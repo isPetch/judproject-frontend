@@ -4,7 +4,7 @@ import DashboardListProjects from '../views/DashboardListProjects.vue'
 // import TaskBoardVue from '@/views/TaskBoard.vue'
 // import CreateProjectVue from '@/views/CreateProject.vue'
 import LoginVue from '../views/Login.vue'
-// import SignUpVue from '@/views/SignUp.vue'
+import SignUpVue from '@/views/SignUp.vue'
 // import ProfileVue from  '@/views/Profile.vue'
 // import ChangePasswordVue from '@/views/ChangePassword.vue'
 
@@ -20,6 +20,11 @@ const router = createRouter({
       path: '/login',
       name: 'Login',
       component: LoginVue
+    },
+    {
+      path: '/signup',
+      name: 'SignUp',
+      component: SignUpVue
     }
     // ,
     // {
