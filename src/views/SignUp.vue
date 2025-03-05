@@ -94,11 +94,11 @@ const preventSpacebar = (event) => {
         <img src="../components/image/jubproject.png" class="w-10 h-10" />
         <span class="text-xl font-bold ">JudProject</span>
         <nav class=" space-x-6">
-        <a href="#" class="text-white hover:underline">About</a>
-        <a href="#" class="text-white hover:underline">Contact</a>
+        <a href="#" class="px-4 py-2 relative transition duration-300 hover:text-white after:absolute after:left-0 after:bottom-0 after:w-full after:h-1 after:bg-gradient-to-r after:from-blue-400 after:to-gray-200 after:scale-x-0 hover:after:scale-x-90 after:transition-transform after:duration-300">About</a>
+          <a href="#" class="px-4 py-2 relative transition duration-300 hover:text-white after:absolute after:left-0 after:bottom-0 after:w-full after:h-1 after:bg-gradient-to-r after:from-blue-400 after:to-gray-200 after:scale-x-0 hover:after:scale-x-90 after:transition-transform after:duration-300">Contact</a>
       </nav>
       </div>
-      <a href="/login" class="text-white hover:underline">Sign in</a>
+      <a href="/login" class="text-white px-4 py-2 relative transition duration-300 hover:text-white after:absolute after:left-0 after:bottom-0 after:w-full after:h-1 after:bg-gradient-to-r after:from-blue-400 after:to-gray-200 after:scale-x-0 hover:after:scale-x-90 after:transition-transform after:duration-300">Sign in</a>
     </header>
     
     <!-- Main Content -->
