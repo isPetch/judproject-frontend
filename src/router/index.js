@@ -27,12 +27,11 @@ const router = createRouter({
       component: SignUpVue
     },
     {
-<<<<<<< HEAD
       path: '/projects',
       name: 'Listprojects',
       component: ListProjects
     },
-=======
+    {
       path: '/create',
       name: 'CreateProject',
       component: CreateProjectVue
@@ -43,7 +42,6 @@ const router = createRouter({
     //   name: 'Listprojects',
     //   component: ListProjects
     // },
->>>>>>> d45795a90510faa02a79dda546d1aca9fb3715cd
     // {
     //   path: '/create',
     //   name: 'CreateProject',
