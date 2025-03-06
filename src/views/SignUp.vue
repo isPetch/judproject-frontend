@@ -105,7 +105,7 @@ const preventSpacebar = (event) => {
   </nav>
     <!-- Main Content -->
     <div class="flex flex-grow justify-center items-center pt-20">
-      <div class="bg-gray-200 w-[900px] flex shadow-lg rounded-lg overflow-hidden">
+      <div class="bg-gray-100 w-[900px] flex shadow-lg rounded-lg overflow-hidden">
         <!-- Left Side: Form -->
         <div class="w-1/2 p-6 flex flex-col">
           <div class="flex justify-center mb-4">

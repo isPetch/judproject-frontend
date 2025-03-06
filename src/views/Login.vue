@@ -60,7 +60,7 @@ const handleLogin = async () => {
     </div>
     </nav>
     <div class="flex flex-grow justify-center items-center  pt-20">
-      <div class="flex bg-gray-200 shadow-lg rounded-lg overflow-hidden max-w-4xl w-full">
+      <div class="flex bg-gray-100 shadow-lg rounded-lg overflow-hidden max-w-4xl w-full">
         <div class="w-1/2 bg-[#316394] p-8 flex justify-center items-center">
           <img src="../components/image/clipboard.png" class="max-w-full h-auto" />
         </div>
