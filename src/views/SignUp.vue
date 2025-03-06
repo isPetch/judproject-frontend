@@ -87,25 +87,27 @@ const preventSpacebar = (event) => {
 };
 </script>
 <template>
-  <div class="w-screen h-screen flex flex-col bg-white">
-    <!-- Header -->
-    <header class="bg-[#316394] text-white py-4 px-8 flex justify-between items-center">
-      <div class="flex items-center space-x-10">
-        <img src="../components/image/jubproject.png" class="w-10 h-10" />
-        <span class="text-xl font-bold ">JudProject</span>
-        <nav class=" space-x-6">
-        <a href="#" class="text-white hover:underline">About</a>
-        <a href="#" class="text-white hover:underline">Contact</a>
-      </nav>
+<div class="w-screen h-screen bg-white flex flex-col">
+  <nav class="fixed top-0 left-0 w-full z-50 text-white p-4 flex justify-between items-center" style="background-color: #316394;">
+    <div class="flex flex-row items-center space-x-6">
+      <div class="flex items-center space-x-2">
+      <img src="../components/image/jubproject.png" alt="JudProject Logo" class="h-6 w-6" />
+      <span class="text-lg font-bold">JudProject</span>
+      <div class="text-sm flex space-x-6"> 
+        <a href="#" class="px-4 py-2 relative transition duration-300 hover:text-white after:absolute after:left-0 after:bottom-0 after:w-full after:h-1 after:bg-gradient-to-r after:from-blue-400 after:to-gray-200 after:scale-x-0 hover:after:scale-x-90 after:transition-transform after:duration-300">About</a>
+        <a href="#" class="px-4 py-2 relative transition duration-300 hover:text-white after:absolute after:left-0 after:bottom-0 after:w-full after:h-1 after:bg-gradient-to-r after:from-blue-400 after:to-gray-200 after:scale-x-0 hover:after:scale-x-90 after:transition-transform after:duration-300">Contact</a>
       </div>
-      <a href="/login" class="text-white hover:underline">Sign in</a>
-    </header>
-    
+    </div>
+    </div>
+    <div class="ml-auto">
+      <a href="/login" class="text-white px-4 py-2 relative transition duration-300 hover:text-white after:absolute after:left-0 after:bottom-0 after:w-full after:h-1 after:bg-gradient-to-r after:from-blue-400 after:to-gray-200 after:scale-x-0 hover:after:scale-x-90 after:transition-transform after:duration-300">Sign in</a>
+    </div>
+  </nav>
     <!-- Main Content -->
-    <div class="flex flex-grow justify-center items-center">
-      <div class="bg-gray-200 w-[900px] flex shadow-lg rounded-lg overflow-hidden">
+    <div class="flex flex-grow justify-center items-center pt-20">
+      <div class="bg-gray-100 w-[900px] flex shadow-lg rounded-lg overflow-hidden">
         <!-- Left Side: Form -->
-        <div class="w-1/2 p-8 flex flex-col">
+        <div class="w-1/2 p-6 flex flex-col">
           <div class="flex justify-center mb-4">
             <img src="../components/image/jubproject.png" class="w-20 h-20" />
           </div>
@@ -138,7 +140,7 @@ const preventSpacebar = (event) => {
         
         <!-- Right Side: Image -->
         <div class="w-1/2 bg-[#316394] flex justify-center items-center">
-          <img src="../components/image/project-manager.png" class="w-3/4" />
+          <img src="../components/image/clipboard.png" class="w-3/4" />
         </div>
       </div>
     </div>

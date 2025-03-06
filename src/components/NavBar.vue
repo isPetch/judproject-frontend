@@ -48,7 +48,7 @@ const userInitials = computed(() => {
           v-for="tab in tabs"
           :key="tab.name"
           :to="tab.link"
-          class="hover:underline"
+          class="px-4 py-2 relative transition duration-300 hover:text-white after:absolute after:left-0 after:bottom-0 after:w-full after:h-1 after:bg-gradient-to-r after:from-blue-400 after:to-gray-200 after:scale-x-0 hover:after:scale-x-90 after:transition-transform after:duration-300"
         >
           {{ tab.name }}
         </router-link>

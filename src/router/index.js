@@ -2,7 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 import DashboardListProjects from '../views/DashboardListProjects.vue'
 import ListProjects from '../views/ListProjects.vue'
 // import TaskBoardVue from '@/views/TaskBoard.vue'
-// import CreateProjectVue from '@/views/CreateProject.vue'
+import CreateProjectVue from '@/views/CreateProject.vue'
 import LoginVue from '../views/Login.vue'
 import SignUpVue from '@/views/SignUp.vue'
 // import ProfileVue from  '@/views/Profile.vue'
@@ -27,10 +27,23 @@ const router = createRouter({
       component: SignUpVue
     },
     {
+<<<<<<< HEAD
       path: '/projects',
       name: 'Listprojects',
       component: ListProjects
     },
+=======
+      path: '/create',
+      name: 'CreateProject',
+      component: CreateProjectVue
+     }
+    // ,
+    // {
+    //   path: '/projects',
+    //   name: 'Listprojects',
+    //   component: ListProjects
+    // },
+>>>>>>> d45795a90510faa02a79dda546d1aca9fb3715cd
     // {
     //   path: '/create',
     //   name: 'CreateProject',
