@@ -39,7 +39,7 @@ const userInitials = computed(() => {
   <nav class="fixed top-0 left-0 w-full z-50 text-white p-4 flex justify-between items-center" style="background-color: #316394;">
     <div class="flex flex-row space-x-6 items-center">
       <div class="flex items-center space-x-2">
-        <img src="../components/image/jubproject.png" alt="JudProject Logo" class="h-6 w-6" />
+        <img src="../components/image/jubproject.png" alt="JudProject Logo" class="h-10 w-10" />
         <span class="text-lg font-bold">JudProject</span>
       </div>
 

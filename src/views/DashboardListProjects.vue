@@ -29,7 +29,7 @@ const formatDate = (dateString) => {
 <template>
   <div>
     <NavBar />
-    <div class="max-w-8xl mx-auto p-6 pt-16">
+    <div class="max-w-8xl mx-auto p-6 pt-20">
       <h2 class="text-2xl font-semibold mb-4">Dashboard</h2>
 
       <!-- Project Overview -->
