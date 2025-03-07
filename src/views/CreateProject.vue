@@ -165,11 +165,11 @@ const tabs = [
     </nav>
 
    <!-- Form Section -->
-    <div class="flex justify-center items-center  flex-grow  pt-28">
-      <div class=" bg-gray-100 p-16 rounded-lg shadow-lg w-11/12">
+    <div class="flex justify-center items-center  flex-grow  pt-24">
+      <div class=" bg-gray-100 p-16 rounded-lg shadow-lg w-10/12">
         <div class="flex justify-between items-center mb-6">
           <h2 class="text-4xl font-bold">Create Project</h2>
-          <img src="../components/icon/cross.png" alt="JudProject Logo" class="h-8 w-8" />
+          <img src="../components/icon/MakiCross.png" alt="JudProject Logo" class="h-8 w-8" />
         </div>
         
         <!-- Form Inputs -->
@@ -206,7 +206,7 @@ const tabs = [
                 <option value="member">Member</option>
                 <option value="admin">Admin</option>
               </select>
-              <button @click="addMember" class="bg-blue-600 text-white px-4 py-2 rounded">Add</button>
+              <button @click="addMember" class="bg-green-600 text-white px-4 py-2 rounded font-bold">Add</button>
             </div>
             
               <ul>
@@ -221,8 +221,8 @@ const tabs = [
         <hr>
         <!-- Buttons -->
         <div class="flex justify-center items-center space-x-2 mt-4  ">
-          <button @click="addCreateProject" :disabled="isSubmitDisabled" class=" text-white px-4 py-2 rounded " style="background-color: #316394;" >Submit</button>
-           <button @click="CancleCreateProject,goToListProject()" class="bg-red-700 text-white px-4 py-2 rounded">Cancel</button>
+          <button @click="addCreateProject" :disabled="isSubmitDisabled" class="font-bold text-white px-6 py-3 rounded-xl text-xl" style="background-color: #316394;">Submit</button>
+           <button @click="CancleCreateProject,goToListProject()" class="font-bold bg-red-700 text-white px-6 py-3 rounded-xl text-xl">Cancel</button>
         </div>
       </div>
     </div>
