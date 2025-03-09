@@ -55,7 +55,7 @@ const formatDate = (dateString) => {
             class="bg-gray-100 p-4 rounded-lg cursor-pointer hover:bg-gray-200"
           >
             <h3 class="text-lg font-semibold text-[#144251]">{{ project.name }}</h3>
-            <p class="text-sm text-[#2A728A]">{{ project.description }}</p>
+            <p class="text-sm text-[#2A728A] break-words whitespace-pre-wrap">{{ project.description }}</p>
           </div>
         </div>
 
@@ -66,7 +66,7 @@ const formatDate = (dateString) => {
             <button><img src="../components/icon/MakiCross.png" alt="clearSelection" class="h-6 w-6" @click="clearSelection"/></button>
           </div>
           <!-- <h3 class="text-xl font-semibold text-[#144251]">{{ selectedProject.name }}</h3> -->
-          <p class="text-[#2A728A]">{{ selectedProject.description }}</p>
+          <p class="text-[#2A728A]  break-words whitespace-pre-wrap">{{ selectedProject.description }}</p>
           <div class="mt-4 text-[#A39898]">
             <p>📅 <strong>Due date:</strong> {{ selectedProject.dueDate ? formatDate(selectedProject.dueDate) : '-' }}</p>
             <p>🚀 <strong>Current Sprint:</strong> {{ selectedProject.sprints.length }}</p>
