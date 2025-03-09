@@ -166,10 +166,15 @@ const tabs = [
 
    <!-- Form Section -->
     <div class="flex justify-center items-center  flex-grow  pt-24">
-      <div class=" bg-gray-100 p-16 rounded-lg shadow-lg w-10/12">
+      <div class=" bg-gray-100 p-8 rounded-lg shadow-lg w-10/12">
         <div class="flex justify-between items-center mb-6">
           <h2 class="text-4xl font-bold">Create Project</h2>
-          <img src="../components/icon/MakiCross.png" alt="JudProject Logo" class="h-8 w-8" />
+         <img 
+  src="../components/icon/MakiCross.png" 
+  alt="JudProject Logo" 
+  class="h-8 w-8 cursor-pointer" 
+  @click="$router.push('/projects')" 
+/>
         </div>
         
         <!-- Form Inputs -->
@@ -197,30 +202,47 @@ const tabs = [
           </div>
           
           <!-- Team Members Section -->
-          <div class="col-span-2 mt-4">
-            <label class="block font-semibold">Add Team Members</label>
-            <div class="flex space-x-4">
-              <input v-model="searchEmail" type="text" placeholder="Search email..." class="p-2 border rounded w-1/3" />
-              <select v-model="selectedRole" class="p-2 border rounded w-1/4">
-                <option value="">- Select role -</option>
-                <option value="member">Member</option>
-                <option value="admin">Admin</option>
-              </select>
-              <button @click="addMember" class="bg-green-600 text-white px-4 py-2 rounded font-bold">Add</button>
-            </div>
-            
-              <ul>
-                <li v-for="(member, index) in teamMembers" :key="index" class="flex justify-between p-1">
-                  <span>{{ member.email }} ({{ member.role }})</span>
-                  <button @click="removeMember(index)" class="text-red-500">&times;</button>
-                </li>
-              </ul>
-            </div>
-          </div>
+               <div class="flex flex-row w-full">
+                <div class="flex flex-col w-1/3">
+                  <label for="add-member" class="text-base block mb-1">Add Team Members</label>
+                  <input v-model="searchEmail" id="add-member" type="text" placeholder="Search email..." class="input input-bordered w-2/3 h-12 mb-2" />
+                  <ul v-if="searchEmail && !selectedEmail" class="bg-white border border-gray-300 rounded-md mt-1"
+                      style="max-height: 150px; overflow-y: auto;">
+                    <li v-for="(email, index) in filteredEmails.slice(0, 10)" :key="index" 
+                        @click="selectEmail(email)" 
+                        class="p-2 cursor-pointer hover:bg-gray-100">
+                      {{ email }}
+                    </li>
+                  </ul>
+                </div>
+               <div class="flex flex-col w-1/3">
+          <label for="role-member" class="text-base block mb-1">Role</label>
+      <div class="flex items-center space-x-2">
+    <select v-model="selectedRole" class="select select-bordered w-2/3 max-w-xs">
+      <option value="">- Select role -</option>
+      <option value="member">Member</option>
+      <option value="admin">Admin</option>
+    </select>
+    <button @click="addMember" class="bg-green-600 text-white px-4 py-2 rounded font-bold">Add</button>
+  </div>
+        </div>
+                <div class="flex flex-col w-1/3 ml-8">
+                  <label for="add-member" class="text-base block mb-1">Team Members</label>
+                  <div class="w-full h-20 bg-white rounded-md p-2 overflow-x-hidden">
+                    <ul>
+                      <li v-for="(member, index) in teamMembers" :key="index" class="flex justify-between items-center p-1 ">
+                        <span>{{ member.email }} ({{ member.role }})</span>
+                        <button @click="removeMember(index)" class="text-red-500 font-bold px-4">&times;</button>
+                      </li>
+                    </ul>
+                  </div>
+                </div>          
+              </div>
+              </div>
        <br>
         <hr>
         <!-- Buttons -->
-        <div class="flex justify-center items-center space-x-2 mt-4  ">
+        <div class="flex justify-center items-center space-x-6 mt-4  ">
           <button @click="addCreateProject" :disabled="isSubmitDisabled" class="font-bold text-white px-6 py-3 rounded-xl text-xl" style="background-color: #316394;">Submit</button>
            <button @click="CancleCreateProject,goToListProject()" class="font-bold bg-red-700 text-white px-6 py-3 rounded-xl text-xl">Cancel</button>
         </div>
