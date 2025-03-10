@@ -26,7 +26,7 @@ const handleLogin = async () => {
     return;
   }
   try {
-    const response = await axios.post('http://cp24sy3.sit.kmutt.ac.th:8000/api/login', { 
+    const response = await axios.post('http://localhost:8080/api/login', { 
       username: username.value, 
       password: password.value 
     });

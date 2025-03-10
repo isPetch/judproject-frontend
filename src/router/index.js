@@ -76,6 +76,34 @@ const router = createRouter({
   ]
 })
 
+router.beforeEach((to, from, next) => {
+  const publicPages = ['Login', 'SignUp']; 
+  const isPublicPage = publicPages.includes(to.name);
+  const token = localStorage.getItem('token');
+  const lastLogin = localStorage.getItem('lastLogin');
+  // const EXPIRATION_TIME = 30 * 60 * 1000; // 30 นาที
+  const EXPIRATION_TIME = 3000;
+
+  if (token && lastLogin) {
+    const currentTime = Date.now();
+    if (currentTime - lastLogin > EXPIRATION_TIME) {
+      // ถ้าเกิน 30 นาที ให้ลบ token แล้ว redirect ไปหน้า login
+      localStorage.removeItem('token');
+      localStorage.removeItem('userId');
+      localStorage.removeItem('lastLogin');
+      return next({ name: 'Login' });
+    } else {
+      // อัปเดตเวลาใหม่เมื่อยังอยู่ในช่วงเวลาที่กำหนด
+      localStorage.setItem('lastLogin', Date.now());
+    }
+  }
+
+  if (!isPublicPage && !token) {
+    next({ name: 'Login' });
+  } else {
+    next();
+  }
+});
 
 
 export default router
