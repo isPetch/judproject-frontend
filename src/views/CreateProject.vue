@@ -165,80 +165,82 @@ const tabs = [
     </nav>
 
    <!-- Form Section -->
-    <div class="flex justify-center items-center  flex-grow  pt-24">
-      <div class=" bg-gray-100 p-8 rounded-lg shadow-lg w-10/12">
-        <div class="flex justify-between items-center mb-6">
-          <h2 class="text-4xl font-bold">Create Project</h2>
-         <img 
-  src="../components/icon/MakiCross.png" 
-  alt="JudProject Logo" 
-  class="h-8 w-8 cursor-pointer" 
-  @click="$router.push('/projects')" 
-/>
-        </div>
-        
-        <!-- Form Inputs -->
-        <div class="grid grid-cols-2 gap-2">
-          <div class="mr-2">
-            <label class="block font-semibold">Project Name</label>
-            <input v-model="projectName" type="text" class="w-4/6 w-full p-2 border rounded" />
-          </div>
-          <div class="row-span-3">
-            <label class="block font-semibold">Project Description</label>
-            <textarea v-model="projectDescription" class="w-full  border rounded h-64"></textarea>
-          </div>
-          <div>
-            <label class="block font-semibold">Project Duration</label>
-            <br>
-            <p>Start Date</p>
-            <div class="flex space-x-2">
-              <input v-model="startDate" type="date" class="w-4/6 p-2 border rounded" />
-            </div>
-            <br>
-             <p>End Date</p>
-            <div class="flex space-x-2">
-              <input v-model="endDate" type="date" class="w-4/6 p-2 border rounded" />
-            </div>
-          </div>
-          
-          <!-- Team Members Section -->
-               <div class="flex flex-row w-full">
-                <div class="flex flex-col w-1/3">
-                  <label for="add-member" class="text-base block mb-1">Add Team Members</label>
-                  <input v-model="searchEmail" id="add-member" type="text" placeholder="Search email..." class="input input-bordered w-2/3 h-12 mb-2" />
-                  <ul v-if="searchEmail && !selectedEmail" class="bg-white border border-gray-300 rounded-md mt-1"
-                      style="max-height: 150px; overflow-y: auto;">
-                    <li v-for="(email, index) in filteredEmails.slice(0, 10)" :key="index" 
-                        @click="selectEmail(email)" 
-                        class="p-2 cursor-pointer hover:bg-gray-100">
-                      {{ email }}
-                    </li>
-                  </ul>
-                </div>
-               <div class="flex flex-col w-1/3">
-          <label for="role-member" class="text-base block mb-1">Role</label>
-      <div class="flex items-center space-x-2">
-    <select v-model="selectedRole" class="select select-bordered w-2/3 max-w-xs">
+    <div class="flex justify-center items-center flex-grow pt-28">
+  <div class="bg-gray-100 p-8 rounded-lg shadow-lg w-2/3">
+    <div class="flex justify-between items-center mb-4">
+      <h2 class="text-4xl font-bold">Create Project</h2>
+      <img 
+        src="../components/icon/MakiCross.png" 
+        alt="Close" 
+        class="h-8 w-8 cursor-pointer" 
+        @click="$router.push('/projects')" 
+      />
+    </div>
+
+    <!-- Form Inputs -->
+    <div class="grid grid-cols-2 gap-4">
+      <!-- Project Name -->
+      <div>
+        <label class="block font-semibold">Project Name</label>
+        <input v-model="projectName" type="text" class="w-full p-2 border rounded" />
+      </div>
+
+      <!-- Project Description -->
+      <div class="row-span-3">
+        <label class="block font-semibold">Project Description</label>
+        <textarea v-model="projectDescription" class="w-full border rounded h-64"></textarea>
+      </div>
+
+      <!-- Project Duration -->
+      <div>
+        <label class="block font-semibold">Project Duration</label>
+        <p class="mt-1">Start Date</p>
+        <input v-model="startDate" type="date" class="w-full p-2 border rounded" />
+        <p class="mt-2">End Date</p>
+        <input v-model="endDate" type="date" class="w-full p-2 border rounded" />
+      </div>
+    </div>
+
+    <!-- Team Section -->
+    <div class="grid grid-cols-3 gap-4 mt-4">
+      <!-- Add Team Members -->
+      <div class="flex flex-col gap-2">
+        <label class="text-base block mb-1">Add Team Members</label>
+        <input v-model="searchEmail" id="add-member" type="text" placeholder="Search email..." class="input input-bordered w-full h-12" />
+        <ul v-if="searchEmail && !selectedEmail" class="bg-white border border-gray-300 rounded-md mt-1 max-h-32 overflow-y-auto">
+          <li v-for="(email, index) in filteredEmails.slice(0, 10)" :key="index" @click="selectEmail(email)" class="p-2 cursor-pointer hover:bg-gray-100">
+            {{ email }}
+          </li>
+        </ul>
+      </div>
+<!-- Role Selection -->
+<div class="flex flex-col gap-3">
+  <label class="text-base font-semibold">Role</label>
+  <div class="flex flex-row items-center gap-2">
+    <select v-model="selectedRole" class="select select-bordered w-full">
       <option value="">- Select role -</option>
       <option value="member">Member</option>
       <option value="admin">Admin</option>
     </select>
-    <button @click="addMember" class="bg-green-600 text-white px-4 py-2 rounded font-bold">Add</button>
+    <button @click="addMember" class="bg-green-600 text-white px-4 py-2 rounded font-bold whitespace-nowrap">Add</button>
   </div>
+</div>
+
+
+
+      <!-- Team Members List -->
+      <div class="flex flex-col gap-2">
+        <label class="text-base block mb-1">Team Members</label>
+        <div class="w-full h-20 bg-white rounded-md p-2 overflow-y-auto">
+          <ul>
+            <li v-for="(member, index) in teamMembers" :key="index" class="mt-1 flex justify-between items-center p-1">
+              <span class="truncate">{{ member.email }} ({{ member.role }})</span>
+              <button @click="removeMember(index)" class="text-red-500 font-bold px-4">&times;</button>
+            </li>
+          </ul>
         </div>
-                <div class="flex flex-col w-1/3 ml-8">
-                  <label for="add-member" class="text-base block mb-1">Team Members</label>
-                  <div class="w-full h-20 bg-white rounded-md p-2 overflow-x-hidden">
-                    <ul>
-                      <li v-for="(member, index) in teamMembers" :key="index" class="flex justify-between items-center p-1 ">
-                        <span>{{ member.email }} ({{ member.role }})</span>
-                        <button @click="removeMember(index)" class="text-red-500 font-bold px-4">&times;</button>
-                      </li>
-                    </ul>
-                  </div>
-                </div>          
-              </div>
-              </div>
+      </div>
+    </div>
        <br>
         <hr>
         <!-- Buttons -->
