@@ -1,8 +1,10 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue';
+import { useRouter } from 'vue-router';
 import NavBar from "@/components/NavBar.vue";
 import { getAllProjects, getProjectById } from "../composable/getJudProjects";
 
+const router = useRouter();
 const projects = ref([]);
 const selectedProject = ref(null);
 
@@ -17,6 +19,10 @@ const selectProject = async (id) => {
 
 const clearSelection = () => {
   selectedProject.value = null; // เคลียร์การเลือก
+};
+
+const goToProjectDetail = (id) => {
+  router.push(`/project/board-${id}`);
 };
 
 // กรองเฉพาะโปรเจกต์ที่ยังไม่ถูกเลือก
@@ -79,7 +85,7 @@ const formatDate = (dateString) => {
           </div>
           <div class="mt-4 flex justify-end gap-2">
             <button class="px-4 py-2 bg-yellow-500 text-white rounded-lg">Move to archive</button>
-            <button class="px-4 py-2 bg-green-500 text-white rounded-lg">View</button>
+            <button class="px-4 py-2 bg-green-500 text-white rounded-lg" @click="goToProjectDetail(selectedProject.id)">View</button>
           </div>
         </div>
 
