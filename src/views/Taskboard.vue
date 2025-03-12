@@ -2,6 +2,7 @@
 import { ref, onMounted } from "vue";
 import { useRoute } from "vue-router";
 import NavBar from "@/components/NavBar.vue";
+import ModalTask from "@/components/ModalTask.vue";
 import { getProjectById, getSprintById } from "../composable/getJudProjects";
 
 const route = useRoute();
@@ -10,6 +11,8 @@ const project = ref(null);
 const sprints = ref([]);
 const selectedSprint = ref(null);
 const tasks = ref([]);
+const selectedTask = ref(null);  // Store the selected task for the modal
+const isModalVisible = ref(false);  // Control visibility of the modal
 
 // โหลดข้อมูลโปรเจกต์และ Sprint List
 const fetchProject = async () => {
@@ -46,6 +49,16 @@ const fetchSprint = async (sprintId) => {
 const handleSprintSelection = (sprintId) => {
   fetchSprint(sprintId);
   localStorage.setItem(`selectedSprintId_${projectId}`, sprintId);  // เก็บค่า Sprint ที่เลือกใน localStorage โดยใช้ projectId เป็นคีย์
+};
+
+const openTaskDetails = (task) => {
+  selectedTask.value = task;
+  isModalVisible.value = true;
+};
+
+const closeModal = () => {
+  isModalVisible.value = false;
+  selectedTask.value = null;
 };
 
 onMounted(() => {
@@ -131,8 +144,8 @@ const addSprint = async () => {
             <div
               v-for="task in tasks.filter(t => t.status === 'ToDo')"
               :key="task.id"
-              class="bg-[#EAEBF1] p-3 rounded mb-2 shadow-sm text-md font-semibold"
-            >
+              class="bg-[#EAEBF1] p-3 rounded mb-2 shadow-sm text-md font-semibold cursor-pointer hover:bg-gray-300 transition-all"
+              @click="openTaskDetails(task)">
               {{ task.name }}
             </div>
           </div>
@@ -142,8 +155,8 @@ const addSprint = async () => {
             <div
               v-for="task in tasks.filter(t => t.status === 'In Progress')"
               :key="task.id"
-              class="bg-[#EAEBF1] p-3 rounded mb-2 shadow-sm text-md font-semibold"
-            >
+              class="bg-[#EAEBF1] p-3 rounded mb-2 shadow-sm text-md font-semibold cursor-pointer hover:bg-gray-300 transition-all"
+              @click="openTaskDetails(task)">
               {{ task.name }}
             </div>
           </div>
@@ -153,13 +166,20 @@ const addSprint = async () => {
             <div
               v-for="task in tasks.filter(t => t.status === 'Done')"
               :key="task.id"
-              class="bg-[#EAEBF1] p-3 rounded mb-2 shadow-sm text-md font-semibold"
-            >
+              class="bg-[#EAEBF1] p-3 rounded mb-2 shadow-sm text-md font-semibold cursor-pointer hover:bg-gray-300 transition-all"
+              @click="openTaskDetails(task)">
               {{ task.name }}
             </div>
           </div>
         </div>
       </div>
     </div>
+ <!-- Modal Component -->
+    <ModalTask
+      v-if="isModalVisible"
+      :task="selectedTask"
+      :isVisible="isModalVisible"
+      :closeModal="closeModal"
+    />
   </div>
 </template>
