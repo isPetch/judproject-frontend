@@ -178,6 +178,7 @@ const addSprint = async () => {
     <ModalTask
       v-if="isModalVisible"
       :task="selectedTask"
+      :sprints="sprints"
       :isVisible="isModalVisible"
       :closeModal="closeModal"
     />
