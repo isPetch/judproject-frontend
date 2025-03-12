@@ -41,14 +41,20 @@ const formatDate = (dateString) => {
     day: 'numeric' 
   })
 }
+const isMenuOpen = ref(false);
+
 </script>
 
 <template>
   <div>
     <NavBar />
     <div class="max-w-8xl mx-auto p-6 pt-20">
-      <h2 class="text-2xl font-semibold mb-4">Dashboard</h2>
-
+      <div class="flex justify-between items-center mb-4">
+        <h2 class="text-2xl font-semibold">Dashboard</h2>
+         <router-link to="/create" class="btn text-white bg-blue-500 px-4 py-2 rounded">
+  + Create New Project
+</router-link>
+      </div>
       <!-- Layout เปลี่ยนตามการเลือกโปรเจกต์ -->
       <div :class="selectedProject ? 'grid grid-cols-2 gap-4 items-start' : 'grid grid-cols-2 gap-4'">
         
@@ -67,11 +73,32 @@ const formatDate = (dateString) => {
 
         <!-- ด้านขวา: แสดงรายละเอียดโปรเจกต์ที่เลือก -->
         <div class="bg-white p-6 rounded-lg shadow-md min-h-0 overflow-auto" v-if="selectedProject">
-          <div class="flex items-center justify-between">
-            <span class="text-xl font-semibold text-[#144251]">{{ selectedProject.name }}</span>
-            <button><img src="../components/icon/MakiCross.png" alt="clearSelection" class="h-6 w-6" @click="clearSelection"/></button>
-          </div>
-          <!-- <h3 class="text-xl font-semibold text-[#144251]">{{ selectedProject.name }}</h3> -->
+  <div class="flex items-center justify-between">
+    <span class="text-xl font-semibold text-[#144251]">{{ selectedProject.name }}</span>
+    <div class="flex items-center gap-2">
+    <!-- ปุ่มเปิดเมนู -->
+<div class="dropdown dropdown-end">
+  <button @click="isMenuOpen = !isMenuOpen" >
+    <div class="w-10 rounded-full">
+      <img src="../components/icon/List.png" alt="list" class="h-6 w-6" />
+    </div>
+  </button>
+
+  <!-- Dropdown Menu -->
+  <ul v-show="isMenuOpen" class="menu menu-sm dropdown-content bg-gray-100 rounded-box z-[1] mt-3 w-52 p-2 shadow">
+    <li>
+      <router-link to="/edit" class="justify-between font-bold text-lg">Edit Project
+           <img src="../components/icon/edit.png" class="h-5 w-5" />
+      </router-link>
+    </li>
+    <li><a class="text-red-500 font-bold text-lg justify-between">Leave
+      <img src="../components/icon/logout.png" class="h-5 w-5" />
+    </a></li>
+  </ul>
+</div>
+      <button><img src="../components/icon/MakiCross.png" alt="clearSelection" class="h-6 w-6" @click="clearSelection"/></button>
+    </div>
+  </div>
           <p class="text-[#2A728A]  break-words whitespace-pre-wrap">{{ selectedProject.description }}</p>
           <div class="mt-4 text-[#A39898]">
             <p>📅 <strong>Due date:</strong> {{ selectedProject.dueDate ? formatDate(selectedProject.dueDate) : '-' }}</p>
@@ -92,7 +119,11 @@ const formatDate = (dateString) => {
       </div>
     </div>
   </div>
+
+    
+  
 </template>
+
 
 <style scoped>
 .cursor-pointer {

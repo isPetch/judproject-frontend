@@ -6,6 +6,7 @@ import CreateProjectVue from '@/views/CreateProject.vue'
 import LoginVue from '../views/Login.vue'
 import SignUpVue from '@/views/SignUp.vue'
 import Taskboard from '../views/Taskboard.vue'
+import EditProjectVue from '../views/EditProject.vue'
 // import ProfileVue from  '@/views/Profile.vue'
 // import ChangePasswordVue from '@/views/ChangePassword.vue'
 
@@ -41,6 +42,11 @@ const router = createRouter({
       path: '/project/board-:id',
       name: 'Taskboard',
       component: Taskboard
+    },
+    {
+      path: '/edit',
+      name: 'EditProject',
+      component: EditProjectVue
     }
     // ,
     // {
