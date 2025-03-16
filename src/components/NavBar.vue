@@ -89,7 +89,7 @@ const handleLogout = () => {
       </router-link>
     </li>
     <li><a class="text-red-500 font-bold text-lg justify-between" @click="handleLogout">Logout
-      <img src="../components/icon/switch.png" class="h-5 w-5" />
+      <img src="../components/icon/logoutt.png" class="h-5 w-5" />
     </a></li>
   </ul>
       </div>
