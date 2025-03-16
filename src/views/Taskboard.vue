@@ -180,7 +180,7 @@ const addSprint = async () => {
       </aside>
 
       <!-- Task Board -->
-      <div class="flex-1 p-6">
+      <div v-if="selectedSprint" class="flex-1 p-6">
         <h2 v-if="selectedSprint" class="text-2xl font-semibold mb-4 text-white">
           Sprint {{ selectedSprint.sprintNumber }}
         </h2>
@@ -299,6 +299,7 @@ const addSprint = async () => {
       :task="selectedTask"
       :sprints="sprints"
       :isVisible="isModalVisible"
+      :sprintId="selectedSprint?.id"
       :closeModal="closeModal"
     />
   </div>
