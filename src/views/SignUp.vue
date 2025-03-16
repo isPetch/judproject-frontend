@@ -38,17 +38,17 @@ const isPasswordLengthValid = computed(() => {
 
 const addUser = async (use) => {
     try {
+        const formData = new FormData();
+        formData.append("username", use.username);
+        formData.append("password", use.password);
+        formData.append("email", use.email);
+
         const res = await fetch(import.meta.env.VITE_ROOT_API + "/api/register", {
             method: 'POST',
             headers: {
-                'content-type': 'application/json',
-                'Authorization': id
+                'Authorization': id  
             },
-            body: JSON.stringify({
-                username: use.username,
-                password: use.password,
-                email: use.email
-            })
+            body: formData
         });
 
         const result = await res.json();
@@ -59,9 +59,9 @@ const addUser = async (use) => {
         } else {
             if (result.message.includes("Duplicate entry") && result.message.includes("user.username")) {
                 alert("This username is already taken. Please choose another name.");
-            }else if (result.message.includes("Duplicate entry") && result.message.includes("user.email")){
+            } else if (result.message.includes("Duplicate entry") && result.message.includes("user.email")) {
                 alert("This email is already taken.");
-            }else {
+            } else {
                 console.error(result.message);
             }
         }
@@ -69,6 +69,7 @@ const addUser = async (use) => {
         console.log("เกิดข้อผิดพลาดในการสมัครสมาชิก กรุณาลองใหม่:", err);
     }
 };
+
 
 // Updated watcher logic to check password and length validation
 const isFieldAdd = computed(() => {

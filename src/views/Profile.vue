@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import { getUserById } from "../composable/getJudProjects";
 const router = useRouter();
@@ -111,6 +111,27 @@ const deleteAccount = async () => {
     console.error("Error deleting account:", error.message);
   }
 };
+
+const userInitials = computed(() => {
+  if (!username.value) return "";
+  const trimmedName = username.value.trim();
+  return trimmedName.length > 1 
+    ? trimmedName.charAt(0).toUpperCase() + trimmedName.charAt(trimmedName.length - 1).toUpperCase()
+    : trimmedName.charAt(0).toUpperCase();
+});
+
+const profileImage = ref(null); // รูปโปรไฟล์ที่เลือก
+
+// ฟังก์ชันสำหรับจัดการการอัปโหลดไฟล์
+const handleFileUpload = (event) => {
+  const file = event.target.files[0];
+  if (file) {
+    // สร้าง URL ของไฟล์ที่เลือก
+    const fileURL = URL.createObjectURL(file);
+    profileImage.value = fileURL; // ตั้งค่ารูปโปรไฟล์ใหม่
+  }
+};
+
 </script>
 
 <template>
@@ -136,14 +157,23 @@ const deleteAccount = async () => {
 
     <div class="max-w-7xl mx-auto mt-36 bg-gray-100 p-20 rounded-lg shadow-lg">
       <h2 class="text-2xl font-bold mb-4">Profile</h2>
+     <div class="flex flex-col items-center mb-4">
+  <div class="avatar avatar-placeholder">
+    <div class="bg-white text-neutral-content w-24 h-24 rounded-full flex items-center justify-center">
+      <!-- ใช้ <img> แสดงรูปโปรไฟล์ถ้ามี -->
+      <img v-if="profileImage" :src="profileImage" alt="Profile Image" class="w-full h-full object-cover rounded-full" />
+      <!-- ถ้าไม่มีรูปโปรไฟล์จะแสดงตัวอักษรย่อ -->
+      <span v-else class="text-xs font-bold text-black">{{ userInitials }}</span>
+    </div>
+  </div>
+  
+  <div class="mt-4 flex space-x-2">
+    <label for="file-upload" class="bg-blue-600 text-white px-6 py-3 rounded cursor-pointer">Upload New</label>
+    <input type="file" id="file-upload" class="hidden" @change="handleFileUpload" accept="image/*" />
+    <button class="bg-gray-400 text-white px-6 py-3 rounded">Delete</button>
+  </div>
+</div>
 
-      <div class="flex flex-col items-center mb-4">
-        <div class="w-24 h-24 bg-gray-300 rounded-full"></div>
-        <div class="mt-4 flex space-x-2">
-          <button class="bg-blue-600 text-white px-6 py-3 rounded">Upload New</button>
-          <button class="bg-gray-400 text-white px-6 py-3 rounded">Delete</button>
-        </div>
-      </div>
 
       <!-- Success Message -->
       <div v-if="successMessage" class="bg-green-400 text-white text-center p-3 rounded-lg mb-4">
