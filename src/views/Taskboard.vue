@@ -188,7 +188,8 @@ const addSprint = async () => {
         <div class="grid grid-cols-3 gap-6">
           <div class="bg-white p-4 rounded shadow">
             <h3 class="text-lg font-semibold mb-3">TO DO</h3>
-            <div v-if="tasks.some(t => t.status === 'ToDo')" class="flex flex-col">
+            <div class="max-h-[calc(100vh-250px)] overflow-y-auto">
+              <div v-if="tasks.some(t => t.status === 'ToDo')" class="flex flex-col">
                 <div
                   v-for="task in tasks.filter(t => t.status === 'ToDo')"
                   :key="task.id"
@@ -202,26 +203,28 @@ const addSprint = async () => {
                   <div>step</div>
                 </div>
 
-            </div>
-            <!-- Add task -->
-            <div v-if="isAddingTask['ToDo']">
-              <input 
-                v-model="newTaskName" 
-                class="w-full p-2 border rounded" 
-                placeholder="Enter task name"
-              />
-              <div class="flex mt-2">
-                <button @click="addTask(selectedSprint.id)" class="bg-blue-500 text-white px-3 py-1 rounded">Add task</button>
-                <button @click="isAddingTask['ToDo'] = false" class="ml-2 text-black">✖</button>
               </div>
+              <!-- Add task -->
+              <div v-if="isAddingTask['ToDo']">
+                <input 
+                  v-model="newTaskName" 
+                  class="w-full p-2 border rounded" 
+                  placeholder="Enter task name"
+                />
+                <div class="flex mt-2">
+                  <button @click="addTask(selectedSprint.id)" class="bg-blue-500 text-white px-3 py-1 rounded">Add task</button>
+                  <button @click="isAddingTask['ToDo'] = false" class="ml-2 text-black">✖</button>
+                </div>
+              </div>
+              <div class="cursor-pointer pl-4 text-[#BAB1B1]" @click="openTaskInput('ToDo')">+ New Task</div>
             </div>
-            <div class="cursor-pointer pl-4 text-[#BAB1B1]" @click="openTaskInput('ToDo')">+ New Task</div>
 
           </div>
 
           <div class="bg-white p-4 rounded shadow">
             <h3 class="text-lg font-semibold mb-3">IN PROGRESS</h3>
-            <div v-if="tasks.some(t => t.status === 'In Progress')" class="flex flex-col">
+            <div class="max-h-[calc(100vh-250px)] overflow-y-auto">
+              <div v-if="tasks.some(t => t.status === 'In Progress')" class="flex flex-col">
                 <div
                   v-for="task in tasks.filter(t => t.status === 'In Progress')"
                   :key="task.id"
@@ -234,26 +237,28 @@ const addSprint = async () => {
                    <!-- step -->
                   <div>step</div>
                 </div>
-            </div>
-            <!-- Add task -->
-            <div v-if="isAddingTask['In Progress']">
-              <input 
-                v-model="newTaskName" 
-                class="w-full p-2 border rounded" 
-                placeholder="Enter task name"
-              />
-              <div class="flex mt-2">
-                <button @click="addTask(selectedSprint.id)" class="bg-blue-500 text-white px-3 py-1 rounded">Add task</button>
-                <button @click="isAddingTask['In Progress'] = false" class="ml-2 text-black">✖</button>
               </div>
+              <!-- Add task -->
+              <div v-if="isAddingTask['In Progress']">
+                <input 
+                  v-model="newTaskName" 
+                  class="w-full p-2 border rounded" 
+                  placeholder="Enter task name"
+                />
+                <div class="flex mt-2">
+                  <button @click="addTask(selectedSprint.id)" class="bg-blue-500 text-white px-3 py-1 rounded">Add task</button>
+                  <button @click="isAddingTask['In Progress'] = false" class="ml-2 text-black">✖</button>
+                </div>
+              </div>
+              <div class="cursor-pointer pl-4 text-[#BAB1B1]" @click="openTaskInput('In Progress')">+ New Task</div>
             </div>
-            <div class="cursor-pointer pl-4 text-[#BAB1B1]" @click="openTaskInput('In Progress')">+ New Task</div>
 
           </div>
 
           <div class="bg-white p-4 rounded shadow">
             <h3 class="text-lg font-semibold mb-3">DONE</h3>
-            <div v-if="tasks.some(t => t.status === 'Done')" class="flex flex-col ">
+            <div class="max-h-[calc(100vh-250px)] overflow-y-auto">
+              <div v-if="tasks.some(t => t.status === 'Done')" class="flex flex-col ">
                 <div
                   v-for="task in tasks.filter(t => t.status === 'Done')"
                   :key="task.id"
@@ -267,20 +272,21 @@ const addSprint = async () => {
                   <div>step</div>
                 </div>
                 
-            </div> 
-            <!-- Add task -->
-            <div v-if="isAddingTask['Done']">
-              <input 
-                v-model="newTaskName" 
-                class="w-full p-2 border rounded" 
-                placeholder="Enter task name"
-              />
-              <div class="flex mt-2">
-                <button @click="addTask(selectedSprint.id)" class="bg-blue-500 text-white px-3 py-1 rounded">Add task</button>
-                <button @click="isAddingTask['Done'] = false" class="ml-2 text-black">✖</button>
+              </div> 
+              <!-- Add task -->
+              <div v-if="isAddingTask['Done']">
+                <input 
+                  v-model="newTaskName" 
+                  class="w-full p-2 border rounded" 
+                  placeholder="Enter task name"
+                />
+                <div class="flex mt-2">
+                  <button @click="addTask(selectedSprint.id)" class="bg-blue-500 text-white px-3 py-1 rounded">Add task</button>
+                  <button @click="isAddingTask['Done'] = false" class="ml-2 text-black">✖</button>
+                </div>
               </div>
+              <div class="cursor-pointer pl-4 text-[#BAB1B1]" @click="openTaskInput('Done')">+ New Task</div>
             </div>
-            <div class="cursor-pointer pl-4 text-[#BAB1B1]" @click="openTaskInput('Done')">+ New Task</div>
 
           </div>
 
