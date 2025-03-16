@@ -113,28 +113,62 @@ const preventSpacebar = (event) => {
           </div>
           <h2 class="text-3xl font-bold text-center mb-6">Create Account</h2>
           <div class="space-y-4">
-            <div>
-              <label class="block text-gray-600 font-medium">Username</label>
-              <input v-model="addNewUser.username" type="text" placeholder="Enter your username" 
-                class="w-full p-2 border border-gray-300 rounded-md focus:ring focus:ring-blue-500">
-            </div>
-            <div>
-              <label class="block text-gray-600 font-medium">Current Password</label>
-              <input type="password" placeholder="Enter your current password" 
-                class="w-full p-2 border border-gray-300 rounded-md focus:ring focus:ring-blue-500">
-            </div>
-            <div>
-              <label class="block text-gray-600 font-medium">Old Password</label>
-              <input type="password" placeholder="Enter your old password" 
-                class="w-full p-2 border border-gray-300 rounded-md focus:ring focus:ring-blue-500">
-            </div>
-            <div>
-              <label class="block text-gray-600 font-medium">New Password</label>
-              <input v-model="addNewUser.password" type="password" placeholder="Enter your new password" 
-                class="w-full p-2 border border-gray-300 rounded-md focus:ring focus:ring-blue-500">
-            </div>
-          </div>
-          <button class="w-full mt-6 py-2 bg-[#316394] text-white font-semibold rounded-md hover:bg-blue-700">Sign Up</button>
+               <!-- Username Input -->
+    <div class="w-full">
+      <label for="username" class="block text-gray-600 font-medium">Username</label>
+      <input v-model="addNewUser.username"
+        type="text"
+        id="username"
+        placeholder="Enter your username"
+        class="w-full mt-1 p-2 border border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-blue-500"
+        maxlength="45" required @keydown="preventSpacebar($event)"
+      />
+      <div v-if="Status" class="text-orange-500">
+        <div class="ann-error-username">{{ Status }}</div>
+      </div>
+    </div>
+    <!-- Email Input -->
+    <div class="w-full">
+      <label for="email" class="block text-gray-600 font-medium">Email</label>
+      <input v-model="addNewUser.email"
+        type="email"
+        id="email"
+        placeholder="Enter your email"
+        class="w-full mt-1 p-2 border border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-blue-500"
+        maxlength="45" required @keydown="preventSpacebar($event)"
+      />
+      <div v-if="addNewUser.email !== '' && !isEmailValid" class="text-orange-500">
+        Please enter a valid email address
+      </div>
+      <div v-if="Status" class="text-orange-500">
+        <div class="error-email">{{ Status }}</div>
+      </div>
+    </div>
+    <!-- Password Input -->
+    <div class="w-full">
+      <label for="password" class="block text-gray-600 font-medium">Password</label>
+      <input v-model="addNewUser.password"
+        type="password"
+        id="password"
+        placeholder="Enter your password"
+        class="w-full mt-1 p-2 border border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-blue-500"
+        maxlength="45" required @keydown="preventSpacebar($event)"
+      />
+      <div v-if="!isPasswordValid && addNewUser.password !== ''" class="text-orange-500 error-password">
+        Password must be 8-14 characters long, including at least 1 uppercase, 1 lowercase, 1 number, and 1 special character.
+      </div>
+      <div v-if="passwordLength < 8" class="text-orange-500 error-password">
+        Password size must be between 8 and 14 characters
+      </div>
+    </div>
+    </div>
+          <button class="w-full mt-6 py-2 text-white font-semibold rounded-md hover:bg-blue-700" 
+          :disabled="!isFieldAdd"
+          :class="{
+    'cursor-not-allowed bg-gray-300 text-gray-400': !isFieldAdd,
+    ' bg-[#316394] text-black': isFieldAdd
+  }"
+  @click="addUser(addNewUser)">Sign Up</button>
           <p class="text-center text-sm text-gray-500 mt-4">Already have an account? <router-link to="/login" class="text-blue-600">Sign In</router-link></p>
         </div>
         

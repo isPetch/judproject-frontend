@@ -1,12 +1,13 @@
 <script setup>
 import { ref, onMounted, computed } from 'vue';
 import { getUserById } from "../composable/getJudProjects";
-
+import { useRouter } from 'vue-router';
 const tabs = [
   { name: "Dashboard", link: "/" },
   { name: "Projects", link: "/projects" },
 ];
 
+const router = useRouter(); 
 const username = ref('');
 const email = ref('');
 
@@ -33,6 +34,16 @@ const userInitials = computed(() => {
     ? trimmedName.charAt(0).toUpperCase() + trimmedName.charAt(trimmedName.length - 1).toUpperCase()
     : trimmedName.charAt(0).toUpperCase();
 });
+const isMenuOpen = ref(false);
+
+const handleLogout = () => {
+  // ลบ Token ออกจาก localStorage
+  localStorage.removeItem('token');
+  
+  // นำทางไปหน้า Login
+  router.push('/login');
+};
+
 </script>
 
 <template>
@@ -56,13 +67,32 @@ const userInitials = computed(() => {
     </div>
 
     <!-- User Name -->
+<!-- User Name -->
+<div class="dropdown dropdown-end">
+  <button @click="isMenuOpen = !isMenuOpen">
     <div class="flex items-center space-x-2">
       <div class="avatar avatar-placeholder">
-        <div class=" bg-white text-neutral-content w-8 rounded-full">
+        <div class="bg-white text-neutral-content w-8 rounded-full">
           <span class="text-xs font-bold text-black">{{ userInitials }}</span>
         </div>
       </div>
-      <div class="font-semibold">{{ username }}</div>
+      <div class="font-semibold">{{ username }}</div> <!-- Move username inside the flex container -->
     </div>
+  </button>
+  
+  <!-- Dropdown Menu -->
+  <ul v-show="isMenuOpen" class="menu menu-sm dropdown-content bg-gray-100 rounded-box z-[1] mt-3 w-52 p-2 shadow">
+    <li>
+      <router-link to="/profile" class="justify-between font-bold text-lg text-black">
+        Profile Settings
+        <img src="../components/icon/profile-user.png" class="h-5 w-5" />
+      </router-link>
+    </li>
+    <li><a class="text-red-500 font-bold text-lg justify-between" @click="handleLogout">Logout
+      <img src="../components/icon/switch.png" class="h-5 w-5" />
+    </a></li>
+  </ul>
+      </div>
+     
   </nav>
 </template>
