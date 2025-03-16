@@ -10,39 +10,50 @@ const props = defineProps({
 });
 const isEditingName = ref(false);
 const editedTaskName = ref(props.task.name);
+const editedStatus = ref(props.task.status);
+const editedDescription = ref(props.task.description);
 
-const startEditing = () => {
-  isEditingName.value = true;
-  editedTaskName.value = props.task.name;
+const startEditing = (field) => {
+  if (field === "name") {
+    isEditingName.value = true;
+    editedTaskName.value = props.task.name;
+  } else if (field === "status") {
+    editedStatus.value = props.task.status;
+  } else if (field === "description") {
+    editedDescription.value = props.task.description;
+  }
 };
 
-const saveTaskName = async () => {
-  if (editedTaskName.value.trim() && editedTaskName.value !== props.task.name) {
-    try {
-      const payload = { 
-        name: editedTaskName.value,
-        sprintId: props.task.sprintId
-      };
-      console.log("Payload:", payload); 
+const saveTaskChanges = async () => {
+  const payload = {
+    name: editedTaskName.value,
+    status: editedStatus.value,
+    description: editedDescription.value,
+    sprintId: props.task.sprintId,
+  };
 
-      const response = await fetch(import.meta.env.VITE_ROOT_API + `/api/task/${props.task.id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
+  try {
+    const response = await fetch(import.meta.env.VITE_ROOT_API + `/api/task/${props.task.id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
 
-      if (response.ok) {
-        props.task.name = editedTaskName.value;
-      } else {
-        const errorData = await response.json();
-        console.error("Failed to update task name:", errorData);
-      }
-    } catch (error) {
-      console.error("Error updating task name:", error);
+    if (response.ok) {
+      props.task.name = editedTaskName.value;
+      props.task.status = editedStatus.value;
+      props.task.description = editedDescription.value;
+    } else {
+      const errorData = await response.json();
+      console.error("Failed to update task:", errorData);
     }
+  } catch (error) {
+    console.error("Error updating task:", error);
   }
+
   isEditingName.value = false;
 };
+
 
 // คำนวณตัวย่อของสมาชิก (Initials)
 const memberData = computed(() => {
@@ -85,20 +96,20 @@ const applyMove = () => {
       <div class="bg-white p-6 rounded-lg shadow-lg w-[400px] border border-gray-300">
         <!-- Task Title & Status -->
         <div class="flex justify-between items-center mb-3">
-  <div @click="startEditing" class="cursor-pointer">
-    <input
-      v-if="isEditingName"
-      v-model="editedTaskName"
-      @blur="saveTaskName"
-      @keyup.enter="saveTaskName"
-      class="border rounded px-2 py-1 w-full"
-    />
-    <h2 v-else class="text-lg font-semibold">{{ task.name }}</h2>
-  </div>
-  <button @click="closeModal" class="text-gray-500 hover:text-red-500">✖</button>
-</div>
+          <div @click="startEditing" class="cursor-pointer">
+            <input
+              v-if="isEditingName"
+              v-model="editedTaskName"
+              @blur="saveTaskName"
+              @keyup.enter="saveTaskName"
+              class="border rounded px-2 py-1 w-full"
+            />
+            <h2 v-else class="text-lg font-semibold">{{ task.name }}</h2>
+          </div>
+          <button @click="closeModal" class="text-gray-500 hover:text-red-500">✖</button>
+        </div>
         <div class="flex items-center gap-2 text-sm mb-4">
-          <select v-model="task.status" class="px-1 py-1 bg-gray-200 rounded-full">
+          <select v-model="editedStatus" @change="saveTaskChanges" class="px-1 py-1 bg-gray-200 rounded-full">
             <option value="ToDo">TO DO</option>
             <option value="In Progress">IN PROGRESS</option>
             <option value="Done">DONE</option>
@@ -166,7 +177,7 @@ const applyMove = () => {
         <!-- Description -->
         <div class="mb-4">
           <label class="text-sm font-medium">Description</label>
-          <textarea v-model="task.description" class="w-full border rounded p-2"></textarea>
+          <textarea v-model="editedDescription" @blur="saveTaskChanges" class="w-full border rounded p-2"></textarea>
         </div>
   
         <!-- Comments Section -->
