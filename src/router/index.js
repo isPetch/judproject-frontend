@@ -7,7 +7,7 @@ import LoginVue from '../views/Login.vue'
 import SignUpVue from '@/views/SignUp.vue'
 import Taskboard from '../views/Taskboard.vue'
 import EditProjectVue from '../views/EditProject.vue'
-// import ProfileVue from  '@/views/Profile.vue'
+import ProfileVue from  '@/views/Profile.vue'
 // import ChangePasswordVue from '@/views/ChangePassword.vue'
 
 const router = createRouter({
@@ -47,7 +47,12 @@ const router = createRouter({
       path: '/edit',
       name: 'EditProject',
       component: EditProjectVue
-    }
+    },
+    {
+      path: '/profile',
+      name: 'Profile',
+      component: ProfileVue
+     }
     // ,
     // {
     //   path: '/create',
