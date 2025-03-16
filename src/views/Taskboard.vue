@@ -14,6 +14,7 @@ const tasks = ref([]);
 const selectedTask = ref(null);  // Store the selected task for the modal
 const isModalVisible = ref(false);  // Control visibility of the modal
 const newTaskName = ref("");
+const isBoardView = ref(true);
 const isAddingTask = ref({
   ToDo: false,
   "In Progress": false,
@@ -181,13 +182,35 @@ const addSprint = async () => {
 
       <!-- Task Board -->
       <div v-if="selectedSprint" class="flex-1 p-6">
-        <h2 v-if="selectedSprint" class="text-2xl font-semibold mb-4 text-white">
-          Sprint {{ selectedSprint.sprintNumber }}
-        </h2>
+        <div class="flex flex-row justify-between">
+          <h2 v-if="selectedSprint" class="text-2xl font-semibold mb-4 text-white">
+            Sprint {{ selectedSprint.sprintNumber }}
+          </h2>
+          <div class="flex items-center justify-center mb-4">
+            <div class="relative w-44">
+              <div class="w-full h-10 bg-[#316394] rounded-full flex items-center">
+                <div class="absolute top-1 left-1 w-1/2 h-8 bg-white rounded-full shadow-md transition-transform duration-300"
+                  :class="{ 'translate-x-20': !isBoardView }"></div>
+                <button
+                  class="z-10 flex-1 text-center text-sm font-semibold transition-all"
+                  :class="isBoardView ? 'text-[#144251]' : 'text-gray-300'"
+                  @click="isBoardView = true"
+                > Board
+                </button>
+                <button
+                  class="z-10 flex-1 text-center text-sm font-semibold transition-all"
+                  :class="!isBoardView ? 'text-[#144251]' : 'text-gray-300'"
+                  @click="isBoardView = false"
+                > Team Plan
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
 
         <div class="grid grid-cols-3 gap-6">
           <div class="bg-white p-4 rounded shadow">
-            <h3 class="text-lg font-semibold mb-3">TO DO</h3>
+            <h3 class="text-lg font-semibold mb-3 text-[#144251]">TO DO</h3>
             <div class="max-h-[calc(100vh-250px)] overflow-y-auto">
               <div v-if="tasks.some(t => t.status === 'ToDo')" class="flex flex-col">
                 <div
@@ -222,7 +245,7 @@ const addSprint = async () => {
           </div>
 
           <div class="bg-white p-4 rounded shadow">
-            <h3 class="text-lg font-semibold mb-3">IN PROGRESS</h3>
+            <h3 class="text-lg font-semibold mb-3 text-[#144251]">IN PROGRESS</h3>
             <div class="max-h-[calc(100vh-250px)] overflow-y-auto">
               <div v-if="tasks.some(t => t.status === 'In Progress')" class="flex flex-col">
                 <div
@@ -256,7 +279,7 @@ const addSprint = async () => {
           </div>
 
           <div class="bg-white p-4 rounded shadow">
-            <h3 class="text-lg font-semibold mb-3">DONE</h3>
+            <h3 class="text-lg font-semibold mb-3 text-[#144251]">DONE</h3>
             <div class="max-h-[calc(100vh-250px)] overflow-y-auto">
               <div v-if="tasks.some(t => t.status === 'Done')" class="flex flex-col ">
                 <div
@@ -304,3 +327,8 @@ const addSprint = async () => {
     />
   </div>
 </template>
+<style scoped>
+.w-18 {
+  width: 4.5rem; /* กำหนดขนาดของปุ่ม Toggle */
+}
+</style>
