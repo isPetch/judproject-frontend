@@ -199,6 +199,54 @@ const toggleSubtaskStatus = async (task, subtask) => {
     console.error("Error:", error);
   }
 };
+
+const dropdownSubtaskId = ref(null);  // ใช้เก็บ ID ของ step ที่เปิด dropdown อยู่
+const editingSubtaskId = ref(null);  // ใช้เก็บ ID ของ step ที่กำลังแก้ไข
+
+// เปิด/ปิด dropdown
+const toggleDropdown = (id) => {
+  dropdownSubtaskId.value = dropdownSubtaskId.value === id ? null : id;
+};
+
+// กด "Edit" → เปลี่ยนเป็น input
+const editSubtask = (subtask) => {
+  editingSubtaskId.value = subtask.id;
+  dropdownSubtaskId.value = null; // ปิด dropdown
+};
+
+// บันทึกเมื่อแก้ไขเสร็จ
+const saveSubtask = async (subtask) => {
+  try {
+    await fetch(import.meta.env.VITE_ROOT_API + `/api/step/${subtask.id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name: subtask.name })
+    });
+  } catch (error) {
+    console.error("Error updating subtask:", error);
+  } finally {
+    editingSubtaskId.value = null; // ปิด input หลังจากบันทึก
+  }
+};
+
+// ลบ step
+const deleteStep = async (subtaskId) => {
+  const confirmDelete = confirm("คุณแน่ใจหรือไม่ว่าต้องการลบ Step นี้?");
+  if (confirmDelete) {
+    try {
+      const response = await fetch(import.meta.env.VITE_ROOT_API + `/api/step/${subtaskId}/delete`, {
+        method: "DELETE",
+      });
+      if (response.ok) {
+        await fetchSprint(selectedSprint.value.id); // โหลดข้อมูลใหม่
+      } else {
+        console.error("Error deleting step");
+      }
+    } catch (error) {
+      console.error("Error:", error);
+    }
+  }
+};
 </script>
 
 <template>
@@ -256,14 +304,14 @@ const toggleSubtaskStatus = async (task, subtask) => {
         </div>
 
         <div class="grid grid-cols-3 gap-6">
-          <div class="bg-white p-4 rounded shadow">
+          <div class="bg-white p-4 rounded-xl shadow">
             <h3 class="text-lg font-semibold mb-3 text-[#144251]">TO DO</h3>
             <div class="max-h-[calc(100vh-250px)] overflow-y-auto">
               <div v-if="tasks.some(t => t.status === 'ToDo')" class="flex flex-col">
                 <div
                   v-for="task in tasks.filter(t => t.status === 'ToDo')"
                   :key="task.id"
-                  class="flex flex-col bg-[#EAEBF1] p-3 rounded mb-2 shadow-sm hover:bg-gray-300 transition-all">
+                  class="flex flex-col bg-[#EAEBF1] p-3 rounded-lg mb-2 shadow-sm hover:bg-gray-300 transition-all">
                   <div @click="openTaskDetails(task)" class="flex flex-row cursor-pointer justify-between">
                     <div class="text-lg font-semibold ">{{ task.name }}</div>
                     <div>priority</div>
@@ -277,11 +325,35 @@ const toggleSubtaskStatus = async (task, subtask) => {
                             @change="toggleSubtaskStatus(task, subtask)"
                           />
                           <div class="flex flex-row w-full justify-between items-center">
-                            <label>{{ subtask.name }}</label>
-                            <RiMore2Fill/>
+                          <!-- Input แก้ไขชื่อ Step -->
+                          <input
+                            v-if="editingSubtaskId === subtask.id"
+                            v-model="subtask.name"
+                            @blur="saveSubtask(subtask)"
+                            @keyup.enter="saveSubtask(subtask)"
+                            class="border px-2 py-1 rounded w-full"
+                          />
+
+                          <!-- ชื่อ Step ปกติ -->
+                          <span v-else class="cursor-pointer" @click="editSubtask(subtask)">
+                            {{ subtask.name }}
+                          </span>
+                          <div v-for="subtask in task.subtasks" :key="subtask.id" class="flex items-center space-x-2">
+                          <!-- ปุ่ม More -->
+                          <div class="relative">
+                            <RiMore2Fill class="cursor-pointer" @click="toggleDropdown(subtask.id)" />
+                            
+                            <!-- Dropdown -->
+                            <div v-if="dropdownSubtaskId === subtask.id" class="absolute right-0 bg-white border rounded shadow-md z-10 w-32">
+                              <button @click="editSubtask(subtask)" class="block w-full px-3 py-1 hover:bg-gray-200 text-left">Edit</button>
+                              <button @click="deleteStep(subtask.id)" class="block w-full px-3 py-1 hover:bg-gray-200 text-left text-red-500">Delete</button>
+                            </div>
                           </div>
-                        </div>
+
+                          </div>
+                          </div>
                       </div>
+                    </div>
                     <!-- ปุ่ม + New Step -->
                     <div v-if="addingStepTaskId === task.id">
                       <input v-model="newStepName" class="w-full p-2 border rounded" placeholder="Enter step name" />
@@ -311,14 +383,14 @@ const toggleSubtaskStatus = async (task, subtask) => {
 
           </div>
 
-          <div class="bg-white p-4 rounded shadow">
+          <div class="bg-white p-4 rounded-xl shadow">
             <h3 class="text-lg font-semibold mb-3 text-[#144251]">IN PROGRESS</h3>
             <div class="max-h-[calc(100vh-250px)] overflow-y-auto">
               <div v-if="tasks.some(t => t.status === 'In Progress')" class="flex flex-col">
                 <div
                   v-for="task in tasks.filter(t => t.status === 'In Progress')"
                   :key="task.id"
-                  class="flex flex-col bg-[#EAEBF1] p-3 rounded mb-2 shadow-sm hover:bg-gray-300 transition-all">
+                  class="flex flex-col bg-[#EAEBF1] p-3 rounded-lg mb-2 shadow-sm hover:bg-gray-300 transition-all">
                   <div @click="openTaskDetails(task)" class="flex flex-row cursor-pointer justify-between">
                     <div class="text-lg font-semibold ">{{ task.name }}</div>
                     <div>priority</div>
@@ -332,11 +404,35 @@ const toggleSubtaskStatus = async (task, subtask) => {
                             @change="toggleSubtaskStatus(task, subtask)"
                           />
                           <div class="flex flex-row w-full justify-between items-center">
-                            <label>{{ subtask.name }}</label>
-                            <RiMore2Fill/>
+                          <!-- Input แก้ไขชื่อ Step -->
+                          <input
+                            v-if="editingSubtaskId === subtask.id"
+                            v-model="subtask.name"
+                            @blur="saveSubtask(subtask)"
+                            @keyup.enter="saveSubtask(subtask)"
+                            class="border px-2 py-1 rounded w-full"
+                          />
+
+                          <!-- ชื่อ Step ปกติ -->
+                          <span v-else class="cursor-pointer" @click="editSubtask(subtask)">
+                            {{ subtask.name }}
+                          </span>
+                          <div v-for="subtask in task.subtasks" :key="subtask.id" class="flex items-center space-x-2">
+                          <!-- ปุ่ม More -->
+                          <div class="relative">
+                            <RiMore2Fill class="cursor-pointer" @click="toggleDropdown(subtask.id)" />
+                            
+                            <!-- Dropdown -->
+                            <div v-if="dropdownSubtaskId === subtask.id" class="absolute right-0 bg-white border rounded shadow-md z-10 w-32">
+                              <button @click="editSubtask(subtask)" class="block w-full px-3 py-1 hover:bg-gray-200 text-left">Edit</button>
+                              <button @click="deleteStep(subtask.id)" class="block w-full px-3 py-1 hover:bg-gray-200 text-left text-red-500">Delete</button>
+                            </div>
                           </div>
-                        </div>
+
+                          </div>
+                          </div>
                       </div>
+                    </div>
                     <!-- ปุ่ม + New Step -->
                     <div v-if="addingStepTaskId === task.id">
                       <input v-model="newStepName" class="w-full p-2 border rounded" placeholder="Enter step name" />
@@ -366,14 +462,14 @@ const toggleSubtaskStatus = async (task, subtask) => {
 
           </div>
 
-          <div class="bg-white p-4 rounded shadow">
+          <div class="bg-white p-4 rounded-xl shadow">
             <h3 class="text-lg font-semibold mb-3 text-[#144251]">DONE</h3>
             <div class="max-h-[calc(100vh-250px)] overflow-y-auto">
               <div v-if="tasks.some(t => t.status === 'Done')" class="flex flex-col ">
                 <div
                   v-for="task in tasks.filter(t => t.status === 'Done')"
                   :key="task.id"
-                  class="flex flex-col bg-[#EAEBF1] p-3 rounded mb-2 shadow-sm hover:bg-gray-300 transition-all">
+                  class="flex flex-col bg-[#EAEBF1] p-3 rounded-lg mb-2 shadow-sm hover:bg-gray-300 transition-all">
                   <div @click="openTaskDetails(task)" class="flex flex-row cursor-pointer justify-between">
                     <div class="text-lg font-semibold ">{{ task.name }}</div>
                     <div>priority</div>
@@ -387,11 +483,35 @@ const toggleSubtaskStatus = async (task, subtask) => {
                             @change="toggleSubtaskStatus(task, subtask)"
                           />
                           <div class="flex flex-row w-full justify-between items-center">
-                            <label>{{ subtask.name }}</label>
-                            <RiMore2Fill/>
+                          <!-- Input แก้ไขชื่อ Step -->
+                          <input
+                            v-if="editingSubtaskId === subtask.id"
+                            v-model="subtask.name"
+                            @blur="saveSubtask(subtask)"
+                            @keyup.enter="saveSubtask(subtask)"
+                            class="border px-2 py-1 rounded w-full"
+                          />
+
+                          <!-- ชื่อ Step ปกติ -->
+                          <span v-else class="cursor-pointer" @click="editSubtask(subtask)">
+                            {{ subtask.name }}
+                          </span>
+                          <div v-for="subtask in task.subtasks" :key="subtask.id" class="flex items-center space-x-2">
+                          <!-- ปุ่ม More -->
+                          <div class="relative">
+                            <RiMore2Fill class="cursor-pointer" @click="toggleDropdown(subtask.id)" />
+                            
+                            <!-- Dropdown -->
+                            <div v-if="dropdownSubtaskId === subtask.id" class="absolute right-0 bg-white border rounded shadow-md z-10 w-32">
+                              <button @click="editSubtask(subtask)" class="block w-full px-3 py-1 hover:bg-gray-200 text-left">Edit</button>
+                              <button @click="deleteStep(subtask.id)" class="block w-full px-3 py-1 hover:bg-gray-200 text-left text-red-500">Delete</button>
+                            </div>
                           </div>
-                        </div>
+
+                          </div>
+                          </div>
                       </div>
+                    </div>
                     <!-- ปุ่ม + New Step -->
                     <div v-if="addingStepTaskId === task.id">
                       <input v-model="newStepName" class="w-full p-2 border rounded" placeholder="Enter step name" />
