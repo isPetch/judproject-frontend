@@ -4,6 +4,7 @@ import { useRoute } from "vue-router";
 import NavBar from "@/components/NavBar.vue";
 import ModalTask from "@/components/ModalTask.vue";
 import { getProjectById, getSprintById } from "../composable/getJudProjects";
+import RiMore2Fill from "../components/icon/RiMore2Fill.vue"
 
 const route = useRoute();
 const projectId = route.params.id;
@@ -152,6 +153,24 @@ const addSprint = async () => {
     console.error('No project selected');
   }
 };
+const toggleSubtaskStatus = async (task, subtask) => {
+  const newStatus = subtask.status === 'Done' ? 'ToDo' : 'Done'; // สลับค่า Done <-> ToDo
+  try {
+    const response = await fetch(import.meta.env.VITE_ROOT_API + `/api/step/${subtask.id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ status: newStatus })
+    });
+
+    if (response.ok) {
+      subtask.status = newStatus; // อัปเดตค่าใน UI
+    } else {
+      console.error("Error updating subtask status");
+    }
+  } catch (error) {
+    console.error("Error:", error);
+  }
+};
 </script>
 
 <template>
@@ -216,16 +235,28 @@ const addSprint = async () => {
                 <div
                   v-for="task in tasks.filter(t => t.status === 'ToDo')"
                   :key="task.id"
-                  class="flex flex-col bg-[#EAEBF1] p-3 rounded mb-2 shadow-sm hover:bg-gray-300 transition-all"
-                  @click="openTaskDetails(task)">
-                  <div class="flex flex-row cursor-pointer justify-between">
+                  class="flex flex-col bg-[#EAEBF1] p-3 rounded mb-2 shadow-sm hover:bg-gray-300 transition-all">
+                  <div @click="openTaskDetails(task)" class="flex flex-row cursor-pointer justify-between">
                     <div class="text-lg font-semibold ">{{ task.name }}</div>
                     <div>priority</div>
                   </div>
-                  <!-- step -->
-                  <div>step</div>
+                   <!-- step -->
+                   <div v-if="task.subtasks && task.subtasks.length">
+                      <div v-for="subtask in task.subtasks" :key="subtask.id" class="subtask-item flex items-center space-x-1 space-y-1 p-1 border-b border-gray-300">
+                          <input 
+                            type="checkbox"  class="checkbox checkbox-xs border-black bg-white checked:bg-white"
+                            :checked="subtask.status === 'Done'" 
+                            @change="toggleSubtaskStatus(task, subtask)"
+                          />
+                          <div class="flex flex-row w-full justify-between items-center">
+                            <label>{{ subtask.name }}</label>
+                            <RiMore2Fill/>
+                          </div>
+                        </div>
+                      </div>
+                    <div class="text-[#3C70A3] cursor-pointer">+ New Step</div>
+                  
                 </div>
-
               </div>
               <!-- Add task -->
               <div v-if="isAddingTask['ToDo']">
@@ -251,14 +282,27 @@ const addSprint = async () => {
                 <div
                   v-for="task in tasks.filter(t => t.status === 'In Progress')"
                   :key="task.id"
-                  class="flex flex-col bg-[#EAEBF1] p-3 rounded mb-2 shadow-sm hover:bg-gray-300 transition-all"
-                  @click="openTaskDetails(task)">
-                  <div class="flex flex-row cursor-pointer justify-between">
+                  class="flex flex-col bg-[#EAEBF1] p-3 rounded mb-2 shadow-sm hover:bg-gray-300 transition-all">
+                  <div @click="openTaskDetails(task)" class="flex flex-row cursor-pointer justify-between">
                     <div class="text-lg font-semibold ">{{ task.name }}</div>
                     <div>priority</div>
                   </div>
                    <!-- step -->
-                  <div>step</div>
+                   <div v-if="task.subtasks && task.subtasks.length">
+                      <div v-for="subtask in task.subtasks" :key="subtask.id" class="subtask-item flex items-center space-x-1 space-y-1 p-1 border-b border-gray-300">
+                          <input 
+                            type="checkbox"  class="checkbox checkbox-xs border-black bg-white checked:bg-white"
+                            :checked="subtask.status === 'Done'" 
+                            @change="toggleSubtaskStatus(task, subtask)"
+                          />
+                          <div class="flex flex-row w-full justify-between items-center">
+                            <label>{{ subtask.name }}</label>
+                            <RiMore2Fill/>
+                          </div>
+                        </div>
+                      </div>
+                    <div class="text-[#3C70A3] cursor-pointer">+ New Step</div>
+                  
                 </div>
               </div>
               <!-- Add task -->
@@ -285,17 +329,29 @@ const addSprint = async () => {
                 <div
                   v-for="task in tasks.filter(t => t.status === 'Done')"
                   :key="task.id"
-                  class="flex flex-col bg-[#EAEBF1] p-3 rounded mb-2 shadow-sm hover:bg-gray-300 transition-all"
-                  @click="openTaskDetails(task)">
-                  <div class="flex flex-row cursor-pointer justify-between">
+                  class="flex flex-col bg-[#EAEBF1] p-3 rounded mb-2 shadow-sm hover:bg-gray-300 transition-all">
+                  <div @click="openTaskDetails(task)" class="flex flex-row cursor-pointer justify-between">
                     <div class="text-lg font-semibold ">{{ task.name }}</div>
                     <div>priority</div>
                   </div>
-                  <!-- step -->
-                  <div>step</div>
+                   <!-- step -->
+                   <div v-if="task.subtasks && task.subtasks.length">
+                      <div v-for="subtask in task.subtasks" :key="subtask.id" class="subtask-item flex items-center space-x-1 space-y-1 p-1 border-b border-gray-300">
+                          <input 
+                            type="checkbox"  class="checkbox checkbox-xs border-black bg-white checked:bg-white"
+                            :checked="subtask.status === 'Done'" 
+                            @change="toggleSubtaskStatus(task, subtask)"
+                          />
+                          <div class="flex flex-row w-full justify-between items-center">
+                            <label>{{ subtask.name }}</label>
+                            <RiMore2Fill/>
+                          </div>
+                        </div>
+                      </div>
+                    <div class="text-[#3C70A3] cursor-pointer">+ New Step</div>
+                  
                 </div>
-                
-              </div> 
+              </div>
               <!-- Add task -->
               <div v-if="isAddingTask['Done']">
                 <input 
