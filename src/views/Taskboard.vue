@@ -5,6 +5,7 @@ import NavBar from "@/components/NavBar.vue";
 import ModalTask from "@/components/ModalTask.vue";
 import { getProjectById, getSprintById } from "../composable/getJudProjects";
 import RiMore2Fill from "../components/icon/RiMore2Fill.vue"
+import MaterialSymbolsCloseRounded from "../components/icon/MaterialSymbolsCloseRounded.vue"
 
 const route = useRoute();
 const projectId = route.params.id;
@@ -22,6 +23,8 @@ const isAddingTask = ref({
   Done: false,
 });
 const addingStatus = ref(""); // เก็บสถานะของคอลัมน์ที่กด + New Task
+const newStepName = ref(""); 
+const addingStepTaskId = ref(null); 
 
 const addTask = async (sprintId) => {
   if (!newTaskName.value.trim()) return;
@@ -56,6 +59,31 @@ const openTaskInput = (status) => {
   // เปิดช่อง input เฉพาะช่องที่ถูกกด
   isAddingTask.value[status] = true;
   addingStatus.value = status;
+};
+const addStep = async (taskId) => {
+  if (!newStepName.value.trim()) return;
+
+  try {
+    const response = await fetch(import.meta.env.VITE_ROOT_API + `/api/step/${taskId}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name: newStepName.value, status: "ToDo" })
+    });
+
+    const result = await response.json();
+    if (result.status === "success") {
+      await fetchSprint(selectedSprint.value.id); // โหลด Sprint ใหม่เพื่ออัปเดต UI
+      newStepName.value = "";
+      addingStepTaskId.value = null;
+    } else {
+      console.error("Error creating step:", result.message);
+    }
+  } catch (error) {
+    console.error("Error creating step:", error.message);
+  }
+};
+const openStepInput = (taskId) => {
+  addingStepTaskId.value = taskId;
 };
 
 // โหลดข้อมูลโปรเจกต์และ Sprint List
@@ -254,7 +282,15 @@ const toggleSubtaskStatus = async (task, subtask) => {
                           </div>
                         </div>
                       </div>
-                    <div class="text-[#3C70A3] cursor-pointer">+ New Step</div>
+                    <!-- ปุ่ม + New Step -->
+                    <div v-if="addingStepTaskId === task.id">
+                      <input v-model="newStepName" class="w-full p-2 border rounded" placeholder="Enter step name" />
+                      <div class="flex mt-2">
+                        <button @click="addStep(task.id)" class="bg-blue-500 text-white px-3 py-1 rounded text-xs">Add Step</button>
+                        <button @click="addingStepTaskId = null" class="ml-2 text-black"><MaterialSymbolsCloseRounded/></button>
+                      </div>
+                    </div>
+                    <div v-else class="text-[#3C70A3] cursor-pointer" @click="openStepInput(task.id)">+ New Step</div>
                   
                 </div>
               </div>
@@ -266,8 +302,8 @@ const toggleSubtaskStatus = async (task, subtask) => {
                   placeholder="Enter task name"
                 />
                 <div class="flex mt-2">
-                  <button @click="addTask(selectedSprint.id)" class="bg-blue-500 text-white px-3 py-1 rounded">Add task</button>
-                  <button @click="isAddingTask['ToDo'] = false" class="ml-2 text-black">✖</button>
+                  <button @click="addTask(selectedSprint.id)" class="bg-blue-500 text-white px-3 py-1 rounded text-xs">Add task</button>
+                  <button @click="isAddingTask['ToDo'] = false" class="ml-2 text-black"><MaterialSymbolsCloseRounded/></button>
                 </div>
               </div>
               <div class="cursor-pointer pl-4 text-[#BAB1B1]" @click="openTaskInput('ToDo')">+ New Task</div>
@@ -301,7 +337,15 @@ const toggleSubtaskStatus = async (task, subtask) => {
                           </div>
                         </div>
                       </div>
-                    <div class="text-[#3C70A3] cursor-pointer">+ New Step</div>
+                    <!-- ปุ่ม + New Step -->
+                    <div v-if="addingStepTaskId === task.id">
+                      <input v-model="newStepName" class="w-full p-2 border rounded" placeholder="Enter step name" />
+                      <div class="flex mt-2">
+                        <button @click="addStep(task.id)" class="bg-blue-500 text-white px-3 py-1 rounded text-xs">Add Step</button>
+                        <button @click="addingStepTaskId = null" class="ml-2 text-black"><MaterialSymbolsCloseRounded/></button>
+                      </div>
+                    </div>
+                    <div v-else class="text-[#3C70A3] cursor-pointer" @click="openStepInput(task.id)">+ New Step</div>
                   
                 </div>
               </div>
@@ -313,8 +357,8 @@ const toggleSubtaskStatus = async (task, subtask) => {
                   placeholder="Enter task name"
                 />
                 <div class="flex mt-2">
-                  <button @click="addTask(selectedSprint.id)" class="bg-blue-500 text-white px-3 py-1 rounded">Add task</button>
-                  <button @click="isAddingTask['In Progress'] = false" class="ml-2 text-black">✖</button>
+                  <button @click="addTask(selectedSprint.id)" class="bg-blue-500 text-white px-3 py-1 rounded text-xs">Add task</button>
+                  <button @click="isAddingTask['In Progress'] = false" class="ml-2 text-black"><MaterialSymbolsCloseRounded/></button>
                 </div>
               </div>
               <div class="cursor-pointer pl-4 text-[#BAB1B1]" @click="openTaskInput('In Progress')">+ New Task</div>
@@ -348,7 +392,15 @@ const toggleSubtaskStatus = async (task, subtask) => {
                           </div>
                         </div>
                       </div>
-                    <div class="text-[#3C70A3] cursor-pointer">+ New Step</div>
+                    <!-- ปุ่ม + New Step -->
+                    <div v-if="addingStepTaskId === task.id">
+                      <input v-model="newStepName" class="w-full p-2 border rounded" placeholder="Enter step name" />
+                      <div class="flex mt-2">
+                        <button @click="addStep(task.id)" class="bg-blue-500 text-white px-3 py-1 rounded text-xs">Add Step</button>
+                        <button @click="addingStepTaskId = null" class="ml-2 text-black"><MaterialSymbolsCloseRounded/></button>
+                      </div>
+                    </div>
+                    <div v-else class="text-[#3C70A3] cursor-pointer" @click="openStepInput(task.id)">+ New Step</div>
                   
                 </div>
               </div>
@@ -360,8 +412,8 @@ const toggleSubtaskStatus = async (task, subtask) => {
                   placeholder="Enter task name"
                 />
                 <div class="flex mt-2">
-                  <button @click="addTask(selectedSprint.id)" class="bg-blue-500 text-white px-3 py-1 rounded">Add task</button>
-                  <button @click="isAddingTask['Done'] = false" class="ml-2 text-black">✖</button>
+                  <button @click="addTask(selectedSprint.id)" class="bg-blue-500 text-white px-3 py-1 rounded text-xs">Add task</button>
+                  <button @click="isAddingTask['Done'] = false" class="ml-2 text-black"><MaterialSymbolsCloseRounded/></button>
                 </div>
               </div>
               <div class="cursor-pointer pl-4 text-[#BAB1B1]" @click="openTaskInput('Done')">+ New Task</div>
