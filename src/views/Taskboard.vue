@@ -338,7 +338,7 @@ const deleteStep = async (subtaskId) => {
                           <span v-else class="cursor-pointer" @click="editSubtask(subtask)">
                             {{ subtask.name }}
                           </span>
-                          <div v-for="subtask in task.subtasks" :key="subtask.id" class="flex items-center space-x-2">
+                          <div class="flex items-center space-x-2">
                           <!-- ปุ่ม More -->
                           <div class="relative">
                             <RiMore2Fill class="cursor-pointer" @click="toggleDropdown(subtask.id)" />
@@ -417,7 +417,7 @@ const deleteStep = async (subtaskId) => {
                           <span v-else class="cursor-pointer" @click="editSubtask(subtask)">
                             {{ subtask.name }}
                           </span>
-                          <div v-for="subtask in task.subtasks" :key="subtask.id" class="flex items-center space-x-2">
+                          <div class="flex items-center space-x-2">
                           <!-- ปุ่ม More -->
                           <div class="relative">
                             <RiMore2Fill class="cursor-pointer" @click="toggleDropdown(subtask.id)" />
@@ -476,7 +476,7 @@ const deleteStep = async (subtaskId) => {
                   </div>
                    <!-- step -->
                    <div v-if="task.subtasks && task.subtasks.length">
-                      <div v-for="subtask in task.subtasks" :key="subtask.id" class="subtask-item flex items-center space-x-1 space-y-1 p-1 border-b border-gray-300">
+                      <div class="subtask-item flex items-center space-x-1 space-y-1 p-1 border-b border-gray-300">
                           <input 
                             type="checkbox"  class="checkbox checkbox-xs border-black bg-white checked:bg-white"
                             :checked="subtask.status === 'Done'" 
