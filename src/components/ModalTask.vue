@@ -101,12 +101,12 @@ const applyMove = () => {
       <div class="bg-white p-6 rounded-lg shadow-lg w-[400px] border border-gray-300">
         <!-- Task Title & Status -->
         <div class="flex justify-between items-center mb-3">
-          <div @click="startEditing" class="cursor-pointer">
+          <div @click="startEditing('name')" class="cursor-pointer">
             <input
               v-if="isEditingName"
               v-model="editedTaskName"
-              @blur="saveTaskName"
-              @keyup.enter="saveTaskName"
+              @blur="saveTaskChanges"
+              @keyup.enter="saveTaskChanges"
               class="border rounded px-2 py-1 w-full"
             />
             <h2 v-else class="text-lg font-semibold">{{ task.name }}</h2>
@@ -134,10 +134,10 @@ const applyMove = () => {
             <div class="mb-3">
               <label class="text-sm font-medium">Sprint</label>
               <select v-model="task.sprintId" class="w-full border rounded p-2">
-              <option v-for="sprint in sprints" :key="sprint.id" :value="sprint.sprintNumber">
-                Sprint {{ sprint.sprintNumber }}
-              </option>
-            </select>
+                <option v-for="sprint in sprints" :key="sprint.id" :value="sprint.sprintNumber">
+                  Sprint {{ sprint.sprintNumber }}
+                </option>
+              </select>
             </div>
             <div class="mb-3">
               <label class="text-sm font-medium">Status</label>
