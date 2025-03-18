@@ -113,18 +113,24 @@ const applyMove = () => {
           </div>
           <button @click="closeModal" class="text-gray-500 hover:text-red-500">✖</button>
         </div>
-        <div class="flex items-center gap-2 text-sm mb-4">
-          <select v-model="editedStatus" @change="saveTaskChanges" class="px-1 text-xs bg-gray-200 rounded-full">
-            <option value="ToDo">TO DO</option>
-            <option value="In Progress">IN PROGRESS</option>
-            <option value="Done">DONE</option>
-          </select>
-          <select v-model="editedPriority" @change="saveTaskChanges" class="px-1 text-xs bg-gray-200 rounded-full">
-            <option value="High">High</option>
-            <option value="Medium">Medium</option>
-            <option value="Low">Low</option>
-          </select>
-          <button @click="showMovePopup = true" class="bg-blue-500 text-white px-3 py-1 rounded text-xs">→ Move</button>
+        <div class="flex items-end gap-2 text-sm mb-4">
+          <div class="flex flex-col">
+            <label class="text-xs text-gray-600 mb-1">Status</label>
+            <select v-model="editedStatus" @change="saveTaskChanges" class="px-1 text-xs bg-gray-200 rounded">
+              <option value="ToDo">TO DO</option>
+              <option value="In Progress">IN PROGRESS</option>
+              <option value="Done">DONE</option>
+            </select>
+          </div>
+          <div class="flex flex-col">
+            <label class="text-xs text-gray-600 mb-1">Priority</label>
+            <select v-model="editedPriority" @change="saveTaskChanges" class="px-1 text-xs bg-gray-200 rounded">
+              <option value="High">High</option>
+              <option value="Medium">Medium</option>
+              <option value="Low">Low</option>
+            </select>
+          </div>
+          <button @click="showMovePopup = true" class="bg-blue-500 text-white px-3 py-0.5 rounded text-xs">→ Move</button>
         </div>
   
         <!-- Move Popup -->
@@ -168,6 +174,16 @@ const applyMove = () => {
             <button class="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center">+</button>
           </div>
         </div>
+
+        <!-- Prerequsite Section -->
+        <div class="flex flex-col">
+            <label class="text-xs text-gray-600 mb-1">Prerequsite</label>
+            <select v-model="editedPrerequsite" @change="saveTaskChanges" class="px-1 text-xs bg-gray-200 w-full border rounded p-2">
+              <option >
+                   แสดง task.name ใน sprint id นี้
+                </option>
+            </select>
+          </div>
   
         <!-- Task Dates -->
         <div class="mb-4">
