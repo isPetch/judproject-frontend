@@ -8,6 +8,7 @@ import SignUpVue from '@/views/SignUp.vue'
 import Taskboard from '../views/Taskboard.vue'
 import EditProjectVue from '../views/EditProject.vue'
 import ProfileVue from  '@/views/Profile.vue'
+import TestVue from '../views/Test.vue'
 // import ChangePasswordVue from '@/views/ChangePassword.vue'
 
 const router = createRouter({
@@ -47,6 +48,11 @@ const router = createRouter({
       path: '/edit',
       name: 'EditProject',
       component: EditProjectVue
+    },
+    {
+    path: '/test',
+    name: 'Test',
+    component: TestVue
     },
     {
       path: '/profile',
