@@ -2,6 +2,7 @@
 import { ref, onMounted, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import { getUserById } from "../composable/getJudProjects";
+
 const router = useRouter();
 const tabs = [
   { name: "Dashboard", link: "/" },
@@ -10,6 +11,7 @@ const tabs = [
 
 const username = ref('');
 const email = ref('');
+
 const isEditingUsername = ref(false);
 const isEditingEmail = ref(false);
 const successMessage = ref(''); // Reactive variable to hold the success message
@@ -41,30 +43,35 @@ const toggleEdit = (field) => {
   }
 };
 
-const updateUserField = async (field, value) => {
+const updateUserField = async () => {
   try {
     const userId = localStorage.getItem('userId');
+    const formData = new FormData();
+    
+    formData.append('username', username.value);
+    formData.append('email', email.value);
+   if(image.value)
+   {
+    formData.append('picture', image.value, image.value.name)
+   }
+    
     const response = await fetch(import.meta.env.VITE_ROOT_API + "/api/profile/update", {
       method: 'PUT',
       headers: { 
-        'Content-Type': 'application/json',
-        'Authorization': localStorage.getItem('userId')
+        'Authorization': userId
       },
-      body: JSON.stringify({ username: username.value, email: email.value }),
+      body: formData,
     });
-
+    
     const result = await response.json();
     if (result && result.status === 'Success') {
-      successMessage.value = `${field} updated successfully!`; // Set success message
-      setTimeout(() => {
-        successMessage.value = ''; // Clear message after 1 second
-      }, 1000); 
-      console.log(`${field} updated successfully:`, result.data);
+      successMessage.value = "Profile updated successfully!";
+      setTimeout(() => successMessage.value = '', 1000);
     } else {
-      console.error(`Error updating ${field}:`, result.message);
+      console.error("Error updating profile:", result.message);
     }
   } catch (error) {
-    console.error(`Error updating ${field}:`, error.message);
+    console.error("Error updating profile:", error.message);
   }
 };
 
@@ -88,6 +95,7 @@ const saveChanges = (field) => {
 const deleteAccount = async () => {
   try {
     const userId = localStorage.getItem('userId');
+    console.log(userId)
     const response = await fetch(import.meta.env.VITE_ROOT_API + "/api/account/delete", {
       method: 'DELETE',
       headers: { 
@@ -97,13 +105,13 @@ const deleteAccount = async () => {
     });
 
     const result = await response.json();
-    if (result && result.status === 'Success') {
+    if (response.ok) {
       console.log("Account deleted successfully.");
       alert("Your account has been deleted.");
       localStorage.removeItem('token');
       localStorage.removeItem('userId');
       localStorage.removeItem('lastLogin');
-      window.location.href = '/login';
+      router.push({ name: 'Login'})
     } else {
       console.error("Error deleting account:", result.message);
     }
@@ -121,12 +129,13 @@ const userInitials = computed(() => {
 });
 
 const profileImage = ref(null); // รูปโปรไฟล์ที่เลือก
-
+const image = ref(null);
 // ฟังก์ชันสำหรับจัดการการอัปโหลดไฟล์
 const handleFileUpload = (event) => {
   const file = event.target.files[0];
   if (file) {
     // สร้าง URL ของไฟล์ที่เลือก
+    image.value = file
     const fileURL = URL.createObjectURL(file);
     profileImage.value = fileURL; // ตั้งค่ารูปโปรไฟล์ใหม่
   }
@@ -161,7 +170,7 @@ const handleFileUpload = (event) => {
   <div class="avatar avatar-placeholder">
     <div class="bg-white text-neutral-content w-24 h-24 rounded-full flex items-center justify-center">
       <!-- ใช้ <img> แสดงรูปโปรไฟล์ถ้ามี -->
-      <img v-if="profileImage" :src="profileImage" alt="Profile Image" class="w-full h-full object-cover rounded-full" />
+      <img   v-if="profileImage" :src="profileImage" alt="Profile Image" class="w-full h-full object-cover rounded-full" />
       <!-- ถ้าไม่มีรูปโปรไฟล์จะแสดงตัวอักษรย่อ -->
       <span v-else class="text-xs font-bold text-black">{{ userInitials }}</span>
     </div>
