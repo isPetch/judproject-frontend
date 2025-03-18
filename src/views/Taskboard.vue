@@ -312,13 +312,14 @@ const deleteStep = async (subtaskId) => {
                   v-for="task in tasks.filter(t => t.status === 'ToDo')"
                   :key="task.id"
                   class="flex flex-col bg-[#EAEBF1] p-3 rounded-lg mb-2 shadow-sm hover:bg-gray-300 transition-all">
-                  <div @click="openTaskDetails(task)" class="flex flex-row cursor-pointer justify-between">
+                  <div @click="openTaskDetails(task)" class="flex flex-row cursor-pointer justify-between items-center">
                     <div class="text-lg font-semibold ">{{ task.name }}</div>
-                    <div>priority</div>
+                    <div class="text-sm" :class="{'text-red-500': task.priority === 'High','text-yellow-500': task.priority === 'Medium','text-green-500': task.priority === 'Low'}">
+                      {{ task.priority }} priority</div>
                   </div>
                    <!-- step -->
-                   <div v-if="task.subtasks && task.subtasks.length">
-                      <div v-for="subtask in task.subtasks" :key="subtask.id" class="subtask-item flex items-center space-x-1 space-y-1 p-1 border-b border-gray-300">
+                   <div v-if="task.steps && task.steps.length">
+                      <div v-for="subtask in task.steps" :key="subtask.id" class="subtask-item flex items-center space-x-1 space-y-1 p-1 border-b border-gray-300">
                           <input 
                             type="checkbox"  class="checkbox checkbox-xs border-black bg-white checked:bg-white"
                             :checked="subtask.status === 'Done'" 
@@ -391,13 +392,14 @@ const deleteStep = async (subtaskId) => {
                   v-for="task in tasks.filter(t => t.status === 'In Progress')"
                   :key="task.id"
                   class="flex flex-col bg-[#EAEBF1] p-3 rounded-lg mb-2 shadow-sm hover:bg-gray-300 transition-all">
-                  <div @click="openTaskDetails(task)" class="flex flex-row cursor-pointer justify-between">
+                  <div @click="openTaskDetails(task)" class="flex flex-row cursor-pointer justify-between items-center">
                     <div class="text-lg font-semibold ">{{ task.name }}</div>
-                    <div>priority</div>
+                    <div class="text-sm" :class="{'text-red-500': task.priority === 'High','text-yellow-500': task.priority === 'Medium','text-green-500': task.priority === 'Low'}">
+                      {{ task.priority }} priority</div>
                   </div>
                    <!-- step -->
-                   <div v-if="task.subtasks && task.subtasks.length">
-                      <div v-for="subtask in task.subtasks" :key="subtask.id" class="subtask-item flex items-center space-x-1 space-y-1 p-1 border-b border-gray-300">
+                   <div v-if="task.steps && task.steps.length">
+                      <div v-for="subtask in task.steps" :key="subtask.id" class="subtask-item flex items-center space-x-1 space-y-1 p-1 border-b border-gray-300">
                           <input 
                             type="checkbox"  class="checkbox checkbox-xs border-black bg-white checked:bg-white"
                             :checked="subtask.status === 'Done'" 
@@ -470,13 +472,14 @@ const deleteStep = async (subtaskId) => {
                   v-for="task in tasks.filter(t => t.status === 'Done')"
                   :key="task.id"
                   class="flex flex-col bg-[#EAEBF1] p-3 rounded-lg mb-2 shadow-sm hover:bg-gray-300 transition-all">
-                  <div @click="openTaskDetails(task)" class="flex flex-row cursor-pointer justify-between">
+                  <div @click="openTaskDetails(task)" class="flex flex-row cursor-pointer justify-between items-center">
                     <div class="text-lg font-semibold ">{{ task.name }}</div>
-                    <div>priority</div>
+                    <div class="text-sm" :class="{'text-red-500': task.priority === 'High','text-yellow-500': task.priority === 'Medium','text-green-500': task.priority === 'Low'}">
+                      {{ task.priority }} priority</div>
                   </div>
                    <!-- step -->
-                   <div v-if="task.subtasks && task.subtasks.length">
-                      <div class="subtask-item flex items-center space-x-1 space-y-1 p-1 border-b border-gray-300">
+                   <div v-if="task.steps && task.steps.length">
+                    <div v-for="subtask in task.steps" :key="subtask.id" class="subtask-item flex items-center space-x-1 space-y-1 p-1 border-b border-gray-300">
                           <input 
                             type="checkbox"  class="checkbox checkbox-xs border-black bg-white checked:bg-white"
                             :checked="subtask.status === 'Done'" 
@@ -496,7 +499,7 @@ const deleteStep = async (subtaskId) => {
                           <span v-else class="cursor-pointer" @click="editSubtask(subtask)">
                             {{ subtask.name }}
                           </span>
-                          <div v-for="subtask in task.subtasks" :key="subtask.id" class="flex items-center space-x-2">
+                          <div class="flex items-center space-x-2">
                           <!-- ปุ่ม More -->
                           <div class="relative">
                             <RiMore2Fill class="cursor-pointer" @click="toggleDropdown(subtask.id)" />

@@ -11,6 +11,7 @@ const props = defineProps({
 const isEditingName = ref(false);
 const editedTaskName = ref(props.task.name);
 const editedStatus = ref(props.task.status);
+const editedPriority = ref(props.task.priority);
 const editedDescription = ref(props.task.description);
 
 const startEditing = (field) => {
@@ -19,7 +20,9 @@ const startEditing = (field) => {
     editedTaskName.value = props.task.name;
   } else if (field === "status") {
     editedStatus.value = props.task.status;
-  } else if (field === "description") {
+  } else if (field === "priority") {
+    editedPriority.value = props.task.priority;
+  }  else if (field === "description") {
     editedDescription.value = props.task.description;
   }
 };
@@ -28,6 +31,7 @@ const saveTaskChanges = async () => {
   const payload = {
     name: editedTaskName.value,
     status: editedStatus.value,
+    priority: editedPriority.value,
     description: editedDescription.value,
     sprintId: props.task.sprintId,
   };
@@ -42,6 +46,7 @@ const saveTaskChanges = async () => {
     if (response.ok) {
       props.task.name = editedTaskName.value;
       props.task.status = editedStatus.value;
+      props.task.priority = editedPriority.value;
       props.task.description = editedDescription.value;
     } else {
       const errorData = await response.json();
@@ -96,12 +101,12 @@ const applyMove = () => {
       <div class="bg-white p-6 rounded-lg shadow-lg w-[400px] border border-gray-300">
         <!-- Task Title & Status -->
         <div class="flex justify-between items-center mb-3">
-          <div @click="startEditing" class="cursor-pointer">
+          <div @click="startEditing('name')" class="cursor-pointer">
             <input
               v-if="isEditingName"
               v-model="editedTaskName"
-              @blur="saveTaskName"
-              @keyup.enter="saveTaskName"
+              @blur="saveTaskChanges"
+              @keyup.enter="saveTaskChanges"
               class="border rounded px-2 py-1 w-full"
             />
             <h2 v-else class="text-lg font-semibold">{{ task.name }}</h2>
@@ -109,10 +114,15 @@ const applyMove = () => {
           <button @click="closeModal" class="text-gray-500 hover:text-red-500">✖</button>
         </div>
         <div class="flex items-center gap-2 text-sm mb-4">
-          <select v-model="editedStatus" @change="saveTaskChanges" class="px-1 py-1 bg-gray-200 rounded-full">
+          <select v-model="editedStatus" @change="saveTaskChanges" class="px-1 text-xs bg-gray-200 rounded-full">
             <option value="ToDo">TO DO</option>
             <option value="In Progress">IN PROGRESS</option>
             <option value="Done">DONE</option>
+          </select>
+          <select v-model="editedPriority" @change="saveTaskChanges" class="px-1 text-xs bg-gray-200 rounded-full">
+            <option value="High">High</option>
+            <option value="Medium">Medium</option>
+            <option value="Low">Low</option>
           </select>
           <button @click="showMovePopup = true" class="bg-blue-500 text-white px-3 py-1 rounded text-xs">→ Move</button>
         </div>
@@ -124,10 +134,10 @@ const applyMove = () => {
             <div class="mb-3">
               <label class="text-sm font-medium">Sprint</label>
               <select v-model="task.sprintId" class="w-full border rounded p-2">
-              <option v-for="sprint in sprints" :key="sprint.id" :value="sprint.sprintNumber">
-                Sprint {{ sprint.sprintNumber }}
-              </option>
-            </select>
+                <option v-for="sprint in sprints" :key="sprint.id" :value="sprint.sprintNumber">
+                  Sprint {{ sprint.sprintNumber }}
+                </option>
+              </select>
             </div>
             <div class="mb-3">
               <label class="text-sm font-medium">Status</label>
