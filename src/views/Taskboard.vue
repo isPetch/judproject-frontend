@@ -312,9 +312,10 @@ const deleteStep = async (subtaskId) => {
                   v-for="task in tasks.filter(t => t.status === 'ToDo')"
                   :key="task.id"
                   class="flex flex-col bg-[#EAEBF1] p-3 rounded-lg mb-2 shadow-sm hover:bg-gray-300 transition-all">
-                  <div @click="openTaskDetails(task)" class="flex flex-row cursor-pointer justify-between">
+                  <div @click="openTaskDetails(task)" class="flex flex-row cursor-pointer justify-between items-center">
                     <div class="text-lg font-semibold ">{{ task.name }}</div>
-                    <div>priority</div>
+                    <div class="text-sm" :class="{'text-red-500': task.priority === 'High','text-yellow-500': task.priority === 'Medium','text-green-500': task.priority === 'Low'}">
+                      {{ task.priority }} priority</div>
                   </div>
                    <!-- step -->
                    <div v-if="task.steps && task.steps.length">
@@ -391,9 +392,10 @@ const deleteStep = async (subtaskId) => {
                   v-for="task in tasks.filter(t => t.status === 'In Progress')"
                   :key="task.id"
                   class="flex flex-col bg-[#EAEBF1] p-3 rounded-lg mb-2 shadow-sm hover:bg-gray-300 transition-all">
-                  <div @click="openTaskDetails(task)" class="flex flex-row cursor-pointer justify-between">
+                  <div @click="openTaskDetails(task)" class="flex flex-row cursor-pointer justify-between items-center">
                     <div class="text-lg font-semibold ">{{ task.name }}</div>
-                    <div>priority</div>
+                    <div class="text-sm" :class="{'text-red-500': task.priority === 'High','text-yellow-500': task.priority === 'Medium','text-green-500': task.priority === 'Low'}">
+                      {{ task.priority }} priority</div>
                   </div>
                    <!-- step -->
                    <div v-if="task.steps && task.steps.length">
@@ -470,9 +472,10 @@ const deleteStep = async (subtaskId) => {
                   v-for="task in tasks.filter(t => t.status === 'Done')"
                   :key="task.id"
                   class="flex flex-col bg-[#EAEBF1] p-3 rounded-lg mb-2 shadow-sm hover:bg-gray-300 transition-all">
-                  <div @click="openTaskDetails(task)" class="flex flex-row cursor-pointer justify-between">
+                  <div @click="openTaskDetails(task)" class="flex flex-row cursor-pointer justify-between items-center">
                     <div class="text-lg font-semibold ">{{ task.name }}</div>
-                    <div>priority</div>
+                    <div class="text-sm" :class="{'text-red-500': task.priority === 'High','text-yellow-500': task.priority === 'Medium','text-green-500': task.priority === 'Low'}">
+                      {{ task.priority }} priority</div>
                   </div>
                    <!-- step -->
                    <div v-if="task.steps && task.steps.length">

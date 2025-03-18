@@ -11,6 +11,7 @@ const props = defineProps({
 const isEditingName = ref(false);
 const editedTaskName = ref(props.task.name);
 const editedStatus = ref(props.task.status);
+const editedPriority = ref(props.task.priority);
 const editedDescription = ref(props.task.description);
 
 const startEditing = (field) => {
@@ -19,7 +20,9 @@ const startEditing = (field) => {
     editedTaskName.value = props.task.name;
   } else if (field === "status") {
     editedStatus.value = props.task.status;
-  } else if (field === "description") {
+  } else if (field === "priority") {
+    editedPriority.value = props.task.priority;
+  }  else if (field === "description") {
     editedDescription.value = props.task.description;
   }
 };
@@ -28,6 +31,7 @@ const saveTaskChanges = async () => {
   const payload = {
     name: editedTaskName.value,
     status: editedStatus.value,
+    priority: editedPriority.value,
     description: editedDescription.value,
     sprintId: props.task.sprintId,
   };
@@ -42,6 +46,7 @@ const saveTaskChanges = async () => {
     if (response.ok) {
       props.task.name = editedTaskName.value;
       props.task.status = editedStatus.value;
+      props.task.priority = editedPriority.value;
       props.task.description = editedDescription.value;
     } else {
       const errorData = await response.json();
@@ -109,10 +114,15 @@ const applyMove = () => {
           <button @click="closeModal" class="text-gray-500 hover:text-red-500">✖</button>
         </div>
         <div class="flex items-center gap-2 text-sm mb-4">
-          <select v-model="editedStatus" @change="saveTaskChanges" class="px-1 py-1 bg-gray-200 rounded-full">
+          <select v-model="editedStatus" @change="saveTaskChanges" class="px-1 text-xs bg-gray-200 rounded-full">
             <option value="ToDo">TO DO</option>
             <option value="In Progress">IN PROGRESS</option>
             <option value="Done">DONE</option>
+          </select>
+          <select v-model="editedPriority" @change="saveTaskChanges" class="px-1 text-xs bg-gray-200 rounded-full">
+            <option value="High">High</option>
+            <option value="Medium">Medium</option>
+            <option value="Low">Low</option>
           </select>
           <button @click="showMovePopup = true" class="bg-blue-500 text-white px-3 py-1 rounded text-xs">→ Move</button>
         </div>
