@@ -28,6 +28,8 @@ onMounted(async () => {
     console.log('User Data:', userData); // Check the data we are receiving from the API
     username.value = userData.username;
     email.value = userData.email;
+   
+
     loading.value = false; // Set loading to false when data is fetched
   } catch (error) {
     console.error("Failed to fetch user data:", error);
@@ -138,70 +140,73 @@ const handleFileUpload = (event) => {
     image.value = file
     const fileURL = URL.createObjectURL(file);
     profileImage.value = fileURL; // ตั้งค่ารูปโปรไฟล์ใหม่
+     
   }
 };
 
+
 </script>
 
-<template>
-  <div class="w-screen h-screen bg-white flex flex-col">
-    <nav class="fixed top-0 left-0 w-full z-50 text-white p-4 flex justify-between items-center" style="background-color: #316394;">
-      <div class="flex flex-row items-center space-x-6">
-        <div class="flex items-center space-x-2">
-          <img src="../components/image/jubproject.png" alt="JudProject Logo" class="h-6 w-6" />
-          <span class="text-lg font-bold">JudProject</span>
-        </div>
-        <div class="text-sm flex space-x-6">
-          <router-link
-            v-for="tab in tabs"
-            :key="tab.name"
-            :to="tab.link"
-            class="px-4 py-2 relative transition duration-300 hover:text-white after:absolute after:left-0 after:bottom-0 after:w-full after:h-1 after:bg-gradient-to-r after:from-blue-400 after:to-gray-200 after:scale-x-0 hover:after:scale-x-90 after:transition-transform after:duration-300"
-          >
-            {{ tab.name }}
-          </router-link>
-        </div>
-      </div>
-    </nav>
 
-    <div class="max-w-7xl mx-auto mt-36 bg-gray-100 p-20 rounded-lg shadow-lg">
-      <h2 class="text-2xl font-bold mb-4">Profile</h2>
-     <div class="flex flex-col items-center mb-4">
-  <div class="avatar avatar-placeholder">
-    <div class="bg-white text-neutral-content w-24 h-24 rounded-full flex items-center justify-center">
-      <!-- ใช้ <img> แสดงรูปโปรไฟล์ถ้ามี -->
-      <img   v-if="profileImage" :src="profileImage" alt="Profile Image" class="w-full h-full object-cover rounded-full" />
-      <!-- ถ้าไม่มีรูปโปรไฟล์จะแสดงตัวอักษรย่อ -->
-      <span v-else class="text-xs font-bold text-black">{{ userInitials }}</span>
+  <template>
+<div class="w-screen h-screen bg-white flex flex-col">
+  <nav class="fixed top-0 left-0 w-full z-50 text-white p-4 flex justify-between items-center" style="background-color: #316394;">
+    <div class="flex flex-row items-center space-x-6">
+      <div class="flex items-center space-x-2">
+        <img src="../components/image/jubproject.png" alt="JudProject Logo" class="h-6 w-6" />
+        <span class="text-lg font-bold">JudProject</span>
+      </div>
+      <div class="text-sm flex space-x-6">
+        <router-link
+          v-for="tab in tabs"
+          :key="tab.name"
+          :to="tab.link"
+          class="px-4 py-2 relative transition duration-300 hover:text-white after:absolute after:left-0 after:bottom-0 after:w-full after:h-1 after:bg-gradient-to-r after:from-blue-400 after:to-gray-200 after:scale-x-0 hover:after:scale-x-90 after:transition-transform after:duration-300"
+        >
+          {{ tab.name }}
+        </router-link>
+      </div>
     </div>
-  </div>
-  
-  <div class="mt-4 flex space-x-2">
-    <label for="file-upload" class="bg-blue-600 text-white px-6 py-3 rounded cursor-pointer">Upload New</label>
-    <input type="file" id="file-upload" class="hidden" @change="handleFileUpload" accept="image/*" />
-    <button class="bg-gray-400 text-white px-6 py-3 rounded">Delete</button>
-  </div>
-</div>
+  </nav>
 
+  <div class="mt-20 p-10">
+    <h2 class="text-4xl font-bold mb-8 text-center">Profile</h2>
+    <hr class="w-full ">
 
-      <!-- Success Message -->
-      <div v-if="successMessage" class="bg-green-400 text-white text-center p-3 rounded-lg mb-4">
-        {{ successMessage }}
+    <div class="flex flex-col items-center mb-6 mt-6">
+      <div class="relative bg-gray-100 text-neutral-content w-40 h-40 rounded-full flex items-center justify-center overflow-hidden shadow">
+        <img 
+          v-if="profileImage" 
+          :src="profileImage" 
+          alt="Profile Image" 
+          class="absolute inset-0 w-full h-full object-cover rounded-full"
+        />
+        <span v-if="!profileImage" class="text-3xl font-bold text-gray-700">
+          {{ userInitials }}
+        </span>
       </div>
+      <div class="mt-2 flex space-x-2">
+        <label for="file-upload" class="bg-blue-600 text-white px-6 py-2 rounded cursor-pointer">Upload New</label>
+        <input type="file" id="file-upload" class="hidden" @change="handleFileUpload" accept="image/*" />
+        <button @click="deleteProfileImage" class="bg-gray-400 text-white px-6 py-2 rounded">Delete</button>
+      </div>
+    </div>
 
-      <!-- Loading State -->
-      <div v-if="loading" class="text-center">Loading...</div>
+    <div v-if="successMessage" class="bg-green-400 text-white text-center p-3 rounded mb-4">
+      {{ successMessage }}
+    </div>
 
-      <div v-else class="space-y-4">
-        <!-- Username and Email (Flex) -->
-        <div class="flex space-x-4">
-          <!-- Username -->
-          <div class="flex-1">
-            <label class="block text-gray-700 font-medium mb-1">Username</label>
+    <div v-if="loading" class="text-center text-gray-500">Loading...</div>
+
+    <div v-else class="space-y-6">
+      <div class="space-y-4">
+        <div class="flex justify-center">
+          <div class="w-3/4 md:w-1/2 lg:w-1/3">
+            <label class="block text-gray-700 font-semibold mb-2">Username</label>
             <div class="relative flex items-center">
               <input
                 type="text"
-                class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                class="w-full border border-gray-300 rounded px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 :disabled="!isEditingUsername"
                 v-model="username"
               />
@@ -210,24 +215,23 @@ const handleFileUpload = (event) => {
                   <path d="M17.414 2.586a2 2 0 00-2.828 0L7 10.172V13h2.828l7.586-7.586a2 2 0 000-2.828z" />
                 </svg>
               </button>
-              <button v-if="isEditingUsername" class="ml-2 px-4 py-2 rounded-lg text-white" 
-                      :class="{
-                        'bg-green-500': username.trim(),
-                        'bg-gray-400 cursor-not-allowed': !username.trim()
-                      }"
-                      @click="saveChanges('username')" :disabled="!username.trim()">
+              <button v-if="isEditingUsername" class="ml-2 px-4 py-2 rounded text-white" 
+                      :class="username.trim() ? 'bg-green-500' : 'bg-gray-400 cursor-not-allowed'"
+                      @click="saveChanges('username')" 
+                      :disabled="!username.trim()">
                 Save
               </button>
             </div>
           </div>
+        </div>
 
-          <!-- Email -->
-          <div class="flex-1">
-            <label class="block text-gray-700 font-medium mb-1">Email</label>
+        <div class="flex justify-center">
+          <div class="w-3/4 md:w-1/2 lg:w-1/3">
+            <label class="block text-gray-700 font-semibold mb-2">Email</label>
             <div class="relative flex items-center">
               <input
                 type="email"
-                class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                class="w-full border border-gray-300 rounded px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 :disabled="!isEditingEmail"
                 v-model="email"
               />
@@ -236,21 +240,20 @@ const handleFileUpload = (event) => {
                   <path d="M17.414 2.586a2 2 0 00-2.828 0L7 10.172V13h2.828l7.586-7.586a2 2 0 000-2.828z" />
                 </svg>
               </button>
-              <button v-if="isEditingEmail" class="ml-2 px-4 py-2 rounded-lg text-white" 
-                      :class="{
-                        'bg-green-500': email.trim(),
-                        'bg-gray-400 cursor-not-allowed': !email.trim()
-                      }"
-                      @click="saveChanges('email')" :disabled="!email.trim()">
+              <button v-if="isEditingEmail" class="ml-2 px-4 py-2 rounded text-white" 
+                      :class="email.trim() ? 'bg-green-500' : 'bg-gray-400 cursor-not-allowed'"
+                      @click="saveChanges('email')" 
+                      :disabled="!email.trim()">
                 Save
               </button>
             </div>
           </div>
         </div>
-      </div>
 
-      <div>
-        <router-link to="/password" class="text-red-600 hover:underline">Change Password</router-link>
+        <!-- Change Password Link Here -->
+        <div class="flex justify-center">
+          <router-link to="/password" class="text-red-600 hover:underline">Change Password</router-link>
+        </div>
       </div>
 
       <div class="flex mt-6 justify-center">
@@ -258,7 +261,16 @@ const handleFileUpload = (event) => {
       </div>
     </div>
   </div>
+</div>
+
+
+
+
 </template>
+
+
+
+
 
 <style scoped>
 </style>
