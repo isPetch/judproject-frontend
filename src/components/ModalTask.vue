@@ -94,6 +94,18 @@ const addComment = () => {
 const applyMove = () => {
   showMovePopup.value = false;
 };
+
+const selectedSprint = computed({
+  get() {
+    // Find the sprint that corresponds to the current sprintId
+    const selected = props.sprints.find(sprint => sprint.id === props.sprintId);
+    return selected ? selected.id : null;  // Return the ID of the selected sprint
+  },
+  set(newSprintId) {
+    // Set the sprintId to the selected value
+    props.task.sprintId = newSprintId;
+  }
+});
 </script>
 
 <template>
@@ -138,13 +150,13 @@ const applyMove = () => {
         </div>
   
         <!-- Move Popup -->
-        <div v-if="showMovePopup" class="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
+        <div v-if="showMovePopup" class="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center" style="z-index: 9999;">
           <div class="bg-white p-4 rounded-lg shadow-lg w-80 border border-gray-300">
             <h3 class="text-md font-semibold mb-2">Move Task</h3>
             <div class="mb-3">
               <label class="text-sm font-medium">Sprint</label>
-              <select v-model="task.sprintId" class="w-full border rounded p-2">
-                <option v-for="sprint in sprints" :key="sprint.id" :value="sprint.sprintNumber">
+              <select v-model="selectedSprint" class="w-full border rounded p-2">
+                <option v-for="sprint in sprints" :key="sprint.id" :value="sprint.id">
                   Sprint {{ sprint.sprintNumber }}
                 </option>
               </select>
