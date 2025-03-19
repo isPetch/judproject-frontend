@@ -183,12 +183,10 @@ const applyMove = () => {
         <div class="flex flex-col">
           <label class="text-xs text-gray-600 mb-1">Prerequisite</label>
           <select v-model="editedPrerequisite" @change="saveTaskChanges" class="px-1 text-xs bg-gray-200 w-full border rounded p-2">
-            <option  value="">None</option>
-            <!-- ถ้ามี prerequisite และชื่อไม่ซ้ำกับ task.name -->
+            <option :value="null">None</option>
             <option v-if="task.prerequisite && task.prerequisite.name !== task.name" :value="task.prerequisite.id">
               {{ task.prerequisite.name }} ({{ task.prerequisite.status }})
             </option>
-            <!-- แสดง task อื่นๆ ที่ชื่อไม่ซ้ำกับ task.name -->
             <option v-for="taskItem in tasks.filter(item => item.name !== task.prerequisite?.name)" :key="taskItem.id" :value="taskItem.id">
               {{ taskItem.name }} ({{ taskItem.status }})
             </option>
