@@ -130,6 +130,11 @@ const handleSprintSelection = (sprintId) => {
 const openTaskDetails = (task) => {
   selectedTask.value = task;
   isModalVisible.value = true;
+  // กรอง tasks ที่ไม่ใช่ task ที่ถูกเลือก
+  const filteredTasks = tasks.value.filter(t => t.id !== task.id);
+  
+  // ส่ง tasks ที่กรองแล้วไปที่ modal
+  selectedSprint.value.filteredTasks = filteredTasks;
 };
 
 const closeModal = () => {
@@ -551,6 +556,7 @@ const deleteStep = async (subtaskId) => {
     <ModalTask
       v-if="isModalVisible"
       :task="selectedTask"
+      :tasks="selectedSprint?.filteredTasks"
       :sprints="sprints"
       :isVisible="isModalVisible"
       :sprintId="selectedSprint?.id"

@@ -3,6 +3,7 @@ import { ref, computed  } from "vue";
 
 const props = defineProps({
   task: Object,
+  tasks: Array,
   sprints: Array,
   isVisible: Boolean,
   closeModal: Function,
@@ -13,6 +14,7 @@ const editedTaskName = ref(props.task.name);
 const editedStatus = ref(props.task.status);
 const editedPriority = ref(props.task.priority);
 const editedDescription = ref(props.task.description);
+const editedPrerequisite = ref(props.task.prerequisite ? props.task.prerequisite.id : null);
 
 const startEditing = (field) => {
   if (field === "name") {
@@ -34,6 +36,7 @@ const saveTaskChanges = async () => {
     priority: editedPriority.value,
     description: editedDescription.value,
     sprintId: props.task.sprintId,
+    prerequisite: editedPrerequisite.value,
   };
 
   try {
@@ -48,6 +51,7 @@ const saveTaskChanges = async () => {
       props.task.status = editedStatus.value;
       props.task.priority = editedPriority.value;
       props.task.description = editedDescription.value;
+      props.task.prerequisite = props.tasks.find(taskItem => taskItem.id === editedPrerequisite.value);
     } else {
       const errorData = await response.json();
       console.error("Failed to update task:", errorData);
@@ -95,7 +99,7 @@ const applyMove = () => {
 <template>
     <div
       v-if="isVisible"
-      class="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center"
+      class="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center mt-10"
       @click.self="closeModal"
     >
       <div class="bg-white p-6 rounded-lg shadow-lg w-[400px] border border-gray-300">
@@ -175,15 +179,21 @@ const applyMove = () => {
           </div>
         </div>
 
-        <!-- Prerequsite Section -->
+        <!-- Prerequisite Section -->
         <div class="flex flex-col">
-            <label class="text-xs text-gray-600 mb-1">Prerequsite</label>
-            <select v-model="editedPrerequsite" @change="saveTaskChanges" class="px-1 text-xs bg-gray-200 w-full border rounded p-2">
-              <option >
-                   แสดง task.name ใน sprint id นี้
-                </option>
-            </select>
-          </div>
+          <label class="text-xs text-gray-600 mb-1">Prerequisite</label>
+          <select v-model="editedPrerequisite" @change="saveTaskChanges" class="px-1 text-xs bg-gray-200 w-full border rounded p-2">
+            <option  value="">None</option>
+            <!-- ถ้ามี prerequisite และชื่อไม่ซ้ำกับ task.name -->
+            <option v-if="task.prerequisite && task.prerequisite.name !== task.name" :value="task.prerequisite.id">
+              {{ task.prerequisite.name }} ({{ task.prerequisite.status }})
+            </option>
+            <!-- แสดง task อื่นๆ ที่ชื่อไม่ซ้ำกับ task.name -->
+            <option v-for="taskItem in tasks.filter(item => item.name !== task.prerequisite?.name)" :key="taskItem.id" :value="taskItem.id">
+              {{ taskItem.name }} ({{ taskItem.status }})
+            </option>
+          </select>
+        </div>
   
         <!-- Task Dates -->
         <div class="mb-4">
