@@ -123,20 +123,13 @@ const dayWidth = ref(40); // Default width before measurement
 
 // Calculate days to display - show current month plus part of next month
 const displayDays = computed(() => {
-  // Get the current month
   const monthStart = startOfMonth(currentDate.value);
   const monthEnd = endOfMonth(currentDate.value);
-  
-  // Get the next month
-  const nextMonthStart = addDays(monthEnd, 1);
-  const nextMonthEnd = addDays(nextMonthStart, 6); // Show first week of next month
-  
-  // Generate array of days for both months
-  return eachDayOfInterval({ start: monthStart, end: nextMonthEnd }).map(date => ({
+  return eachDayOfInterval({ start: monthStart, end: monthEnd }).map(date => ({
     date,
     dateStr: format(date, 'yyyy-MM-dd')
   }));
-});
+})
 
 const currentMonthName = computed(() => {
   return format(currentDate.value, 'MMMM yyyy');
@@ -169,7 +162,7 @@ const teamMembers = ref([
 // Tasks
 const tasks = ref([
   { id: 1, name: 'API GET A', memberId: 1, startDate: '2025-03-18', dueDate: '2025-03-20', color: '#f28b82' },
-  { id: 6, name: 'API T A', memberId: 2, startDate: '2025-03-26', dueDate: '2025-04-02', color: '#f28b82' },
+  { id: 6, name: 'Jaaaaaa', memberId: 2, startDate: '2025-03-26', dueDate: '2025-04-02', color: '#f28b82' },
   { id: 2, name: 'API POST A', memberId: 1, startDate: '2025-03-22', dueDate: '2025-03-25', color: '#ff66ff' },
   { id: 3, name: 'API POST B', memberId: 2, startDate: '2025-03-19', dueDate: '2025-03-21', color: '#81c995' },
   { id: 4, name: 'API GET B', memberId: 3, startDate: '2025-03-23', dueDate: '2025-03-26', color: '#ffcc66' },
