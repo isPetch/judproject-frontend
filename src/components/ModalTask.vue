@@ -15,6 +15,7 @@ const editedStatus = ref(props.task.status);
 const editedPriority = ref(props.task.priority);
 const editedDescription = ref(props.task.description);
 const editedPrerequisite = ref(props.task.prerequisite ? props.task.prerequisite.id : null);
+const editedSprintId = ref(props.task.sprintId);
 
 const startEditing = (field) => {
   if (field === "name") {
@@ -37,6 +38,7 @@ const saveTaskChanges = async () => {
     description: editedDescription.value,
     sprintId: props.task.sprintId,
     prerequisite: editedPrerequisite.value,
+    sprintId: editedSprintId.value
   };
 
   try {
@@ -52,6 +54,7 @@ const saveTaskChanges = async () => {
       props.task.priority = editedPriority.value;
       props.task.description = editedDescription.value;
       props.task.prerequisite = props.tasks.find(taskItem => taskItem.id === editedPrerequisite.value);
+      props.task.sprintId = editedSprintId.value
     } else {
       const errorData = await response.json();
       console.error("Failed to update task:", errorData);
@@ -61,6 +64,10 @@ const saveTaskChanges = async () => {
   }
 
   isEditingName.value = false;
+};
+const saveTaskChangesAndRefresh = async () => {
+  await saveTaskChanges();
+  window.location.reload();
 };
 
 
@@ -97,13 +104,10 @@ const applyMove = () => {
 
 const selectedSprint = computed({
   get() {
-    // Find the sprint that corresponds to the current sprintId
-    const selected = props.sprints.find(sprint => sprint.id === props.sprintId);
-    return selected ? selected.id : null;  // Return the ID of the selected sprint
+    return editedSprintId.value;
   },
   set(newSprintId) {
-    // Set the sprintId to the selected value
-    props.task.sprintId = newSprintId;
+    editedSprintId.value = newSprintId;
   }
 });
 </script>
@@ -163,7 +167,7 @@ const selectedSprint = computed({
             </div>
             <div class="mb-3">
               <label class="text-sm font-medium">Status</label>
-              <select v-model="task.status" class="w-full border rounded p-2">
+              <select v-model="editedStatus" class="w-full border rounded p-2">
                 <option value="ToDo">TO DO</option>
                 <option value="In Progress">IN PROGRESS</option>
                 <option value="Done">DONE</option>
@@ -171,7 +175,7 @@ const selectedSprint = computed({
             </div>
             <div class="flex justify-end gap-2">
               <button @click="showMovePopup = false" class="px-4 py-2 bg-gray-300 rounded">Cancel</button>
-              <button @click="applyMove" class="px-4 py-2 bg-blue-500 text-white rounded">Save</button>
+              <button @click="saveTaskChangesAndRefresh"  class="px-4 py-2 bg-blue-500 text-white rounded">Save</button>
             </div>
           </div>
         </div>

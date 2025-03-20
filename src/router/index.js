@@ -6,6 +6,7 @@ import CreateProjectVue from '@/views/CreateProject.vue'
 import LoginVue from '../views/Login.vue'
 import SignUpVue from '@/views/SignUp.vue'
 import Taskboard from '../views/Taskboard.vue'
+import TeamPlanVue from '../views/TeamPlan.vue'
 import EditProjectVue from '../views/EditProject.vue'
 import ProfileVue from  '@/views/Profile.vue'
 import TestVue from '../views/Test.vue'
@@ -43,6 +44,11 @@ const router = createRouter({
       path: '/project/board-:id',
       name: 'Taskboard',
       component: Taskboard
+    },
+    {
+      path: '/project/teamplan/:id',
+      name: 'TeamPlan',
+      component: TeamPlanVue
     },
     {
       path: '/edit',

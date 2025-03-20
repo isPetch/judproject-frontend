@@ -1,6 +1,6 @@
 <script setup>
 import { ref, onMounted } from "vue";
-import { useRoute } from "vue-router";
+import { useRoute, useRouter  } from "vue-router";
 import NavBar from "@/components/NavBar.vue";
 import ModalTask from "@/components/ModalTask.vue";
 import { getProjectById, getSprintById } from "../composable/getJudProjects";
@@ -8,6 +8,7 @@ import RiMore2Fill from "../components/icon/RiMore2Fill.vue"
 import MaterialSymbolsCloseRounded from "../components/icon/MaterialSymbolsCloseRounded.vue"
 
 const route = useRoute();
+const router = useRouter();
 const projectId = route.params.id;
 const project = ref(null);
 const sprints = ref([]);
@@ -22,6 +23,12 @@ const isAddingTask = ref({
   "In Progress": false,
   Done: false,
 });
+
+// ฟังก์ชันสำหรับนำทางไปยังหน้า Team Plan
+const goTeamPlan = () => {
+  router.push(`/project/teamplan/${route.params.id}`);
+};
+
 const addingStatus = ref(""); // เก็บสถานะของคอลัมน์ที่กด + New Task
 const newStepName = ref(""); 
 const addingStepTaskId = ref(null); 
@@ -300,7 +307,7 @@ const deleteStep = async (subtaskId) => {
                 <button
                   class="z-10 flex-1 text-center text-sm font-semibold transition-all"
                   :class="!isBoardView ? 'text-[#144251]' : 'text-gray-300'"
-                  @click="isBoardView = false"
+                  @click="goTeamPlan" 
                 > Team Plan
                 </button>
               </div>
