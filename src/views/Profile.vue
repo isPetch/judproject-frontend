@@ -14,8 +14,8 @@ const email = ref('');
 
 const isEditingUsername = ref(false);
 const isEditingEmail = ref(false);
-const successMessage = ref(''); // Reactive variable to hold the success message
-const loading = ref(true); // Add loading status to wait until data is fetched
+const successMessage = ref(''); 
+const loading = ref(true); 
 
 onMounted(async () => {
   try {
@@ -25,15 +25,19 @@ onMounted(async () => {
     }
 
     const userData = await getUserById(userId);
-    console.log('User Data:', userData); // Check the data we are receiving from the API
+    console.log('User Data:', userData); 
     username.value = userData.username;
     email.value = userData.email;
-   
-
-    loading.value = false; // Set loading to false when data is fetched
+    if (userData.pictureName) {
+      profileImage.value = await import.meta.env.VITE_ROOT_API + `/api/profile/picture/${userData.pictureName}`;
+    } else {
+      profileImage.value = null; 
+    }
+    
+    loading.value = false; 
   } catch (error) {
     console.error("Failed to fetch user data:", error);
-    loading.value = false; // Set loading to false even if the data fetch fails
+    loading.value = false; 
   }
 });
 
@@ -52,10 +56,9 @@ const updateUserField = async () => {
     
     formData.append('username', username.value);
     formData.append('email', email.value);
-   if(image.value)
-   {
-    formData.append('picture', image.value, image.value.name)
-   }
+    if (image.value) {
+      formData.append('picture', image.value, image.value.name);
+    }
     
     const response = await fetch(import.meta.env.VITE_ROOT_API + "/api/profile/update", {
       method: 'PUT',
@@ -77,22 +80,32 @@ const updateUserField = async () => {
   }
 };
 
-
 const saveChanges = (field) => {
   const value = field === 'username' ? username.value : email.value;
 
-  // Check that the value is not empty
-  if (!value.trim()) {
+  // Check that the value is not empty for username or email
+  if (!value.trim() && (field === 'username' || field === 'email')) {
     alert(`${field} cannot be empty!`);
     return; // Stop if value is empty
   }
 
-  console.log(`${field} value:`, value); // Debugging to ensure the correct value is sent
-
-  updateUserField(field, value).then(() => {
-    toggleEdit(field); // Close the editing mode after saving
+  
+  const formData = new FormData();
+  if (field === 'username' || field === 'email') {
+    formData.append(field, value); 
+  }
+  if (image.value) {
+    formData.append('picture', image.value, image.value.name); 
+  }
+  console.log(`${field} value:`, value);
+  if (image.value) {
+    console.log("Updated image:", image.value.name);
+  }
+  updateUserField(formData).then(() => {
+    toggleEdit(field); 
   });
 };
+
 
 const deleteAccount = async () => {
   try {
@@ -113,7 +126,7 @@ const deleteAccount = async () => {
       localStorage.removeItem('token');
       localStorage.removeItem('userId');
       localStorage.removeItem('lastLogin');
-      router.push({ name: 'Login'})
+      router.push({ name: 'Login'} )
     } else {
       console.error("Error deleting account:", result.message);
     }
@@ -132,23 +145,25 @@ const userInitials = computed(() => {
 
 const profileImage = ref(null); // รูปโปรไฟล์ที่เลือก
 const image = ref(null);
+
 // ฟังก์ชันสำหรับจัดการการอัปโหลดไฟล์
 const handleFileUpload = (event) => {
   const file = event.target.files[0];
   if (file) {
     // สร้าง URL ของไฟล์ที่เลือก
-    image.value = file
+    image.value = file;
     const fileURL = URL.createObjectURL(file);
     profileImage.value = fileURL; // ตั้งค่ารูปโปรไฟล์ใหม่
-     
   }
 };
 
-
+// Function to delete the profile image
+const deleteProfileImage = () => {
+  profileImage.value = null;
+  image.value = null; // Clear the image reference
+};
 </script>
-
-
-  <template>
+<template>
 <div class="w-screen h-screen bg-white flex flex-col">
   <nav class="fixed top-0 left-0 w-full z-50 text-white p-4 flex justify-between items-center" style="background-color: #316394;">
     <div class="flex flex-row items-center space-x-6">
@@ -171,7 +186,7 @@ const handleFileUpload = (event) => {
 
   <div class="mt-20 p-10">
     <h2 class="text-4xl font-bold mb-8 text-center">Profile</h2>
-    <hr class="w-full ">
+    <hr class="w-full">
 
     <div class="flex flex-col items-center mb-6 mt-6">
       <div class="relative bg-gray-100 text-neutral-content w-40 h-40 rounded-full flex items-center justify-center overflow-hidden shadow">
@@ -184,9 +199,26 @@ const handleFileUpload = (event) => {
         <span v-if="!profileImage" class="text-3xl font-bold text-gray-700">
           {{ userInitials }}
         </span>
+        <!-- Hidden File Input -->
+        <input 
+          id="profilePicture" 
+          type="file" 
+          accept="image/*" 
+          class="hidden" 
+          @change="handleFileUpload" 
+        />
+        
+        <!-- Edit Icon for Profile Image, placed on top of the image -->
+        <label for="profilePicture" class="absolute bottom-0 right-0 bg-blue-500 text-white p-2 rounded-full cursor-pointer hover:bg-blue-600">
+          <!-- Pencil Icon -->
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+            <path d="M17.414 2.586a2 2 0 00-2.828 0L7 10.172V13h2.828l7.586-7.586a2 2 0 000-2.828z" />
+          </svg>
+        </label>
       </div>
+
       <div class="mt-2 flex space-x-2">
-        <label for="file-upload" class="bg-blue-600 text-white px-6 py-2 rounded cursor-pointer">Upload New</label>
+        <label for="file-upload" @click="saveChanges" class="bg-blue-600 text-white px-6 py-2 rounded cursor-pointer">Upload New</label>
         <input type="file" id="file-upload" class="hidden" @change="handleFileUpload" accept="image/*" />
         <button @click="deleteProfileImage" class="bg-gray-400 text-white px-6 py-2 rounded">Delete</button>
       </div>
@@ -195,9 +227,7 @@ const handleFileUpload = (event) => {
     <div v-if="successMessage" class="bg-green-400 text-white text-center p-3 rounded mb-4">
       {{ successMessage }}
     </div>
-
     <div v-if="loading" class="text-center text-gray-500">Loading...</div>
-
     <div v-else class="space-y-6">
       <div class="space-y-4">
         <div class="flex justify-center">
@@ -250,12 +280,12 @@ const handleFileUpload = (event) => {
           </div>
         </div>
 
-        <!-- Change Password Link Here -->
         <div class="flex justify-center">
-          <router-link to="/password" class="text-red-600 hover:underline">Change Password</router-link>
+          <div class="w-3/4 md:w-1/2 lg:w-1/3">
+            <router-link to="/password" class="block text-red-600 hover:underline">Change Password</router-link>
+          </div>
         </div>
       </div>
-
       <div class="flex mt-6 justify-center">
         <button class="bg-red-500 text-white px-6 py-3 rounded" @click="deleteAccount">Delete Account</button>
       </div>
@@ -263,14 +293,7 @@ const handleFileUpload = (event) => {
   </div>
 </div>
 
-
-
-
 </template>
-
-
-
-
 
 <style scoped>
 </style>
