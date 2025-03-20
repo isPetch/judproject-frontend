@@ -3,6 +3,7 @@ import { ref, computed  } from "vue";
 
 const props = defineProps({
   task: Object,
+  tasks: Array,
   sprints: Array,
   isVisible: Boolean,
   closeModal: Function,
@@ -13,6 +14,7 @@ const editedTaskName = ref(props.task.name);
 const editedStatus = ref(props.task.status);
 const editedPriority = ref(props.task.priority);
 const editedDescription = ref(props.task.description);
+const editedPrerequisite = ref(props.task.prerequisite ? props.task.prerequisite.id : null);
 
 const startEditing = (field) => {
   if (field === "name") {
@@ -34,6 +36,7 @@ const saveTaskChanges = async () => {
     priority: editedPriority.value,
     description: editedDescription.value,
     sprintId: props.task.sprintId,
+    prerequisite: editedPrerequisite.value,
   };
 
   try {
@@ -48,6 +51,7 @@ const saveTaskChanges = async () => {
       props.task.status = editedStatus.value;
       props.task.priority = editedPriority.value;
       props.task.description = editedDescription.value;
+      props.task.prerequisite = props.tasks.find(taskItem => taskItem.id === editedPrerequisite.value);
     } else {
       const errorData = await response.json();
       console.error("Failed to update task:", errorData);
@@ -90,12 +94,24 @@ const addComment = () => {
 const applyMove = () => {
   showMovePopup.value = false;
 };
+
+const selectedSprint = computed({
+  get() {
+    // Find the sprint that corresponds to the current sprintId
+    const selected = props.sprints.find(sprint => sprint.id === props.sprintId);
+    return selected ? selected.id : null;  // Return the ID of the selected sprint
+  },
+  set(newSprintId) {
+    // Set the sprintId to the selected value
+    props.task.sprintId = newSprintId;
+  }
+});
 </script>
 
 <template>
     <div
       v-if="isVisible"
-      class="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center"
+      class="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center mt-10"
       @click.self="closeModal"
     >
       <div class="bg-white p-6 rounded-lg shadow-lg w-[400px] border border-gray-300">
@@ -113,28 +129,34 @@ const applyMove = () => {
           </div>
           <button @click="closeModal" class="text-gray-500 hover:text-red-500">✖</button>
         </div>
-        <div class="flex items-center gap-2 text-sm mb-4">
-          <select v-model="editedStatus" @change="saveTaskChanges" class="px-1 text-xs bg-gray-200 rounded-full">
-            <option value="ToDo">TO DO</option>
-            <option value="In Progress">IN PROGRESS</option>
-            <option value="Done">DONE</option>
-          </select>
-          <select v-model="editedPriority" @change="saveTaskChanges" class="px-1 text-xs bg-gray-200 rounded-full">
-            <option value="High">High</option>
-            <option value="Medium">Medium</option>
-            <option value="Low">Low</option>
-          </select>
-          <button @click="showMovePopup = true" class="bg-blue-500 text-white px-3 py-1 rounded text-xs">→ Move</button>
+        <div class="flex items-end gap-2 text-sm mb-4">
+          <div class="flex flex-col">
+            <label class="text-xs text-gray-600 mb-1">Status</label>
+            <select v-model="editedStatus" @change="saveTaskChanges" class="px-1 text-xs bg-gray-200 rounded">
+              <option value="ToDo">TO DO</option>
+              <option value="In Progress">IN PROGRESS</option>
+              <option value="Done">DONE</option>
+            </select>
+          </div>
+          <div class="flex flex-col">
+            <label class="text-xs text-gray-600 mb-1">Priority</label>
+            <select v-model="editedPriority" @change="saveTaskChanges" class="px-1 text-xs bg-gray-200 rounded">
+              <option value="High">High</option>
+              <option value="Medium">Medium</option>
+              <option value="Low">Low</option>
+            </select>
+          </div>
+          <button @click="showMovePopup = true" class="bg-blue-500 text-white px-3 py-0.5 rounded text-xs">→ Move</button>
         </div>
   
         <!-- Move Popup -->
-        <div v-if="showMovePopup" class="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
+        <div v-if="showMovePopup" class="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center" style="z-index: 9999;">
           <div class="bg-white p-4 rounded-lg shadow-lg w-80 border border-gray-300">
             <h3 class="text-md font-semibold mb-2">Move Task</h3>
             <div class="mb-3">
               <label class="text-sm font-medium">Sprint</label>
-              <select v-model="task.sprintId" class="w-full border rounded p-2">
-                <option v-for="sprint in sprints" :key="sprint.id" :value="sprint.sprintNumber">
+              <select v-model="selectedSprint" class="w-full border rounded p-2">
+                <option v-for="sprint in sprints" :key="sprint.id" :value="sprint.id">
                   Sprint {{ sprint.sprintNumber }}
                 </option>
               </select>
@@ -167,6 +189,20 @@ const applyMove = () => {
             </span>
             <button class="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center">+</button>
           </div>
+        </div>
+
+        <!-- Prerequisite Section -->
+        <div class="flex flex-col">
+          <label class="text-xs text-gray-600 mb-1">Prerequisite</label>
+          <select v-model="editedPrerequisite" @change="saveTaskChanges" class="px-1 text-xs bg-gray-200 w-full border rounded p-2">
+            <option :value="null">None</option>
+            <option v-if="task.prerequisite && task.prerequisite.name !== task.name" :value="task.prerequisite.id">
+              {{ task.prerequisite.name }} ({{ task.prerequisite.status }})
+            </option>
+            <option v-for="taskItem in tasks.filter(item => item.name !== task.prerequisite?.name)" :key="taskItem.id" :value="taskItem.id">
+              {{ taskItem.name }} ({{ taskItem.status }})
+            </option>
+          </select>
         </div>
   
         <!-- Task Dates -->
