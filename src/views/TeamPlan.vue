@@ -52,11 +52,22 @@ const handleScroll = (event) => {
 };
 
 // Sample team members - this should eventually come from your backend
-const teamMembers = ref([
-  { id: 1, name: 'Team Member 1' },
-  { id: 2, name: 'Team Member 2' },
-  { id: 3, name: 'Team Member 3' }
-]);
+const teamMembers = ref([]);
+const viewProjectMember = async (projectId) => {
+  try {
+    console.log('Fetching members for project ID:', projectId);
+    const response = await fetch(import.meta.env.VITE_ROOT_API + `/api/project/${projectId}/members`);
+    const result = await response.json();
+    console.log("API Response:", result);
+    if (result && result.status === 'Success') { 
+      teamMembers.value = result.members; 
+    } else {
+      console.error('Error fetching project members:', result.message);
+    }
+  } catch (error) {
+    console.error('Error fetching project members:', error.message);
+  }
+};
 
 const goBoard = () => {
   router.push(`/project/board-${route.params.id}`);
@@ -104,6 +115,7 @@ const handleSprintSelection = (sprintId) => {
 
 onMounted(() => {
   fetchProject();
+  viewProjectMember(projectId);
 
   // ดึงข้อมูล Sprint ที่เลือกก่อนหน้าเฉพาะสำหรับ project นี้
   const savedSprintId = localStorage.getItem(`selectedSprintId_${projectId}`);
@@ -304,9 +316,9 @@ const getColorByStatus = (status) => {
                 <div class="h-10 bg-gray-100"></div> <!-- Empty header cell -->
                 <div v-for="member in teamMembers" :key="`fixed-${member.id}`" class="flex items-center p-3 h-16 border-b">
                   <div class="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center mr-2">
-                    {{ member.name.charAt(0) }}
+                    {{ member.username.charAt(0) }}
                   </div>
-                  <div class="font-medium truncate">{{ member.name }}</div>
+                  <div class="font-medium truncate">{{ member.username }}</div>
                 </div>
               </div>
               
