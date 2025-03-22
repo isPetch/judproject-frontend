@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed  } from "vue";
+import { ref, computed, onMounted  } from "vue";
 
 const props = defineProps({
   task: Object,
@@ -7,6 +7,7 @@ const props = defineProps({
   sprints: Array,
   isVisible: Boolean,
   closeModal: Function,
+  projectId: Number,
   sprintId: String,
 });
 const isEditingName = ref(false);
@@ -16,6 +17,40 @@ const editedPriority = ref(props.task.priority);
 const editedDescription = ref(props.task.description);
 const editedPrerequisite = ref(props.task.prerequisite ? props.task.prerequisite.id : null);
 const editedSprintId = ref(props.task.sprintId);
+const sprintData = ref({ projectId: props.projectId });
+const showMemberModal = ref(false);  // Modal visibility
+const selectedMember = ref(null);    // Selected member
+const availableMembers = ref([]);
+
+onMounted(() => {
+  // ดึงข้อมูลสมาชิกจาก API ตาม projectId ที่ได้มาจาก sprintData
+  fetch(import.meta.env.VITE_ROOT_API + `/api/project/${sprintData.value.projectId}/members`)
+    .then(response => response.json())
+    .then(data => {
+      availableMembers.value = data.members;
+      console.log(availableMembers.value)
+    })
+    .catch(error => console.error("Error fetching members:", error));
+});
+
+const openMemberModal = () => {
+  showMemberModal.value = true;
+};
+
+const closeMemberModal = () => {
+  showMemberModal.value = false;
+};
+
+const addMemberToTask = () => {
+  if (selectedMember.value) {
+    const member = availableMembers.value.find(m => m.id === selectedMember.value);
+    if (member) {
+      // เพิ่มสมาชิกที่เลือกเข้าไปใน task
+      props.task.assigned.push(member);
+      closeMemberModal();
+    }
+  }
+};
 
 const startEditing = (field) => {
   if (field === "name") {
@@ -181,19 +216,40 @@ const selectedSprint = computed({
         </div>
   
         <!-- Members Section -->
-        <div class="mb-4">
-          <label class="text-sm font-medium">Members</label>
-          <div class="flex items-center gap-2 mt-1">
-            <span 
-              v-for="(member, index) in memberData" 
-              :key="index" 
-              :data-tip="member.username"
-              class="btn tooltip w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center text-xs font-bold text-black">
-              {{ member.initials }}
-            </span>
-            <button class="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center">+</button>
-          </div>
-        </div>
+<!-- Members Section -->
+<div class="mb-4">
+  <label class="text-sm font-medium">Members</label>
+  <div class="flex items-center gap-2 mt-1">
+    <span 
+      v-for="(member, index) in memberData" 
+      :key="index" 
+      :data-tip="member.username"
+      class="btn tooltip w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center text-xs font-bold text-black">
+      {{ member.initials }}
+    </span>
+    <!-- Plus Button to Add Members -->
+    <button @click="openMemberModal" class="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center">+</button>
+  </div>
+</div>
+
+<!-- Member Selection Modal -->
+<div v-if="showMemberModal" class="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center" style="z-index: 9999;">
+  <div class="bg-white p-4 rounded-lg shadow-lg w-80 border border-gray-300">
+    <h3 class="text-md font-semibold mb-2">Select Member</h3>
+    <div class="mb-3">
+      <label class="text-sm font-medium">Available Members</label>
+      <select v-model="selectedMember" class="w-full border rounded p-2">
+        <option v-for="member in availableMembers" :key="member.id" :value="member.id">
+          {{ member.username }}
+        </option>
+      </select>
+    </div>
+    <div class="flex justify-end gap-2">
+      <button @click="closeMemberModal" class="px-4 py-2 bg-gray-300 rounded">Cancel</button>
+      <button @click="addMemberToTask" class="px-4 py-2 bg-blue-500 text-white rounded">Add Member</button>
+    </div>
+  </div>
+</div>
 
         <!-- Prerequisite Section -->
         <div class="flex flex-col">

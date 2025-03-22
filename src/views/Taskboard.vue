@@ -567,6 +567,7 @@ const deleteStep = async (subtaskId) => {
       :sprints="sprints"
       :isVisible="isModalVisible"
       :sprintId="selectedSprint?.id"
+      :projectId="projectId"
       :closeModal="closeModal"
     />
   </div>
