@@ -217,96 +217,43 @@ onMounted(fetchProjects);
           </div>
         </div>
 
-        <!-- งานที่กำลังดำเนินการ -->
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <!-- รายการงาน -->
-          <div class="bg-white rounded-xl shadow">
-            <div class="p-4 border-b border-gray-200">
-              <h2 class="text-xl font-semibold text-gray-800">Upcoming Tasks</h2>
-            </div>
-            <div class="p-4">
-              <div v-if="tasks.length === 0" class="text-gray-500 text-center py-4">
-                No Tasks Available
-              </div>
-              <div v-else class="space-y-3">
-                <div v-for="task in tasks" :key="task.id" 
-                    class="p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
-                  <div class="flex justify-between items-start">
-                    <div>
-                      <h4 class="font-medium text-gray-900">{{ task.name }}</h4>
-                      <p class="text-sm text-gray-500">{{ task.project }}</p>
-                    </div>
-                    <span class="px-2 py-1 text-xs rounded-full"
-                      :class="{
-                        'bg-red-100 text-red-800': task.priority === 'High',
-                        'bg-orange-100 text-orange-800': task.priority === 'Medium',
-                        'bg-green-100 text-green-800': task.priority === 'Low',
-                      }"
-                    >
-                      {{ task.priority }}
-                    </span>
-                  </div>
-                  <div class="flex items-center justify-between mt-2">
-                    <span class="text-sm text-gray-500">Due: {{ task.dueDate }}</span>
-                    <span class="text-sm font-medium"
-                      :class="{
-                        'text-blue-600': task.status === 'In Progress',
-                        'text-gray-500': task.status === 'Not Started',
-                        'text-green-600': task.status === 'Completed',
-                      }"
-                    >
-                      {{ task.status }}
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </div>
+        <div class="bg-white rounded-xl shadow">
+          <div class="p-4 border-b border-gray-200">
+            <h2 class="text-xl font-semibold text-gray-800">Upcoming Tasks</h2>
           </div>
-          
-          <!-- กิจกรรมล่าสุด (จำลองข้อมูล) -->
-          <div class="bg-white rounded-xl shadow">
-            <div class="p-4 border-b border-gray-200">
-              <h2 class="text-xl font-semibold text-gray-800">Recent Activity</h2>
+          <div class="p-4">
+            <div v-if="tasks.length === 0" class="text-gray-500 text-center py-4">
+              No Tasks Available
             </div>
-            <div class="p-4">
-              <div class="space-y-4">
-                <div class="flex">
-                  <div class="flex-shrink-0 h-8 w-8 rounded-full bg-blue-500 flex items-center justify-center text-white">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-                    </svg>
+            <div v-else class="space-y-3">
+              <div v-for="task in tasks" :key="task.id" 
+                  class="p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+                <div class="flex justify-between items-start">
+                  <div>
+                    <h4 class="font-medium text-gray-900">{{ task.name }}</h4>
+                    <p class="text-sm text-gray-500">{{ task.project }}</p>
                   </div>
-                  <div class="ml-3">
-                    <p class="text-sm font-medium text-gray-900">New Sprint Started</p>
-                    <p class="text-sm text-gray-500">Project Alpha - Sprint 1</p>
-                    <p class="text-xs text-gray-400 mt-1">Today, 10:30 AM</p>
-                  </div>
+                  <span class="px-2 py-1 text-xs rounded-full"
+                    :class="{
+                      'bg-red-100 text-red-800': task.priority === 'High',
+                      'bg-orange-100 text-orange-800': task.priority === 'Medium',
+                      'bg-green-100 text-green-800': task.priority === 'Low',
+                    }"
+                  >
+                    {{ task.priority }}
+                  </span>
                 </div>
-                
-                <div class="flex">
-                  <div class="flex-shrink-0 h-8 w-8 rounded-full bg-green-500 flex items-center justify-center text-white">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-                    </svg>
-                  </div>
-                  <div class="ml-3">
-                    <p class="text-sm font-medium text-gray-900">Task Completed</p>
-                    <p class="text-sm text-gray-500">Setup Project Structure</p>
-                    <p class="text-xs text-gray-400 mt-1">Yesterday, 3:45 PM</p>
-                  </div>
-                </div>
-                
-                <div class="flex">
-                  <div class="flex-shrink-0 h-8 w-8 rounded-full bg-purple-500 flex items-center justify-center text-white">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path>
-                    </svg>
-                  </div>
-                  <div class="ml-3">
-                    <p class="text-sm font-medium text-gray-900">Deadline Approaching</p>
-                    <p class="text-sm text-gray-500">Design UI Components (2 days left)</p>
-                    <p class="text-xs text-gray-400 mt-1">Mar 21, 2025, 9:15 AM</p>
-                  </div>
+                <div class="flex items-center justify-between mt-2">
+                  <span class="text-sm text-gray-500">Due: {{ task.dueDate }}</span>
+                  <span class="text-sm font-medium"
+                    :class="{
+                      'text-blue-600': task.status === 'In Progress',
+                      'text-gray-500': task.status === 'Not Started',
+                      'text-green-600': task.status === 'Completed',
+                    }"
+                  >
+                    {{ task.status }}
+                  </span>
                 </div>
               </div>
             </div>
