@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, onMounted  } from "vue";
+import { ref, computed, onMounted, watch  } from "vue";
 
 const props = defineProps({
   task: Object,
@@ -19,16 +19,20 @@ const editedPrerequisite = ref(props.task.prerequisite ? props.task.prerequisite
 const editedSprintId = ref(props.task.sprintId);
 const sprintData = ref({ projectId: props.projectId });
 const showMemberModal = ref(false);  // Modal visibility
-const selectedMember = ref(null);    // Selected member
+const selectedMember = ref("");   // Selected member
 const availableMembers = ref([]);
+const editedMemberId = ref(
+  props.task.assigned && props.task.assigned.length > 0
+    ? props.task.assigned[0].id
+    : null
+);
 
 onMounted(() => {
-  // ดึงข้อมูลสมาชิกจาก API ตาม projectId ที่ได้มาจาก sprintData
   fetch(import.meta.env.VITE_ROOT_API + `/api/project/${sprintData.value.projectId}/members`)
     .then(response => response.json())
     .then(data => {
       availableMembers.value = data.members;
-      console.log(availableMembers.value)
+      console.log("Available Members:", availableMembers.value);  // ตรวจสอบโครงสร้าง
     })
     .catch(error => console.error("Error fetching members:", error));
 });
@@ -42,11 +46,19 @@ const closeMemberModal = () => {
 };
 
 const addMemberToTask = () => {
+  console.log("Selected Member:", selectedMember.value);
   if (selectedMember.value) {
-    const member = availableMembers.value.find(m => m.id === selectedMember.value);
+    const memberIdNum = Number(selectedMember.value);
+    // เปลี่ยนจาก m.id เป็น m.memberId เนื่องจากข้อมูลมี key เป็น memberId
+    const member = availableMembers.value.find(m => m.memberId === memberIdNum);
+    console.log("Member found:", member);
     if (member) {
-      // เพิ่มสมาชิกที่เลือกเข้าไปใน task
-      props.task.assigned.push(member);
+      if (!props.task.assigned) {
+        props.task.assigned = [];
+      }
+      // ใช้ spread operator เพื่อให้ Vue ติดตามการเปลี่ยนแปลง
+      props.task.assigned = [...props.task.assigned, member];
+      editedMemberId.value = member.memberId;
       closeMemberModal();
     }
   }
@@ -71,9 +83,9 @@ const saveTaskChanges = async () => {
     status: editedStatus.value,
     priority: editedPriority.value,
     description: editedDescription.value,
-    sprintId: props.task.sprintId,
     prerequisite: editedPrerequisite.value,
-    sprintId: editedSprintId.value
+    sprintId: editedSprintId.value,  
+    memberId: editedMemberId.value
   };
 
   try {
@@ -144,6 +156,10 @@ const selectedSprint = computed({
   set(newSprintId) {
     editedSprintId.value = newSprintId;
   }
+});
+
+watch(selectedMember, (newVal) => {
+  console.log("Selected Member changed:", newVal);
 });
 </script>
 
@@ -216,40 +232,40 @@ const selectedSprint = computed({
         </div>
   
         <!-- Members Section -->
-<!-- Members Section -->
-<div class="mb-4">
-  <label class="text-sm font-medium">Members</label>
-  <div class="flex items-center gap-2 mt-1">
-    <span 
-      v-for="(member, index) in memberData" 
-      :key="index" 
-      :data-tip="member.username"
-      class="btn tooltip w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center text-xs font-bold text-black">
-      {{ member.initials }}
-    </span>
-    <!-- Plus Button to Add Members -->
-    <button @click="openMemberModal" class="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center">+</button>
-  </div>
-</div>
+        <div class="mb-4">
+          <label class="text-sm font-medium">Members</label>
+          <div class="flex items-center gap-2 mt-1">
+            <span 
+              v-for="(member, index) in memberData" 
+              :key="index" 
+              :data-tip="member.username"
+              class="btn tooltip w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center text-xs font-bold text-black">
+              {{ member.initials }}
+            </span>
+            <!-- Plus Button to Add Members -->
+            <button @click="openMemberModal" class="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center">+</button>
+          </div>
+        </div>
 
-<!-- Member Selection Modal -->
-<div v-if="showMemberModal" class="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center" style="z-index: 9999;">
-  <div class="bg-white p-4 rounded-lg shadow-lg w-80 border border-gray-300">
-    <h3 class="text-md font-semibold mb-2">Select Member</h3>
-    <div class="mb-3">
-      <label class="text-sm font-medium">Available Members</label>
-      <select v-model="selectedMember" class="w-full border rounded p-2">
-        <option v-for="member in availableMembers" :key="member.id" :value="member.id">
-          {{ member.username }}
-        </option>
-      </select>
-    </div>
-    <div class="flex justify-end gap-2">
-      <button @click="closeMemberModal" class="px-4 py-2 bg-gray-300 rounded">Cancel</button>
-      <button @click="addMemberToTask" class="px-4 py-2 bg-blue-500 text-white rounded">Add Member</button>
-    </div>
-  </div>
-</div>
+        <!-- Member Selection Modal -->
+        <div v-if="showMemberModal" class="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center" style="z-index: 9999;">
+          <div class="bg-white p-4 rounded-lg shadow-lg w-80 border border-gray-300">
+            <h3 class="text-md font-semibold mb-2">Select Member</h3>
+            <div class="mb-3">
+              <label class="text-sm font-medium">Available Members</label>
+              <select v-model="selectedMember" class="w-full border rounded p-2">
+                <option disabled value="">Select a member</option>
+                <option v-for="member in availableMembers" :key="member.memberId" :value="member.memberId">
+                  {{ member.username }}
+                </option>
+              </select>
+            </div>
+            <div class="flex justify-end gap-2">
+              <button @click="closeMemberModal" class="px-4 py-2 bg-gray-300 rounded">Cancel</button>
+              <button @click="addMemberToTask" class="px-4 py-2 bg-blue-500 text-white rounded">Add Member</button>
+            </div>
+          </div>
+        </div>
 
         <!-- Prerequisite Section -->
         <div class="flex flex-col">
