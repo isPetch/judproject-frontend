@@ -18,11 +18,26 @@ const dashboardStats = ref({
 });
 
 // ข้อมูลตัวอย่างงาน (ควรใช้ API จริงในการดึงข้อมูล)
-const tasks = ref([
-  { id: 1, name: 'Design UI Components', dueDate: '28 Mar 2025', priority: 'High', status: 'In Progress', project: 'Project Alpha' },
-  { id: 2, name: 'Backend Integration', dueDate: '2 Apr 2025', priority: 'Medium', status: 'Not Started', project: 'Project Alpha' },
-  { id: 3, name: 'QA Testing', dueDate: '10 Apr 2025', priority: 'Low', status: 'Not Started', project: 'Project Beta' }
-]);
+const tasks = ref([]);
+
+const fetchTasks = async () => {
+  const token = localStorage.getItem('token'); // หรือจุดอื่นที่คุณเก็บ token ไว้
+  try {
+    const response = await fetch(`${import.meta.env.VITE_ROOT_API}/api/tasks`, {
+      headers: {
+        'Authorization': `${token}`,
+        'Content-Type': 'application/json'
+      }
+    });
+
+    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+    const data = await response.json();
+    tasks.value = data; // ปรับตามโครงสร้าง response ที่ API ส่งกลับมา
+    console.log(tasks.value)
+  } catch (error) {
+    console.error('Failed to fetch tasks:', error);
+  }
+};
 
 const fetchProjects = async () => {
   isLoading.value = true;
@@ -105,7 +120,10 @@ const navigateToProject = (projectId) => {
   router.push(`/project/board-${projectId}`);
 };
 
-onMounted(fetchProjects);
+onMounted(() => {
+  fetchProjects();
+  fetchTasks();
+});
 </script>
 
 <template>
@@ -219,7 +237,7 @@ onMounted(fetchProjects);
 
         <div class="bg-white rounded-xl shadow">
           <div class="p-4 border-b border-gray-200">
-            <h2 class="text-xl font-semibold text-gray-800">Upcoming Tasks</h2>
+            <h2 class="text-xl font-semibold text-gray-800">Tasks and Deadlines</h2>
           </div>
           <div class="p-4">
             <div v-if="tasks.length === 0" class="text-gray-500 text-center py-4">
@@ -231,7 +249,7 @@ onMounted(fetchProjects);
                 <div class="flex justify-between items-start">
                   <div>
                     <h4 class="font-medium text-gray-900">{{ task.name }}</h4>
-                    <p class="text-sm text-gray-500">{{ task.project }}</p>
+                    <p class="text-sm text-gray-500">{{ task.description }}</p>
                   </div>
                   <span class="px-2 py-1 text-xs rounded-full"
                     :class="{
@@ -244,12 +262,13 @@ onMounted(fetchProjects);
                   </span>
                 </div>
                 <div class="flex items-center justify-between mt-2">
-                  <span class="text-sm text-gray-500">Due: {{ task.dueDate }}</span>
+                  <span v-if="task.dueDate===null" class="text-sm text-gray-500">Due: - </span>
+                  <span v-else class="text-sm text-gray-500">Due: {{ task.dueDate }}</span>
                   <span class="text-sm font-medium"
                     :class="{
                       'text-blue-600': task.status === 'In Progress',
-                      'text-gray-500': task.status === 'Not Started',
-                      'text-green-600': task.status === 'Completed',
+                      'text-gray-500': task.status === 'ToDo',
+                      'text-green-600': task.status === 'Done',
                     }"
                   >
                     {{ task.status }}
