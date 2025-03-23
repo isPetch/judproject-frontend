@@ -6,7 +6,7 @@ import ModalTask from "@/components/ModalTask.vue";
 import { getProjectById, getSprintById } from "../composable/getJudProjects";
 import RiMore2Fill from "../components/icon/RiMore2Fill.vue";
 import MaterialSymbolsCloseRounded from "../components/icon/MaterialSymbolsCloseRounded.vue";
-import { PlusIcon, CalendarIcon, ChevronDownIcon, ArrowRightIcon, CheckCircleIcon } from '@heroicons/vue/24/outline';
+import { PlusIcon, CalendarIcon, ChevronDownIcon, ArrowRightIcon, CheckCircleIcon, TrashIcon } from '@heroicons/vue/24/outline';
 
 const route = useRoute();
 const router = useRouter();
@@ -31,6 +31,7 @@ const isLoading = ref(false);
 const dropdownSubtaskId = ref(null);
 const editingSubtaskId = ref(null);
 const sprintDropdownOpen = ref(false);
+const taskDropdownOpen = ref(null);
 
 // UI improvement - Task statistics
 const taskStats = computed(() => {
@@ -77,6 +78,37 @@ const addTask = async (sprintId) => {
   } catch (error) {
     console.error("Error creating task:", error.message);
   }
+};
+
+// delete a task
+const deleteTask = async (taskId) => {
+  const confirmDelete = confirm("Are you sure you want to delete this task?");
+  if (confirmDelete) {
+    try {
+      const token = localStorage.getItem("token");
+      const response = await fetch(import.meta.env.VITE_ROOT_API + `/api/task/${taskId}/delete`, {
+        method: "DELETE",
+        headers: { "Authorization": `${token}` }
+      });
+      
+      if (response.ok) {
+        await fetchSprint(selectedSprint.value.id);
+        // Close task dropdown if open
+        taskDropdownOpen.value = null;
+      } else {
+        console.error("Error deleting task");
+      }
+    } catch (error) {
+      console.error("Error deleting task:", error);
+    }
+  }
+};
+
+// Toggle task menu dropdown
+const toggleTaskDropdown = (id) => {
+  taskDropdownOpen.value = taskDropdownOpen.value === id ? null : id;
+  // Close any open subtask dropdown
+  dropdownSubtaskId.value = null;
 };
 
 const openTaskInput = (status) => {
@@ -220,6 +252,8 @@ const toggleSubtaskStatus = async (task, subtask) => {
 // Open/close dropdown
 const toggleDropdown = (id) => {
   dropdownSubtaskId.value = dropdownSubtaskId.value === id ? null : id;
+  // Close any open task dropdown
+  taskDropdownOpen.value = null;
 };
 
 // Edit subtask
@@ -276,7 +310,7 @@ const updateTaskStatus = async (task, newStatus) => {
         status: newStatus,
         sprintId: selectedSprint.value.id,
         priority: task.priority,
-        prerequisite: task.prerequisite.id
+        prerequisite: task.prerequisite ? task.prerequisite.id : null
       })
     });
     location.reload();
@@ -443,17 +477,34 @@ onMounted(() => {
                 <div v-for="task in tasks.filter(t => t.status === column.id)" :key="task.id"
                      class="bg-white rounded-lg shadow-sm hover:shadow-md transition-all duration-200 overflow-visible">
                   <!-- Task header -->
-                  <div @click="openTaskDetails(task)" class="p-3 cursor-pointer border-b border-gray-100">
-                    <div class="flex justify-between items-start mb-2">
-                      <h4 class="text-gray-800 font-semibold text-lg">{{ task.name }}</h4>
-                      <span :class="[getPriorityColorClass(task.priority), 'text-xs px-2 py-1 rounded-full']">
-                        {{ task.priority }}
-                      </span>
+                  <div class="p-3 cursor-pointer border-b border-gray-100">
+                    <div class="flex justify-between items-start">
+                      <h4 @click="openTaskDetails(task)" class="text-gray-800 font-semibold text-lg">{{ task.name }}</h4>
+                      <div class="flex items-center space-x-2">
+                        <span :class="[getPriorityColorClass(task.priority), 'text-xs px-2 py-1 rounded-full']">
+                          {{ task.priority }}
+                        </span>
+                        <!-- Task menu button -->
+                        <div class="relative">
+                          <button @click.stop="toggleTaskDropdown(task.id)" class="text-gray-400 hover:text-gray-600">
+                            <RiMore2Fill class="h-4 w-4" />
+                          </button>
+                          
+                          <!-- Task dropdown menu -->
+                          <div v-if="taskDropdownOpen === task.id" 
+                               class="absolute right-0 top-full mt-1 bg-white border rounded shadow-md z-30 w-36">
+                            <button @click.stop="deleteTask(task.id)" 
+                                    class="flex items-center w-full px-3 py-2 text-left text-sm text-red-500 hover:bg-gray-100">
+                              <TrashIcon class="h-4 w-4 mr-1" /> Delete Task
+                            </button>
+                          </div>
+                        </div>
+                      </div>
                     </div>
                     
                     <!-- Task actions -->
                     <div class="flex justify-between items-center text-xs text-gray-500 mt-2">
-                      <div class="flex items-center">
+                      <div @click="openTaskDetails(task)" class="flex items-center">
                         <span>{{ task.steps?.length || 0 }} steps</span>
                         <span class="mx-2">•</span>
                         <span>{{ task.steps?.filter(s => s.status === 'Done').length || 0 }} completed</span>
