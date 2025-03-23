@@ -45,20 +45,20 @@ const closeMemberModal = () => {
   showMemberModal.value = false;
 };
 
-const addMemberToTask = () => {
+const addMemberToTask = async () => {
   console.log("Selected Member:", selectedMember.value);
   if (selectedMember.value) {
     const memberIdNum = Number(selectedMember.value);
-    // เปลี่ยนจาก m.id เป็น m.memberId เนื่องจากข้อมูลมี key เป็น memberId
     const member = availableMembers.value.find(m => m.memberId === memberIdNum);
     console.log("Member found:", member);
     if (member) {
       if (!props.task.assigned) {
         props.task.assigned = [];
       }
-      // ใช้ spread operator เพื่อให้ Vue ติดตามการเปลี่ยนแปลง
       props.task.assigned = [...props.task.assigned, member];
-      editedMemberId.value = member.memberId;
+      console.log("Updated assigned:", props.task.assigned); // ตรวจสอบค่าที่อัพเดทแล้ว
+      // เรียก saveTaskChanges เพื่อส่งข้อมูลไป backend หลังจากอัพเดทสมาชิก
+      await saveTaskChanges();
       closeMemberModal();
     }
   }
@@ -84,24 +84,27 @@ const saveTaskChanges = async () => {
     priority: editedPriority.value,
     description: editedDescription.value,
     prerequisite: editedPrerequisite.value,
-    sprintId: editedSprintId.value,  
-    memberId: editedMemberId.value
+    sprintId: editedSprintId.value,
+    members: props.task.assigned ? props.task.assigned.map(member => member.memberId) : []
   };
+
+  console.log("Payload to update:", payload); // ตรวจสอบ payload ที่จะส่งไป backend
 
   try {
     const response = await fetch(import.meta.env.VITE_ROOT_API + `/api/task/${props.task.id}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
+      body: JSON.stringify(payload)
     });
-
+    console.log("Response status:", response.status);
     if (response.ok) {
+      // อัพเดทค่าใน task หลังจากการอัพเดทสำเร็จ
       props.task.name = editedTaskName.value;
       props.task.status = editedStatus.value;
       props.task.priority = editedPriority.value;
       props.task.description = editedDescription.value;
       props.task.prerequisite = props.tasks.find(taskItem => taskItem.id === editedPrerequisite.value);
-      props.task.sprintId = editedSprintId.value
+      props.task.sprintId = editedSprintId.value;
     } else {
       const errorData = await response.json();
       console.error("Failed to update task:", errorData);
@@ -109,7 +112,6 @@ const saveTaskChanges = async () => {
   } catch (error) {
     console.error("Error updating task:", error);
   }
-
   isEditingName.value = false;
 };
 const saveTaskChangesAndRefresh = async () => {

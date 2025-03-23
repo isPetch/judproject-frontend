@@ -3,6 +3,7 @@ import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import NavBar from "@/components/NavBar.vue";
 import { getAllProjects, getProjectById } from "../composable/getJudProjects";
+import axios from 'axios'; // Make sure axios is imported
 
 const router = useRouter();
 const projects = ref([]);
@@ -11,6 +12,7 @@ const searchQuery = ref('');
 const isLoading = ref(true);
 const isMenuOpen = ref(false);
 const sortOption = ref('newest'); // อาจเป็น 'newest', 'oldest', 'name'
+const projectMembers = ref([]); // Added to store team members
 
 const fetchProjects = async () => {
   isLoading.value = true;
@@ -24,10 +26,34 @@ const fetchProjects = async () => {
   }
 };
 
+// Fetch team members for a specific project
+const fetchProjectMembers = async (projectId) => {
+  try {
+    const response = await axios.get(
+      `${import.meta.env.VITE_ROOT_API}/api/project/${projectId}/members`
+    );
+    return response.data || [];
+  } catch (error) {
+    console.error("Failed to fetch project members:", error);
+    return [];
+  }
+};
+
 const selectProject = async (id) => {
   isLoading.value = true;
   try {
-    selectedProject.value = await getProjectById(id);
+    // Fetch project details
+    const projectDetails = await getProjectById(id);
+    
+    // Fetch team members for the project
+    const members = await fetchProjectMembers(id);
+    
+    // Assign members to project
+    selectedProject.value = {
+      ...projectDetails,
+      members
+    };
+    
   } catch (error) {
     console.error("Failed to fetch project details:", error);
   } finally {
@@ -110,6 +136,17 @@ const getDaysRemaining = (dueDate) => {
   if (daysRemaining === 0) return 'Due today';
   if (daysRemaining === 1) return 'Due tomorrow';
   return `${daysRemaining} days remaining`;
+};
+
+// Helper function to get member initials
+const getMemberInitials = (name) => {
+  if (!name) return 'U';
+  
+  const nameParts = name.split(' ');
+  if (nameParts.length > 1) {
+    return (nameParts[0][0] + nameParts[1][0]).toUpperCase();
+  }
+  return name[0].toUpperCase();
 };
 
 onMounted(fetchProjects);
@@ -317,19 +354,22 @@ onMounted(fetchProjects);
                 
                 <div>
                   <h4 class="text-sm font-medium text-gray-500 mb-1">Team Members</h4>
-                  <div class="flex -space-x-2 overflow-hidden">
-                    <!-- สมมติว่ามีข้อมูลสมาชิก -->
-                    <div v-if="selectedProject.members && selectedProject.members.length">
-                      <div v-for="(member, index) in selectedProject.members.slice(0, 5)" :key="index" 
-                        class="inline-block h-8 w-8 rounded-full ring-2 ring-white bg-gray-200 flex items-center justify-center text-xs font-medium text-gray-600">
-                        {{ member.name ? member.name.charAt(0) : 'U' }}
-                      </div>
-                      <div v-if="selectedProject.members.length > 5" 
-                        class="inline-block h-8 w-8 rounded-full ring-2 ring-white bg-gray-100 flex items-center justify-center text-xs font-medium text-gray-600">
-                        +{{ selectedProject.members.length - 5 }}
+                  <div class="flex flex-wrap gap-1 mt-2">
+                    <!-- Updated Team Members Display -->
+                    <div v-if="selectedProject.members && selectedProject.members.length > 0">
+                      <div class="flex -space-x-2 overflow-hidden">
+                        <div v-for="(member, index) in selectedProject.members.slice(0, 5)" :key="index" 
+                          class="inline-block h-8 w-8 rounded-full ring-2 ring-white bg-gray-200 flex items-center justify-center text-xs font-medium text-gray-600"
+                          :title="member.username || 'Unknown User'">
+                          {{ member.username ? getMemberInitials(member.username) : 'U' }}
+                        </div>
+                        <div v-if="selectedProject.members.length > 5" 
+                          class="inline-block h-8 w-8 rounded-full ring-2 ring-white bg-gray-100 flex items-center justify-center text-xs font-medium text-gray-600">
+                          +{{ selectedProject.members.length - 5 }}
+                        </div>
                       </div>
                     </div>
-                    <div v-else class="text-gray-500">No team members assigned</div>
+                    <div v-else class="text-gray-500">No team members</div>
                   </div>
                 </div>
               </div>
