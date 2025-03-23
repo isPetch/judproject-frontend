@@ -2,6 +2,7 @@
 import { ref, onMounted, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import { getUserById } from "../composable/getJudProjects";
+import NavBar from '../components/NavBar.vue';
 
 const router = useRouter();
 const tabs = [
@@ -195,24 +196,7 @@ const deleteProfileImage = async () => {
 </script>
 <template>
 <div class="w-screen h-screen bg-white flex flex-col">
-  <nav class="fixed top-0 left-0 w-full z-50 text-white p-4 flex justify-between items-center" style="background-color: #316394;">
-    <div class="flex flex-row items-center space-x-6">
-      <div class="flex items-center space-x-2">
-        <img src="../components/image/jubproject.png" alt="JudProject Logo" class="h-6 w-6" />
-        <span class="text-lg font-bold">JudProject</span>
-      </div>
-      <div class="text-sm flex space-x-6">
-        <router-link
-          v-for="tab in tabs"
-          :key="tab.name"
-          :to="tab.link"
-          class="px-4 py-2 relative transition duration-300 hover:text-white after:absolute after:left-0 after:bottom-0 after:w-full after:h-1 after:bg-gradient-to-r after:from-blue-400 after:to-gray-200 after:scale-x-0 hover:after:scale-x-90 after:transition-transform after:duration-300"
-        >
-          {{ tab.name }}
-        </router-link>
-      </div>
-    </div>
-  </nav>
+  <NavBar />
 
   <div class="mt-20 p-10">
     <h2 class="text-4xl font-bold mb-8 text-center">Profile</h2>
