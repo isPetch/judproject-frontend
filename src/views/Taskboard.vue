@@ -265,7 +265,7 @@ const deleteStep = async (subtaskId) => {
   }
 };
 
-// Update task status with drag and drop
+// Update task status
 const updateTaskStatus = async (task, newStatus) => {
   try {
     const token = localStorage.getItem("token");
@@ -274,11 +274,12 @@ const updateTaskStatus = async (task, newStatus) => {
       headers: { "Content-Type": "application/json", "Authorization": `${token}` },
       body: JSON.stringify({
         status: newStatus,
-        sprintId: selectedSprint.value.id, 
-        members: tasks.assigned ,
-        priority: task.priority,   
+        sprintId: selectedSprint.value.id,
+        priority: task.priority,
+        prerequisite: task.prerequisite.id
       })
     });
+    location.reload();
     if (response.ok) {
       await fetchSprint(selectedSprint.value.id);
     } else {
