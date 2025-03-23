@@ -308,6 +308,7 @@ const updateTaskStatus = async (task, newStatus) => {
       headers: { "Content-Type": "application/json", "Authorization": `${token}` },
       body: JSON.stringify({
         status: newStatus,
+        description: task.description,
         sprintId: selectedSprint.value.id,
         priority: task.priority,
         prerequisite: task.prerequisite ? task.prerequisite.id : null
