@@ -157,11 +157,41 @@ const handleFileUpload = (event) => {
   }
 };
 
-// Function to delete the profile image
-const deleteProfileImage = () => {
-  profileImage.value = null;
-  image.value = null; // Clear the image reference
+
+const deleteProfileImage = async () => {
+  try {
+    if (!profileImage.value) {
+      alert("No profile image to delete.");
+      return;
+    }
+
+    const userId = localStorage.getItem("userId");
+    const filename = profileImage.value.split("/").pop(); 
+
+    console.log("Deleting profile picture:", filename); // เพิ่มบรรทัดนี้เพื่อตรวจสอบ
+
+    const response = await fetch(`${import.meta.env.VITE_ROOT_API}/api/profile/picture/${filename}`, {
+      method: "DELETE",
+      headers: {
+        "Authorization": userId,
+      },
+    });
+
+    const result = await response.json();
+
+    if (response.ok) {
+      alert("Profile picture deleted successfully.");
+      profileImage.value = null; 
+      image.value = null;
+    } else {
+      console.error("Error deleting profile picture:", result.message);
+    }
+  } catch (error) {
+    console.error("Error deleting profile picture:", error.message);
+  }
 };
+
+
 </script>
 <template>
 <div class="w-screen h-screen bg-white flex flex-col">
@@ -190,35 +220,35 @@ const deleteProfileImage = () => {
 
     <div class="flex flex-col items-center mb-6 mt-6">
       <div class="relative bg-gray-100 text-neutral-content w-40 h-40 rounded-full flex items-center justify-center overflow-hidden shadow">
-        <img 
-          v-if="profileImage" 
-          :src="profileImage" 
-          alt="Profile Image" 
-          class="absolute inset-0 w-full h-full object-cover rounded-full"
-        />
-        <span v-if="!profileImage" class="text-3xl font-bold text-gray-700">
-          {{ userInitials }}
-        </span>
-        <!-- Hidden File Input -->
-        <input 
-          id="profilePicture" 
-          type="file" 
-          accept="image/*" 
-          class="hidden" 
-          @change="handleFileUpload" 
-        />
-        
-        <!-- Edit Icon for Profile Image, placed on top of the image -->
-        <label for="profilePicture" class="absolute bottom-0 right-0 bg-blue-500 text-white p-2 rounded-full cursor-pointer hover:bg-blue-600">
-          <!-- Pencil Icon -->
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-            <path d="M17.414 2.586a2 2 0 00-2.828 0L7 10.172V13h2.828l7.586-7.586a2 2 0 000-2.828z" />
-          </svg>
-        </label>
-      </div>
-
+  <img 
+    v-if="profileImage" 
+    :src="profileImage" 
+    alt="Profile Image" 
+    class="absolute inset-0 w-full h-full object-cover rounded-full"
+  />
+  <span v-if="!profileImage" class="text-3xl font-bold text-gray-700">
+    {{ userInitials }}
+  </span>
+  
+  <<label for="profilePicture" class="absolute top-3/4 right-5 transform -translate-y-1/2 bg-blue-500 text-white p-2 rounded-full cursor-pointer hover:bg-blue-600">
+  <!-- Plus Icon -->
+  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+    <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v6h6a1 1 0 110 2h-6v6a1 1 0 11-2 0v-6H3a1 1 0 110-2h6V4a1 1 0 011-1z" clip-rule="evenodd" />
+  </svg>
+</label>
+  
+  <!-- Hidden File Input -->
+  <input 
+    id="profilePicture" 
+    type="file" 
+    accept="image/*" 
+    class="hidden" 
+    @change="handleFileUpload" 
+  />
+</div>
+      
       <div class="mt-2 flex space-x-2">
-        <label for="file-upload" @click="saveChanges" class="bg-blue-600 text-white px-6 py-2 rounded cursor-pointer">Upload New</label>
+        <label @click="saveChanges" class="bg-blue-600 text-white px-6 py-2 rounded cursor-pointer">Upload New</label>
         <input type="file" id="file-upload" class="hidden" @change="handleFileUpload" accept="image/*" />
         <button @click="deleteProfileImage" class="bg-gray-400 text-white px-6 py-2 rounded">Delete</button>
       </div>
