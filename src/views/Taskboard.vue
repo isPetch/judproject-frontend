@@ -37,9 +37,10 @@ const addTask = async (sprintId) => {
   if (!newTaskName.value.trim()) return;
 
   try {
+    const token = localStorage.getItem("token"); 
     const response = await fetch(import.meta.env.VITE_ROOT_API + `/api/task/${sprintId}`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", "Authorization": `${token}` },
       body: JSON.stringify({ name: newTaskName.value, status: addingStatus.value, priority: "Medium" })
     });
 
