@@ -4,6 +4,7 @@ import { useRoute, useRouter } from "vue-router";
 import NavBar from "@/components/NavBar.vue";
 import { getProjectById, getSprintById } from "../composable/getJudProjects";
 import { format, parseISO, differenceInDays, addDays, startOfMonth, endOfMonth, eachDayOfInterval, isToday as isDateToday, addMonths } from 'date-fns';
+import { PlusIcon, CalendarIcon, ChevronDownIcon, ArrowRightIcon, CheckCircleIcon } from '@heroicons/vue/24/outline';
 
 const route = useRoute();
 const router = useRouter();
@@ -253,23 +254,32 @@ const getColorByStatus = (status) => {
       
       <div class="flex flex-1 pt-16">
         <!-- Sidebar -->
-        <aside class="w-64 bg-[#3C70A3] text-white p-4">
-          <h2 class="text-lg font-semibold mb-4">{{ project?.name }}</h2>
-          <div class="flex flex-row justify-between">
-              <h3 class="text-md font-medium mb-2">Sprints</h3>
-              <button class="text-md font-semibold" @click="addSprint">+</button>
+        <aside class="w-64 bg-gradient-to-b from-[#3C70A3] to-[#2C5A8A] text-white p-6 shadow-lg">
+          <div class="flex items-center mb-6">
+            <h2 class="text-xl font-bold">{{ project?.name }}</h2>
           </div>
-          <ul>
-            <li
-              v-for="sprint in sprints"
-              :key="sprint.id"
-              @click="handleSprintSelection(sprint.id)"
-              class="p-2 rounded cursor-pointer transition-all duration-200 text-start pl-6"
-              :class="sprint.id === selectedSprint?.id ? 'bg-blue-500' : 'bg-[#3C70A3] hover:bg-blue-600'"
-            >
-              Sprint {{ sprint.sprintNumber }}
-            </li>
-          </ul>
+          
+          <div class="border-b border-white/20 pb-4 mb-4">
+            <div class="flex items-center justify-between">
+              <h3 class="text-md font-semibold flex items-center">
+                <CalendarIcon class="h-4 w-4 mr-2" /> Sprints
+              </h3>
+              <button class="text-md font-semibold rounded-full bg-white/10 hover:bg-white/20 p-1 transition-all" @click="addSprint" title="Add Sprint">
+                <PlusIcon class="h-4 w-4" />
+              </button>
+            </div>
+            
+            <div class="mt-3 space-y-2">
+              <div v-for="sprint in sprints" :key="sprint.id" 
+                  @click="handleSprintSelection(sprint.id)"
+                  class="p-2 rounded-md cursor-pointer transition-all duration-200 hover:bg-white/10"
+                  :class="sprint.id === selectedSprint?.id ? 'bg-[#4380BC]' : ''">
+                <div class="flex items-center">
+                  <span class="ml-2">Sprint {{ sprint.sprintNumber }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
         </aside>
   
         <!-- Task Board -->

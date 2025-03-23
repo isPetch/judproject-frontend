@@ -1,11 +1,12 @@
 <script setup>
-import { ref, onMounted } from "vue";
-import { useRoute, useRouter  } from "vue-router";
+import { ref, onMounted, computed } from "vue";
+import { useRoute, useRouter } from "vue-router";
 import NavBar from "@/components/NavBar.vue";
 import ModalTask from "@/components/ModalTask.vue";
 import { getProjectById, getSprintById } from "../composable/getJudProjects";
-import RiMore2Fill from "../components/icon/RiMore2Fill.vue"
-import MaterialSymbolsCloseRounded from "../components/icon/MaterialSymbolsCloseRounded.vue"
+import RiMore2Fill from "../components/icon/RiMore2Fill.vue";
+import MaterialSymbolsCloseRounded from "../components/icon/MaterialSymbolsCloseRounded.vue";
+import { PlusIcon, CalendarIcon, ChevronDownIcon, ArrowRightIcon, CheckCircleIcon } from '@heroicons/vue/24/outline';
 
 const route = useRoute();
 const router = useRouter();
@@ -14,8 +15,8 @@ const project = ref(null);
 const sprints = ref([]);
 const selectedSprint = ref(null);
 const tasks = ref([]);
-const selectedTask = ref(null);  // Store the selected task for the modal
-const isModalVisible = ref(false);  // Control visibility of the modal
+const selectedTask = ref(null);
+const isModalVisible = ref(false);
 const newTaskName = ref("");
 const isBoardView = ref(true);
 const isAddingTask = ref({
@@ -23,21 +24,42 @@ const isAddingTask = ref({
   "In Progress": false,
   Done: false,
 });
+const addingStatus = ref("");
+const newStepName = ref("");
+const addingStepTaskId = ref(null);
+const isLoading = ref(false);
+const dropdownSubtaskId = ref(null);
+const editingSubtaskId = ref(null);
+const sprintDropdownOpen = ref(false);
 
-// ฟังก์ชันสำหรับนำทางไปยังหน้า Team Plan
+// UI improvement - Task statistics
+const taskStats = computed(() => {
+  if (!tasks.value) return { total: 0, completed: 0, percentage: 0 };
+  
+  const total = tasks.value.length;
+  const completed = tasks.value.filter(t => t.status === 'Done').length;
+  const percentage = total > 0 ? Math.round((completed / total) * 100) : 0;
+  
+  return { total, completed, percentage };
+});
+
+// Better columns layout with fixed titles
+const columns = [
+  { id: 'ToDo', title: 'TO DO', icon: 'clipboard', color: '#E5F0FB', headerColor: '#3C70A3' },
+  { id: 'In Progress', title: 'IN PROGRESS', icon: 'arrow-right', color: '#FFF8E5', headerColor: '#F59E0B' },
+  { id: 'Done', title: 'DONE', icon: 'check-circle', color: '#EDFCF4', headerColor: '#10B981' }
+];
+
+// Function to navigate to Team Plan
 const goTeamPlan = () => {
   router.push(`/project/teamplan/${route.params.id}`);
 };
-
-const addingStatus = ref(""); // เก็บสถานะของคอลัมน์ที่กด + New Task
-const newStepName = ref(""); 
-const addingStepTaskId = ref(null); 
 
 const addTask = async (sprintId) => {
   if (!newTaskName.value.trim()) return;
 
   try {
-    const token = localStorage.getItem("token"); 
+    const token = localStorage.getItem("token");
     const response = await fetch(import.meta.env.VITE_ROOT_API + `/api/task/${sprintId}`, {
       method: "POST",
       headers: { "Content-Type": "application/json", "Authorization": `${token}` },
@@ -46,9 +68,9 @@ const addTask = async (sprintId) => {
 
     const result = await response.json();
     if (result.status === "success") {
-      await fetchSprint(sprintId);  // ดึงข้อมูลใหม่จาก API แทนที่จะใช้ push
-      newTaskName.value = ""; 
-      isAddingTask.value[addingStatus.value] = false; 
+      await fetchSprint(sprintId);
+      newTaskName.value = "";
+      isAddingTask.value[addingStatus.value] = false;
     } else {
       console.error("Error creating task:", result.message);
     }
@@ -57,30 +79,28 @@ const addTask = async (sprintId) => {
   }
 };
 
-
 const openTaskInput = (status) => {
-  // รีเซ็ตค่า isAddingTask ทุกช่องให้เป็น false ก่อน
   Object.keys(isAddingTask.value).forEach(key => {
     isAddingTask.value[key] = false;
   });
-
-  // เปิดช่อง input เฉพาะช่องที่ถูกกด
   isAddingTask.value[status] = true;
   addingStatus.value = status;
 };
+
 const addStep = async (taskId) => {
   if (!newStepName.value.trim()) return;
 
   try {
+    const token = localStorage.getItem("token");
     const response = await fetch(import.meta.env.VITE_ROOT_API + `/api/step/${taskId}`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", "Authorization": `${token}` },
       body: JSON.stringify({ name: newStepName.value, status: "ToDo" })
     });
 
     const result = await response.json();
     if (result.status === "success") {
-      await fetchSprint(selectedSprint.value.id); // โหลด Sprint ใหม่เพื่ออัปเดต UI
+      await fetchSprint(selectedSprint.value.id);
       newStepName.value = "";
       addingStepTaskId.value = null;
     } else {
@@ -90,12 +110,14 @@ const addStep = async (taskId) => {
     console.error("Error creating step:", error.message);
   }
 };
+
 const openStepInput = (taskId) => {
   addingStepTaskId.value = taskId;
 };
 
-// โหลดข้อมูลโปรเจกต์และ Sprint List
+// Load project and Sprint List
 const fetchProject = async () => {
+  isLoading.value = true;
   try {
     project.value = await getProjectById(projectId);
     sprints.value = project.value.sprints || [];
@@ -103,20 +125,19 @@ const fetchProject = async () => {
     if (sprints.value.length > 0) {
       const savedSprintId = localStorage.getItem(`selectedSprintId_${projectId}`);
       if (savedSprintId) {
-        // เลือก Sprint ที่บันทึกไว้เฉพาะสำหรับ project นี้
         handleSprintSelection(savedSprintId);
       } else {
-        // หากไม่มี Sprint ที่เลือกไว้ ให้เลือก Sprint ล่าสุด
         handleSprintSelection(sprints.value[sprints.value.length - 1].id);
       }
     }
   } catch (error) {
     console.error("Error fetching project:", error);
+  } finally {
+    isLoading.value = false;
   }
 };
 
-const isLoading = ref(false);
-// โหลดข้อมูล Sprint และ Tasks
+// Load Sprint and Tasks
 const fetchSprint = async (sprintId) => {
   isLoading.value = true;
   try {
@@ -129,19 +150,17 @@ const fetchSprint = async (sprintId) => {
   }
 };
 
-// อัปเดต Task Board เมื่อเลือก Sprint ใหม่
+// Update Task Board when selecting a new Sprint
 const handleSprintSelection = (sprintId) => {
   fetchSprint(sprintId);
-  localStorage.setItem(`selectedSprintId_${projectId}`, sprintId);  // เก็บค่า Sprint ที่เลือกใน localStorage โดยใช้ projectId เป็นคีย์
+  localStorage.setItem(`selectedSprintId_${projectId}`, sprintId);
+  sprintDropdownOpen.value = false;
 };
 
 const openTaskDetails = (task) => {
   selectedTask.value = task;
   isModalVisible.value = true;
-  // กรอง tasks ที่ไม่ใช่ task ที่ถูกเลือก
   const filteredTasks = tasks.value.filter(t => t.id !== task.id);
-  
-  // ส่ง tasks ที่กรองแล้วไปที่ modal
   selectedSprint.value.filteredTasks = filteredTasks;
 };
 
@@ -150,40 +169,23 @@ const closeModal = () => {
   selectedTask.value = null;
 };
 
-onMounted(() => {
-  fetchProject();
-
-  // ดึงข้อมูล Sprint ที่เลือกก่อนหน้าเฉพาะสำหรับ project นี้
-  const savedSprintId = localStorage.getItem(`selectedSprintId_${projectId}`);
-  if (savedSprintId) {
-    handleSprintSelection(savedSprintId);  // เลือก Sprint ที่เก็บไว้
-  } else {
-    // หากไม่มี Sprint ที่เลือกไว้ ให้เลือก Sprint ล่าสุด
-    if (sprints.value.length > 0) {
-      handleSprintSelection(sprints.value[sprints.value.length - 1].id);
-    }
-  }
-});
-
-
-
 const addSprint = async () => {
   if (projectId) {
     try {
+      const token = localStorage.getItem("token");
       const response = await fetch(import.meta.env.VITE_ROOT_API + `/api/sprint/${projectId}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `${token}`
         },
       });
       const result = await response.json();
 
       if (result && result.status === 'success') {
         console.log('Sprint Created:', result.data);
-        // เพิ่ม sprint ใหม่ลงใน selectedProject.sprints โดยตรงเพื่อให้แสดงผลทันที
-        project.value.sprints.push(result.data); 
-        // เรียกฟังก์ชัน viewProjectSprints เพื่อดึงข้อมูล sprint ใหม่
-        await fetchProject(); // ดึงข้อมูลโปรเจกต์ใหม่เพื่ออัปเดต UI
+        project.value.sprints.push(result.data);
+        await fetchProject();
       } else {
         console.error('Error creating sprint:', result.message);
       }
@@ -194,17 +196,19 @@ const addSprint = async () => {
     console.error('No project selected');
   }
 };
+
 const toggleSubtaskStatus = async (task, subtask) => {
-  const newStatus = subtask.status === 'Done' ? 'ToDo' : 'Done'; // สลับค่า Done <-> ToDo
+  const newStatus = subtask.status === 'Done' ? 'ToDo' : 'Done';
   try {
+    const token = localStorage.getItem("token");
     const response = await fetch(import.meta.env.VITE_ROOT_API + `/api/step/${subtask.id}`, {
       method: "PUT",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", "Authorization": `${token}` },
       body: JSON.stringify({ status: newStatus })
     });
 
     if (response.ok) {
-      subtask.status = newStatus; // อัปเดตค่าใน UI
+      subtask.status = newStatus;
     } else {
       console.error("Error updating subtask status");
     }
@@ -213,45 +217,45 @@ const toggleSubtaskStatus = async (task, subtask) => {
   }
 };
 
-const dropdownSubtaskId = ref(null);  // ใช้เก็บ ID ของ step ที่เปิด dropdown อยู่
-const editingSubtaskId = ref(null);  // ใช้เก็บ ID ของ step ที่กำลังแก้ไข
-
-// เปิด/ปิด dropdown
+// Open/close dropdown
 const toggleDropdown = (id) => {
   dropdownSubtaskId.value = dropdownSubtaskId.value === id ? null : id;
 };
 
-// กด "Edit" → เปลี่ยนเป็น input
+// Edit subtask
 const editSubtask = (subtask) => {
   editingSubtaskId.value = subtask.id;
-  dropdownSubtaskId.value = null; // ปิด dropdown
+  dropdownSubtaskId.value = null;
 };
 
-// บันทึกเมื่อแก้ไขเสร็จ
+// Save after editing
 const saveSubtask = async (subtask) => {
   try {
+    const token = localStorage.getItem("token");
     await fetch(import.meta.env.VITE_ROOT_API + `/api/step/${subtask.id}`, {
       method: "PUT",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", "Authorization": `${token}` },
       body: JSON.stringify({ name: subtask.name })
     });
   } catch (error) {
     console.error("Error updating subtask:", error);
   } finally {
-    editingSubtaskId.value = null; // ปิด input หลังจากบันทึก
+    editingSubtaskId.value = null;
   }
 };
 
-// ลบ step
+// Delete step
 const deleteStep = async (subtaskId) => {
-  const confirmDelete = confirm("คุณแน่ใจหรือไม่ว่าต้องการลบ Step นี้?");
+  const confirmDelete = confirm("Are you sure you want to delete this step?");
   if (confirmDelete) {
     try {
+      const token = localStorage.getItem("token");
       const response = await fetch(import.meta.env.VITE_ROOT_API + `/api/step/${subtaskId}/delete`, {
         method: "DELETE",
+        headers: { "Authorization": `${token}` }
       });
       if (response.ok) {
-        await fetchSprint(selectedSprint.value.id); // โหลดข้อมูลใหม่
+        await fetchSprint(selectedSprint.value.id);
       } else {
         console.error("Error deleting step");
       }
@@ -260,307 +264,329 @@ const deleteStep = async (subtaskId) => {
     }
   }
 };
+
+// Update task status with drag and drop
+const updateTaskStatus = async (task, newStatus) => {
+  try {
+    const token = localStorage.getItem("token");
+    const response = await fetch(import.meta.env.VITE_ROOT_API + `/api/task/${task.id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json", "Authorization": `${token}` },
+      body: JSON.stringify({
+        status: newStatus,
+        sprintId: selectedSprint.value.id, 
+        members: tasks.assigned ,
+        priority: task.priority,   
+      })
+    });
+    if (response.ok) {
+      await fetchSprint(selectedSprint.value.id);
+    } else {
+      console.error("Error updating task status");
+    }
+  } catch (error) {
+    console.error("Error:", error);
+  }
+};
+
+// Get priority color class
+const getPriorityColorClass = (priority) => {
+  switch (priority) {
+    case 'High': return 'bg-red-100 text-red-800';
+    case 'Medium': return 'bg-yellow-100 text-yellow-800';
+    case 'Low': return 'bg-green-100 text-green-800';
+    default: return 'bg-gray-100 text-gray-800';
+  }
+};
+
+onMounted(() => {
+  fetchProject();
+});
 </script>
 
 <template>
-  <div class="h-screen flex flex-col bg-[#4380BC]">
+  <div class="h-screen flex flex-col bg-gradient-to-b from-[#4380BC] to-[#316394]">
     <NavBar />
-    <div v-if="isLoading">Loading...</div>
+    
+    <!-- Loading indicator -->
+    <div v-if="isLoading" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+      <div class="bg-white p-4 rounded-lg shadow-lg flex items-center">
+        <svg class="animate-spin h-5 w-5 mr-3 text-[#4380BC]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+        </svg>
+        <span>Loading...</span>
+      </div>
+    </div>
     
     <div class="flex flex-1 pt-16">
       <!-- Sidebar -->
-      <aside class="w-64 bg-[#3C70A3] text-white p-4">
-        <h2 class="text-lg font-semibold mb-4">{{ project?.name }}</h2>
-        <div class="flex flex-row justify-between">
-            <h3 class="text-md font-medium mb-2">Sprints</h3>
-            <button class=" text-md font-semibold" @click="addSprint">+</button>
+      <aside class="w-64 bg-gradient-to-b from-[#3C70A3] to-[#2C5A8A] text-white p-6 shadow-lg">
+        <div class="flex items-center mb-6">
+          <h2 class="text-xl font-bold">{{ project?.name }}</h2>
         </div>
-        <ul>
-          <li
-            v-for="sprint in sprints"
-            :key="sprint.id"
-            @click="handleSprintSelection(sprint.id)"
-            class="p-2 rounded cursor-pointer transition-all duration-200 text-start pl-6"
-            :class="sprint.id === selectedSprint?.id ? 'bg-blue-500' : 'bg-[#3C70A3] hover:bg-blue-600'"
-          >
-            Sprint {{ sprint.sprintNumber }}
-          </li>
-        </ul>
+        
+        <div class="border-b border-white/20 pb-4 mb-4">
+          <div class="flex items-center justify-between">
+            <h3 class="text-md font-semibold flex items-center">
+              <CalendarIcon class="h-4 w-4 mr-2" /> Sprints
+            </h3>
+            <button class="text-md font-semibold rounded-full bg-white/10 hover:bg-white/20 p-1 transition-all" @click="addSprint" title="Add Sprint">
+              <PlusIcon class="h-4 w-4" />
+            </button>
+          </div>
+          
+          <div class="mt-3 space-y-2">
+            <div v-for="sprint in sprints" :key="sprint.id" 
+                 @click="handleSprintSelection(sprint.id)"
+                 class="p-2 rounded-md cursor-pointer transition-all duration-200 hover:bg-white/10"
+                 :class="sprint.id === selectedSprint?.id ? 'bg-[#4380BC]' : ''">
+              <div class="flex items-center">
+                <span class="ml-2">Sprint {{ sprint.sprintNumber }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Task statistics -->
+        <div class="mb-6">
+          <h3 class="text-md font-semibold mb-3">Task Progress</h3>
+          <div class="space-y-2">
+            <div class="flex justify-between text-sm">
+              <span>Completed</span>
+              <span>{{ taskStats.completed }}/{{ taskStats.total }}</span>
+            </div>
+            <div class="w-full bg-white/10 rounded-full h-2.5">
+              <div class="bg-green-400 h-2.5 rounded-full" :style="`width: ${taskStats.percentage}%`"></div>
+            </div>
+            <div class="text-right text-sm">
+              {{ taskStats.percentage }}% complete
+            </div>
+          </div>
+        </div>
       </aside>
 
       <!-- Task Board -->
-      <div v-if="selectedSprint" class="flex-1 p-6">
-        <div class="flex flex-row justify-between">
-          <h2 v-if="selectedSprint" class="text-2xl font-semibold mb-4 text-white">
-            Sprint {{ selectedSprint.sprintNumber }}
-          </h2>
-          <div class="flex items-center justify-center mb-4">
-            <div class="relative w-44">
-              <div class="w-full h-10 bg-[#316394] rounded-full flex items-center">
-                <div class="absolute top-1 left-1 w-1/2 h-8 bg-white rounded-full shadow-md transition-transform duration-300"
-                  :class="{ 'translate-x-20': !isBoardView }"></div>
-                <button
-                  class="z-10 flex-1 text-center text-sm font-semibold transition-all"
-                  :class="isBoardView ? 'text-[#144251]' : 'text-gray-300'"
-                  @click="isBoardView = true"
-                > Board
-                </button>
-                <button
-                  class="z-10 flex-1 text-center text-sm font-semibold transition-all"
-                  :class="!isBoardView ? 'text-[#144251]' : 'text-gray-300'"
-                  @click="goTeamPlan" 
-                > Team Plan
-                </button>
+      <div v-if="selectedSprint" class="flex-1 p-6 overflow-hidden">
+        <div class="flex justify-between items-center mb-6">
+          <div class="flex items-center">
+            <h2 class="text-2xl font-bold text-white mr-4">
+              Sprint {{ selectedSprint.sprintNumber }}
+            </h2>
+            
+            <!-- Sprint selector dropdown -->
+            <div class="relative">
+              <button 
+                @click="sprintDropdownOpen = !sprintDropdownOpen"
+                class="flex items-center space-x-1 text-white bg-white/10 px-3 py-1.5 rounded-md hover:bg-white/20 transition"
+              >
+                <span>Change Sprint</span>
+                <ChevronDownIcon class="h-4 w-4" />
+              </button>
+              
+              <div v-if="sprintDropdownOpen" 
+                   class="absolute top-full left-0 mt-1 bg-white rounded-md shadow-lg z-10 w-48 py-1 text-gray-800">
+                <div v-for="sprint in sprints" :key="sprint.id"
+                     @click="handleSprintSelection(sprint.id)"
+                     class="px-4 py-2 hover:bg-gray-100 cursor-pointer">
+                  Sprint {{ sprint.sprintNumber }}
+                </div>
               </div>
+            </div>
+          </div>
+          
+          <!-- View toggle -->
+          <div class="bg-[#316394] rounded-full p-1 shadow-md">
+            <div class="relative flex">
+              <div class="absolute w-1/2 h-full bg-white rounded-full transition-all duration-300"
+                  :class="isBoardView ? 'left-0' : 'left-1/2'"></div>
+              <button
+                @click="isBoardView = true"
+                class="relative z-10 px-4 py-1.5 rounded-full text-sm font-medium transition-colors duration-300"
+                :class="isBoardView ? 'text-[#144251]' : 'text-white'"
+              >
+                Board
+              </button>
+              <button
+                @click="goTeamPlan"
+                class="relative z-10 px-4 py-1.5 rounded-full text-sm font-medium transition-colors duration-300"
+                :class="!isBoardView ? 'text-[#144251]' : 'text-white'"
+              >
+                Team Plan
+              </button>
             </div>
           </div>
         </div>
 
-        <div class="grid grid-cols-3 gap-6">
-          <div class="bg-white p-4 rounded-xl shadow">
-            <h3 class="text-lg font-semibold mb-3 text-[#144251]">TO DO</h3>
-            <div class="max-h-[calc(100vh-250px)] overflow-y-auto">
-              <div v-if="tasks.some(t => t.status === 'ToDo')" class="flex flex-col">
-                <div
-                  v-for="task in tasks.filter(t => t.status === 'ToDo')"
-                  :key="task.id"
-                  class="flex flex-col bg-[#EAEBF1] p-3 rounded-lg mb-2 shadow-sm hover:bg-gray-300 transition-all">
-                  <div @click="openTaskDetails(task)" class="flex flex-row cursor-pointer justify-between items-center">
-                    <div class="text-lg font-semibold ">{{ task.name }}</div>
-                    <div class="text-sm" :class="{'text-red-500': task.priority === 'High','text-yellow-500': task.priority === 'Medium','text-green-500': task.priority === 'Low'}">
-                      {{ task.priority }} priority</div>
+        <!-- Task columns -->
+        <div class="grid grid-cols-3 gap-6 h-[calc(100vh-220px)]">
+          <div v-for="column in columns" :key="column.id" 
+               class="flex flex-col rounded-xl shadow-lg overflow-hidden border border-white/10">
+            <!-- Column header -->
+            <div class="p-4" :style="`background-color: ${column.headerColor}`">
+              <h3 class="text-lg font-bold text-white flex items-center">
+                <span v-if="column.id === 'ToDo'">📋</span>
+                <span v-else-if="column.id === 'In Progress'">🔄</span>
+                <span v-else>✅</span>
+                {{ column.title }}
+                <span class="ml-2 bg-white/20 text-white text-xs rounded-full px-2 py-0.5">
+                  {{ tasks.filter(t => t.status === column.id).length }}
+                </span>
+              </h3>
+            </div>
+            
+            <!-- Tasks container -->
+            <div class="flex-1 p-4 overflow-y-auto" :style="`background-color: ${column.color}`">
+              <!-- Task cards -->
+              <div v-if="tasks.filter(t => t.status === column.id).length > 0" class="space-y-3">
+                <div v-for="task in tasks.filter(t => t.status === column.id)" :key="task.id"
+                     class="bg-white rounded-lg shadow-sm hover:shadow-md transition-all duration-200 overflow-visible">
+                  <!-- Task header -->
+                  <div @click="openTaskDetails(task)" class="p-3 cursor-pointer border-b border-gray-100">
+                    <div class="flex justify-between items-start mb-2">
+                      <h4 class="text-gray-800 font-semibold text-lg">{{ task.name }}</h4>
+                      <span :class="[getPriorityColorClass(task.priority), 'text-xs px-2 py-1 rounded-full']">
+                        {{ task.priority }}
+                      </span>
+                    </div>
+                    
+                    <!-- Task actions -->
+                    <div class="flex justify-between items-center text-xs text-gray-500 mt-2">
+                      <div class="flex items-center">
+                        <span>{{ task.steps?.length || 0 }} steps</span>
+                        <span class="mx-2">•</span>
+                        <span>{{ task.steps?.filter(s => s.status === 'Done').length || 0 }} completed</span>
+                      </div>
+                      
+                      <div class="flex space-x-2">
+                        <!-- Move to next column button if not in "Done" column -->
+                        <button v-if="column.id !== 'Done'" 
+                                @click.stop="updateTaskStatus(task, column.id === 'ToDo' ? 'In Progress' : 'Done')"
+                                class="text-blue-500 hover:text-blue-700"
+                                :title="`Move to ${column.id === 'ToDo' ? 'In Progress' : 'Done'}`">
+                          <ArrowRightIcon class="h-4 w-4" />
+                        </button>
+                      </div>
+                    </div>
                   </div>
-                   <!-- step -->
-                   <div v-if="task.steps && task.steps.length">
-                      <div v-for="subtask in task.steps" :key="subtask.id" class="subtask-item flex items-center space-x-1 space-y-1 p-1 border-b border-gray-300">
-                          <input 
-                            type="checkbox"  class="checkbox checkbox-xs border-black bg-white checked:bg-white"
-                            :checked="subtask.status === 'Done'" 
-                            @change="toggleSubtaskStatus(task, subtask)"
-                          />
-                          <div class="flex flex-row w-full justify-between items-center">
-                          <!-- Input แก้ไขชื่อ Step -->
+                  
+                  <!-- Steps section -->
+                  <div class="bg-gray-50 p-2">
+                    <!-- Steps list -->
+                    <div v-if="task.steps && task.steps.length > 0" class="space-y-1">
+                      <div v-for="subtask in task.steps" :key="subtask.id" 
+                           class="flex items-center p-2 hover:bg-gray-100 rounded">
+                        <input 
+                          type="checkbox" 
+                          :checked="subtask.status === 'Done'" 
+                          @change="toggleSubtaskStatus(task, subtask)"
+                          class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                        />
+                        
+                        <div class="flex-1 ml-3 flex justify-between items-center">
+                          <!-- Editing subtask name -->
                           <input
                             v-if="editingSubtaskId === subtask.id"
                             v-model="subtask.name"
                             @blur="saveSubtask(subtask)"
                             @keyup.enter="saveSubtask(subtask)"
-                            class="border px-2 py-1 rounded w-full"
+                            class="border border-gray-300 px-2 py-1 rounded w-full text-sm focus:ring-blue-500 focus:border-blue-500"
                           />
-
-                          <!-- ชื่อ Step ปกติ -->
-                          <span v-else class="cursor-pointer" @click="editSubtask(subtask)">
+                          
+                          <!-- Normal step display -->
+                          <span v-else :class="{'line-through text-gray-400': subtask.status === 'Done'}" class="text-sm">
                             {{ subtask.name }}
                           </span>
-                          <div class="flex items-center space-x-2">
-                          <!-- ปุ่ม More -->
+                          
+                          <!-- Step actions -->
                           <div class="relative">
-                            <RiMore2Fill class="cursor-pointer" @click="toggleDropdown(subtask.id)" />
+                            <button @click.stop="toggleDropdown(subtask.id)" class="text-gray-400 hover:text-gray-600">
+                              <RiMore2Fill class="h-4 w-4" />
+                            </button>
                             
-                            <!-- Dropdown -->
-                            <div v-if="dropdownSubtaskId === subtask.id" class="absolute right-0 bg-white border rounded shadow-md z-10 w-32">
-                              <button @click="editSubtask(subtask)" class="block w-full px-3 py-1 hover:bg-gray-200 text-left">Edit</button>
-                              <button @click="deleteStep(subtask.id)" class="block w-full px-3 py-1 hover:bg-gray-200 text-left text-red-500">Delete</button>
+                            <!-- Dropdown menu -->
+                            <div v-if="dropdownSubtaskId === subtask.id" 
+                                 class="absolute right-0 top-full mt-1 bg-white border rounded shadow-md z-20 w-36">
+                              <button @click.stop="editSubtask(subtask)" 
+                                      class="block w-full px-3 py-2 text-left text-sm hover:bg-gray-100">
+                                Edit
+                              </button>
+                              <button @click.stop="deleteStep(subtask.id)" 
+                                      class="block w-full px-3 py-2 text-left text-sm text-red-500 hover:bg-gray-100">
+                                Delete
+                              </button>
                             </div>
                           </div>
-
-                          </div>
-                          </div>
+                        </div>
                       </div>
                     </div>
-                    <!-- ปุ่ม + New Step -->
-                    <div v-if="addingStepTaskId === task.id">
-                      <input v-model="newStepName" class="w-full p-2 border rounded" placeholder="Enter step name" />
-                      <div class="flex mt-2">
-                        <button @click="addStep(task.id)" class="bg-blue-500 text-white px-3 py-1 rounded text-xs">Add Step</button>
-                        <button @click="addingStepTaskId = null" class="ml-2 text-black"><MaterialSymbolsCloseRounded/></button>
+                    
+                    <!-- Add new step form -->
+                    <div v-if="addingStepTaskId === task.id" class="mt-2 p-2 bg-white rounded border border-gray-200">
+                      <input 
+                        v-model="newStepName" 
+                        class="w-full p-2 border rounded text-sm focus:ring-blue-500 focus:border-blue-500" 
+                        placeholder="Enter step name"
+                        @keyup.enter="addStep(task.id)"
+                      />
+                      <div class="flex justify-between mt-2">
+                        <button @click="addStep(task.id)" 
+                                class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-xs">
+                          Add Step
+                        </button>
+                        <button @click="addingStepTaskId = null" class="text-gray-500 hover:text-gray-700">
+                          <MaterialSymbolsCloseRounded class="h-5 w-5" />
+                        </button>
                       </div>
                     </div>
-                    <div v-else class="text-[#3C70A3] cursor-pointer" @click="openStepInput(task.id)">+ New Step</div>
-                  
-                </div>
-              </div>
-              <!-- Add task -->
-              <div v-if="isAddingTask['ToDo']">
-                <input 
-                  v-model="newTaskName" 
-                  class="w-full p-2 border rounded" 
-                  placeholder="Enter task name"
-                />
-                <div class="flex mt-2">
-                  <button @click="addTask(selectedSprint.id)" class="bg-blue-500 text-white px-3 py-1 rounded text-xs">Add task</button>
-                  <button @click="isAddingTask['ToDo'] = false" class="ml-2 text-black"><MaterialSymbolsCloseRounded/></button>
-                </div>
-              </div>
-              <div class="cursor-pointer pl-4 text-[#BAB1B1]" @click="openTaskInput('ToDo')">+ New Task</div>
-            </div>
-
-          </div>
-
-          <div class="bg-white p-4 rounded-xl shadow">
-            <h3 class="text-lg font-semibold mb-3 text-[#144251]">IN PROGRESS</h3>
-            <div class="max-h-[calc(100vh-250px)] overflow-y-auto">
-              <div v-if="tasks.some(t => t.status === 'In Progress')" class="flex flex-col">
-                <div
-                  v-for="task in tasks.filter(t => t.status === 'In Progress')"
-                  :key="task.id"
-                  class="flex flex-col bg-[#EAEBF1] p-3 rounded-lg mb-2 shadow-sm hover:bg-gray-300 transition-all">
-                  <div @click="openTaskDetails(task)" class="flex flex-row cursor-pointer justify-between items-center">
-                    <div class="text-lg font-semibold ">{{ task.name }}</div>
-                    <div class="text-sm" :class="{'text-red-500': task.priority === 'High','text-yellow-500': task.priority === 'Medium','text-green-500': task.priority === 'Low'}">
-                      {{ task.priority }} priority</div>
+                    
+                    <!-- "Add step" button -->
+                    <button v-else @click.stop="openStepInput(task.id)" 
+                            class="mt-2 text-blue-500 hover:text-blue-700 text-sm flex items-center">
+                      <PlusIcon class="h-3 w-3 mr-1" /> Add Step
+                    </button>
                   </div>
-                   <!-- step -->
-                   <div v-if="task.steps && task.steps.length">
-                      <div v-for="subtask in task.steps" :key="subtask.id" class="subtask-item flex items-center space-x-1 space-y-1 p-1 border-b border-gray-300">
-                          <input 
-                            type="checkbox"  class="checkbox checkbox-xs border-black bg-white checked:bg-white"
-                            :checked="subtask.status === 'Done'" 
-                            @change="toggleSubtaskStatus(task, subtask)"
-                          />
-                          <div class="flex flex-row w-full justify-between items-center">
-                          <!-- Input แก้ไขชื่อ Step -->
-                          <input
-                            v-if="editingSubtaskId === subtask.id"
-                            v-model="subtask.name"
-                            @blur="saveSubtask(subtask)"
-                            @keyup.enter="saveSubtask(subtask)"
-                            class="border px-2 py-1 rounded w-full"
-                          />
-
-                          <!-- ชื่อ Step ปกติ -->
-                          <span v-else class="cursor-pointer" @click="editSubtask(subtask)">
-                            {{ subtask.name }}
-                          </span>
-                          <div class="flex items-center space-x-2">
-                          <!-- ปุ่ม More -->
-                          <div class="relative">
-                            <RiMore2Fill class="cursor-pointer" @click="toggleDropdown(subtask.id)" />
-                            
-                            <!-- Dropdown -->
-                            <div v-if="dropdownSubtaskId === subtask.id" class="absolute right-0 bg-white border rounded shadow-md z-10 w-32">
-                              <button @click="editSubtask(subtask)" class="block w-full px-3 py-1 hover:bg-gray-200 text-left">Edit</button>
-                              <button @click="deleteStep(subtask.id)" class="block w-full px-3 py-1 hover:bg-gray-200 text-left text-red-500">Delete</button>
-                            </div>
-                          </div>
-
-                          </div>
-                          </div>
-                      </div>
-                    </div>
-                    <!-- ปุ่ม + New Step -->
-                    <div v-if="addingStepTaskId === task.id">
-                      <input v-model="newStepName" class="w-full p-2 border rounded" placeholder="Enter step name" />
-                      <div class="flex mt-2">
-                        <button @click="addStep(task.id)" class="bg-blue-500 text-white px-3 py-1 rounded text-xs">Add Step</button>
-                        <button @click="addingStepTaskId = null" class="ml-2 text-black"><MaterialSymbolsCloseRounded/></button>
-                      </div>
-                    </div>
-                    <div v-else class="text-[#3C70A3] cursor-pointer" @click="openStepInput(task.id)">+ New Step</div>
-                  
                 </div>
               </div>
-              <!-- Add task -->
-              <div v-if="isAddingTask['In Progress']">
+              
+              <!-- Empty state -->
+              <div v-else class="text-center p-4 text-gray-500">
+                <div class="border-2 border-dashed border-gray-300 rounded-lg p-6">
+                  <p>No tasks in this column</p>
+                </div>
+              </div>
+              
+              <!-- Add new task form -->
+              <div v-if="isAddingTask[column.id]" class="mt-4 bg-white p-3 rounded-lg shadow">
                 <input 
                   v-model="newTaskName" 
-                  class="w-full p-2 border rounded" 
+                  class="w-full p-2 border rounded focus:ring-blue-500 focus:border-blue-500" 
                   placeholder="Enter task name"
+                  @keyup.enter="addTask(selectedSprint.id)"
                 />
-                <div class="flex mt-2">
-                  <button @click="addTask(selectedSprint.id)" class="bg-blue-500 text-white px-3 py-1 rounded text-xs">Add task</button>
-                  <button @click="isAddingTask['In Progress'] = false" class="ml-2 text-black"><MaterialSymbolsCloseRounded/></button>
+                <div class="flex justify-between mt-2">
+                  <button @click="addTask(selectedSprint.id)" 
+                          class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-sm">
+                    Add Task
+                  </button>
+                  <button @click="isAddingTask[column.id] = false" class="text-gray-500">
+                    <MaterialSymbolsCloseRounded class="h-5 w-5" />
+                  </button>
                 </div>
               </div>
-              <div class="cursor-pointer pl-4 text-[#BAB1B1]" @click="openTaskInput('In Progress')">+ New Task</div>
+              
+              <!-- "Add task" button -->
+              <button v-else @click="openTaskInput(column.id)" 
+                      class="mt-4 w-full flex items-center justify-center p-2 bg-white/70 hover:bg-white rounded-lg border border-dashed border-gray-300 text-gray-500 hover:text-gray-700 transition-colors">
+                <PlusIcon class="h-4 w-4 mr-1" /> Add Task
+              </button>
             </div>
-
           </div>
-
-          <div class="bg-white p-4 rounded-xl shadow">
-            <h3 class="text-lg font-semibold mb-3 text-[#144251]">DONE</h3>
-            <div class="max-h-[calc(100vh-250px)] overflow-y-auto">
-              <div v-if="tasks.some(t => t.status === 'Done')" class="flex flex-col ">
-                <div
-                  v-for="task in tasks.filter(t => t.status === 'Done')"
-                  :key="task.id"
-                  class="flex flex-col bg-[#EAEBF1] p-3 rounded-lg mb-2 shadow-sm hover:bg-gray-300 transition-all">
-                  <div @click="openTaskDetails(task)" class="flex flex-row cursor-pointer justify-between items-center">
-                    <div class="text-lg font-semibold ">{{ task.name }}</div>
-                    <div class="text-sm" :class="{'text-red-500': task.priority === 'High','text-yellow-500': task.priority === 'Medium','text-green-500': task.priority === 'Low'}">
-                      {{ task.priority }} priority</div>
-                  </div>
-                   <!-- step -->
-                   <div v-if="task.steps && task.steps.length">
-                    <div v-for="subtask in task.steps" :key="subtask.id" class="subtask-item flex items-center space-x-1 space-y-1 p-1 border-b border-gray-300">
-                          <input 
-                            type="checkbox"  class="checkbox checkbox-xs border-black bg-white checked:bg-white"
-                            :checked="subtask.status === 'Done'" 
-                            @change="toggleSubtaskStatus(task, subtask)"
-                          />
-                          <div class="flex flex-row w-full justify-between items-center">
-                          <!-- Input แก้ไขชื่อ Step -->
-                          <input
-                            v-if="editingSubtaskId === subtask.id"
-                            v-model="subtask.name"
-                            @blur="saveSubtask(subtask)"
-                            @keyup.enter="saveSubtask(subtask)"
-                            class="border px-2 py-1 rounded w-full"
-                          />
-
-                          <!-- ชื่อ Step ปกติ -->
-                          <span v-else class="cursor-pointer" @click="editSubtask(subtask)">
-                            {{ subtask.name }}
-                          </span>
-                          <div class="flex items-center space-x-2">
-                          <!-- ปุ่ม More -->
-                          <div class="relative">
-                            <RiMore2Fill class="cursor-pointer" @click="toggleDropdown(subtask.id)" />
-                            
-                            <!-- Dropdown -->
-                            <div v-if="dropdownSubtaskId === subtask.id" class="absolute right-0 bg-white border rounded shadow-md z-10 w-32">
-                              <button @click="editSubtask(subtask)" class="block w-full px-3 py-1 hover:bg-gray-200 text-left">Edit</button>
-                              <button @click="deleteStep(subtask.id)" class="block w-full px-3 py-1 hover:bg-gray-200 text-left text-red-500">Delete</button>
-                            </div>
-                          </div>
-
-                          </div>
-                          </div>
-                      </div>
-                    </div>
-                    <!-- ปุ่ม + New Step -->
-                    <div v-if="addingStepTaskId === task.id">
-                      <input v-model="newStepName" class="w-full p-2 border rounded" placeholder="Enter step name" />
-                      <div class="flex mt-2">
-                        <button @click="addStep(task.id)" class="bg-blue-500 text-white px-3 py-1 rounded text-xs">Add Step</button>
-                        <button @click="addingStepTaskId = null" class="ml-2 text-black"><MaterialSymbolsCloseRounded/></button>
-                      </div>
-                    </div>
-                    <div v-else class="text-[#3C70A3] cursor-pointer" @click="openStepInput(task.id)">+ New Step</div>
-                  
-                </div>
-              </div>
-              <!-- Add task -->
-              <div v-if="isAddingTask['Done']">
-                <input 
-                  v-model="newTaskName" 
-                  class="w-full p-2 border rounded" 
-                  placeholder="Enter task name"
-                />
-                <div class="flex mt-2">
-                  <button @click="addTask(selectedSprint.id)" class="bg-blue-500 text-white px-3 py-1 rounded text-xs">Add task</button>
-                  <button @click="isAddingTask['Done'] = false" class="ml-2 text-black"><MaterialSymbolsCloseRounded/></button>
-                </div>
-              </div>
-              <div class="cursor-pointer pl-4 text-[#BAB1B1]" @click="openTaskInput('Done')">+ New Task</div>
-            </div>
-
-          </div>
-
         </div>
       </div>
     </div>
- <!-- Modal Component -->
+    
+    <!-- Task Detail Modal -->
     <ModalTask
       v-if="isModalVisible"
       :task="selectedTask"
@@ -573,8 +599,13 @@ const deleteStep = async (subtaskId) => {
     />
   </div>
 </template>
+
 <style scoped>
-.w-18 {
-  width: 4.5rem; /* กำหนดขนาดของปุ่ม Toggle */
+.task-enter-active, .task-leave-active {
+  transition: all 0.3s ease;
+}
+.task-enter-from, .task-leave-to {
+  opacity: 0;
+  transform: translateY(20px);
 }
 </style>
