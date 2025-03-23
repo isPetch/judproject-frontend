@@ -55,10 +55,10 @@ const userInitials = computed(() => {
 const isMenuOpen = ref(false);
 
 const handleLogout = () => {
-  // ลบ Token ออกจาก localStorage
-  localStorage.removeItem('token');
   
-  // นำทางไปหน้า Login
+  localStorage.removeItem('token'); // ลบ Token
+  localStorage.removeItem('userId'); // ลบ userId
+  
   router.push('/login');
 };
 
