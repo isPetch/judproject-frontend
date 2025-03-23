@@ -258,7 +258,7 @@ onMounted(() => {
                       'bg-green-100 text-green-800': task.priority === 'Low',
                     }"
                   >
-                    {{ task.priority }}
+                    {{ task.priority }} priority
                   </span>
                 </div>
                 <div class="flex items-center justify-between mt-2">
