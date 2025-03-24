@@ -3,6 +3,7 @@ import { ref, onMounted, computed, watch } from 'vue';
 import { getAllProjects } from "../composable/getJudProjects";
 import { getAllUsers } from '../composable/getJudProjects'
 import { useRouter } from 'vue-router';
+import NavBar from '../components/NavBar.vue';
 
 const projects = ref([]);
 const isLoading = ref(false);
@@ -137,26 +138,10 @@ const removeMember = (index) => {
   teamMembers.value.splice(index, 1);
 };
 
-const tabs = [
-  { name: "Dashboard", link: "/" },
-  { name: "Projects", link: "/projects" },
-];
 </script>
 
 <template>
-  <nav class="fixed top-0 left-0 w-full z-50 text-white p-4 flex justify-between items-center" style="background-color: #316394;">
-    <div class="flex flex-row space-x-6 items-center">
-      <div class="flex items-center space-x-2">
-        <img src="../components/image/jubproject.png" alt="JudProject Logo" class="h-6 w-6" />
-        <span class="text-lg font-bold">JudProject</span>
-      </div>
-      <div class="text-sm flex space-x-6">
-        <router-link v-for="tab in tabs" :key="tab.name" :to="tab.link" class="px-4 py-2 relative transition duration-300 hover:text-white after:absolute after:left-0 after:bottom-0 after:w-full after:h-1 after:bg-gradient-to-r after:from-blue-400 after:to-gray-200 after:scale-x-0 hover:after:scale-x-90 after:transition-transform after:duration-300">
-          {{ tab.name }}
-        </router-link>
-      </div>
-    </div>
-  </nav>
+<NavBar/>
 
   <div class="mt-20 p-8">
     <h2 class="text-4xl font-bold mb-8 text-center">Create Project</h2>
