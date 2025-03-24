@@ -237,10 +237,6 @@ const deleteProfileImage = async () => {
         <button @click="deleteProfileImage" class="bg-gray-400 text-white px-6 py-2 rounded">Delete</button>
       </div>
     </div>
-
-    <div v-if="successMessage" class="bg-green-400 text-white text-center p-3 rounded mb-4">
-      {{ successMessage }}
-    </div>
     <div v-if="loading" class="text-center text-gray-500">Loading...</div>
     <div v-else class="space-y-6">
       <div class="space-y-4">
