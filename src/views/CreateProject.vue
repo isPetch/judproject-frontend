@@ -143,7 +143,7 @@ const removeMember = (index) => {
 <template>
 <NavBar/>
 
-  <div class="mt-20 p-8">
+  <div class="mt-20 p-8 bg-gray-50">
     <h2 class="text-4xl font-bold mb-8 text-center">Create Project</h2>
     <hr class="w-full border-gray-300 border-t-2 p-2" />
 
@@ -174,24 +174,47 @@ const removeMember = (index) => {
           </div>
         </div>
 
-        <div class="mt-4 space-y-4">
-          <label class="text-base font-semibold text-gray-700">Add Team Members</label>
-          <input v-model="searchEmail" id="add-member" type="text" placeholder="Search email..." class="w-full p-3 border rounded-lg shadow-sm focus:ring focus:ring-blue-300" />
-        </div>
+         <!-- Team Section -->
+    <div class="mt-4 space-y-4">
+      <!-- Add Team Members -->
+      <div>
+        <label class="text-base font-semibold text-gray-700">Add Team Members</label>
+        <input v-model="searchEmail" id="add-member" type="text" placeholder="Search email..." class="w-full p-3 border rounded-lg shadow-sm focus:ring focus:ring-blue-300" />
+        <ul v-if="searchEmail && !selectedEmail" class="bg-white border rounded-md mt-2 max-h-32 overflow-y-auto shadow-md">
+          <li v-for="(email, index) in filteredEmails.slice(0, 10)" :key="index" @click="selectEmail(email)" class="p-2 cursor-pointer hover:bg-gray-100">
+            {{ email }}
+          </li>
+        </ul>
+      </div>
 
-        <div>
-          <label class="text-base font-semibold text-gray-700">Team Members</label>
-          <div class="w-full h-24 bg-gray-200 rounded-lg p-3 overflow-y-auto shadow-sm">
-            <ul>
-              <li v-for="(member, index) in teamMembers" :key="index" class="flex justify-between items-center py-1">
-                <span class="truncate text-gray-700">{{ member.email }} ({{ member.role }})</span>
-                <button @click="removeMember(index)" class="text-red-500 font-bold px-2 hover:text-red-700">&times;</button>
-              </li>
-            </ul>
-          </div>
+      <!-- Role Selection -->
+      <div>
+        <label class="text-base font-semibold text-gray-700">Role</label>
+        <div class="flex items-center gap-2 mt-2">
+          <select v-model="selectedRole" class="w-full p-3 border rounded-lg shadow-sm focus:ring focus:ring-blue-300">
+            <option value="">- Select role -</option>
+            <option value="member">Member</option>
+            <option value="admin">Admin</option>
+          </select>
+          <button @click="addMember" class="bg-green-600 text-white px-4 py-2 rounded-lg shadow-md hover:bg-green-700">Add</button>
+        </div>
+      </div>
+
+      <!-- Team Members List -->
+      <div>
+        <label class="text-base font-semibold text-gray-700">Team Members</label>
+        <div class="w-full h-24 bg-gray-200 rounded-lg p-3 overflow-y-auto shadow-sm">
+          <ul>
+            <li v-for="(member, index) in teamMembers" :key="index" class="flex justify-between items-center py-1">
+              <span class="truncate text-gray-700">{{ member.email }} ({{ member.role }})</span>
+              <button @click="removeMember(index)" class="text-red-500 font-bold px-2 hover:text-red-700">&times;</button>
+            </li>
+          </ul>
         </div>
       </div>
     </div>
+  </div>
+</div>
 
     <hr class="w-full border-t-2 border-gray-300 my-4" />
     <div class="flex justify-center space-x-4 items-center">

@@ -195,7 +195,7 @@ const deleteProfileImage = async () => {
 
 </script>
 <template>
-<div class="h-screen bg-white flex flex-col">
+<div class="h-screen bg-gray-50 flex flex-col ">
   <NavBar />
 
   <div class="mt-20 p-10">
