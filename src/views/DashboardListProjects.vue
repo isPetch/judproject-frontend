@@ -39,6 +39,10 @@ const fetchTasks = async () => {
   }
 };
 
+const filteredTasks = computed(() => {
+  return tasks.value.filter(task => task.status !== 'Done');
+});
+
 const fetchProjects = async () => {
   isLoading.value = true;
   try {
@@ -244,7 +248,7 @@ onMounted(() => {
               No Tasks Available
             </div>
             <div v-else class="space-y-3">
-              <div v-for="task in tasks" :key="task.id" 
+              <div v-for="task in filteredTasks" :key="task.id" 
                   class="p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
                 <div class="flex justify-between items-start">
                   <div>
@@ -268,7 +272,6 @@ onMounted(() => {
                     :class="{
                       'text-blue-600': task.status === 'In Progress',
                       'text-gray-500': task.status === 'ToDo',
-                      'text-green-600': task.status === 'Done',
                     }"
                   >
                     {{ task.status }}
