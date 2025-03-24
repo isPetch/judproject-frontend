@@ -29,10 +29,17 @@ const fetchProjects = async () => {
 // Fetch team members for a specific project
 const fetchProjectMembers = async (projectId) => {
   try {
-    const response = await axios.get(
-      `${import.meta.env.VITE_ROOT_API}/api/project/${projectId}/members`
-    );
-    return response.data || [];
+    const response = await axios.get(`${import.meta.env.VITE_ROOT_API}/api/project/${projectId}/members`);
+    
+    // ตรวจสอบก่อนว่า response.data คืนอะไรมา
+    console.log(response.data);
+
+    // ถ้าคืนมาแบบ { members: [...] } ก็ทำแบบนี้
+    return response.data.members || [];
+
+    // หรือถ้าคืนมาแบบ array ตรงๆ ก็ใช้ response.data
+    // return response.data || [];
+
   } catch (error) {
     console.error("Failed to fetch project members:", error);
     return [];
@@ -140,13 +147,9 @@ const getDaysRemaining = (dueDate) => {
 
 // Helper function to get member initials
 const getMemberInitials = (name) => {
-  if (!name) return 'U';
+  if (!name || name.length < 2) return name || 'U';
   
-  const nameParts = name.split(' ');
-  if (nameParts.length > 1) {
-    return (nameParts[0][0] + nameParts[1][0]).toUpperCase();
-  }
-  return name[0].toUpperCase();
+  return (name[0] + name[name.length - 1]).toUpperCase();
 };
 
 onMounted(fetchProjects);
@@ -355,17 +358,20 @@ onMounted(fetchProjects);
                 <div>
                   <h4 class="text-sm font-medium text-gray-500 mb-1">Team Members</h4>
                   <div class="flex flex-wrap gap-1 mt-2">
-                    <!-- Updated Team Members Display -->
                     <div v-if="selectedProject.members && selectedProject.members.length > 0">
-                      <div class="flex -space-x-2 overflow-hidden">
-                        <div v-for="(member, index) in selectedProject.members.slice(0, 5)" :key="index" 
-                          class="inline-block h-8 w-8 rounded-full ring-2 ring-white bg-gray-200 flex items-center justify-center text-xs font-medium text-gray-600"
-                          :title="member.username || 'Unknown User'">
-                          {{ member.username ? getMemberInitials(member.username) : 'U' }}
-                        </div>
-                        <div v-if="selectedProject.members.length > 5" 
-                          class="inline-block h-8 w-8 rounded-full ring-2 ring-white bg-gray-100 flex items-center justify-center text-xs font-medium text-gray-600">
-                          +{{ selectedProject.members.length - 5 }}
+                      <div class="flex -space-x-2">
+                        <div 
+                          v-for="(member, index) in selectedProject.members.slice(0, 5)" 
+                          :key="index" 
+                          class="group relative inline-block"
+                        >
+                          <div class="h-8 w-8 rounded-full ring-2 ring-white bg-gray-200 flex items-center justify-center text-xs font-medium text-gray-600">
+                            {{ member.username ? getMemberInitials(member.username) : 'U' }}
+                          </div>
+                          <!-- Custom tooltip -->
+                          <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-gray-900 text-white text-xs rounded whitespace-nowrap opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-opacity duration-200">
+                            {{ member.username || 'Unknown User' }}
+                          </div>
                         </div>
                       </div>
                     </div>
