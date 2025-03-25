@@ -1,69 +1,46 @@
 <script setup>
-import { ref, computed, onMounted } from 'vue';
+import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import NavBar from "@/components/NavBar.vue";
+import { getAllProjects, getProjectById } from "../composable/getJudProjects";
 
+const projectId = 13;
 
-const router = useRouter();
-const editingProject = ref({ name: '', description: '', dueDate: '' }); 
-const openSettingPopup = (project) => {
-  // แปลง dueDate เป็น YYYY-MM-DD
-  const formattedDate = project.dueDate 
-    ? new Date(project.dueDate).toISOString().split('T')[0] 
-    : ''; // ตรวจสอบว่ามีค่าหรือไม่
-  
-  editingProject.value = { 
-    ...project, 
-    dueDate: formattedDate // ใช้ค่าที่แปลงแล้ว
-  }; 
-  isSettingPopupOpen.value = true;
-};
+const projectName = ref('');
+const projectDescription = ref('');
+const startDate = ref('');
+const endDate = ref('');
+const teamMembers = ref([]);
+const loading = ref(true);
 
-const closeSettingPopup = () => {
-  isSettingPopupOpen.value = false;
-  editingProject.value = { name: '', description: '', dueDate: '' }; // รีเซ็ตข้อมูล
-};
-const saveProjectChanges = async () => {
+const fetchProjectData = async () => {
   try {
-    const updatedProject = {
-      ...editingProject.value,
-      dueDate: editingProject.value.dueDate 
-        ? new Date(editingProject.value.dueDate).toISOString() 
-        : null, // แปลงเป็น ISO format หรือใส่ null ถ้าไม่มีค่า
-    };
-    
-    const response = await fetch(import.meta.env.VITE_ROOT_API + `/api/project/${editingProject.value.id}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(updatedProject),
-    });
+    const response = await fetch(import.meta.env.VITE_ROOT_API + `/api/project/${projectId}`);
+    if (response.ok) {
+      const projectData = await response.json();
+      
+      projectName.value = projectData.name || '';
+      projectDescription.value = projectData.description || '';
 
-    const result = await response.json();
-    console.log('API response:', result);
-
-    if (result && result.status === 'success') {
-      console.log('Project updated successfully:', result.data);
-
-      if (result.data) {
-        // อัปเดตข้อมูลใน projects list
-        const index = projects.value.findIndex((p) => p.id === result.data.id);
-        if (index !== -1) {
-          projects.value[index] = result.data;
-        }
-      } else {
-        console.warn('No updated project data returned from API');
-      }
-
-      closeSettingPopup(); // ปิด Popup หลังจาก Save สำเร็จ
-      window.location.reload();
+      // แปลง startDate และ endDate จาก ISO 8601 ให้เป็น YYYY-MM-DD
+      startDate.value = projectData.startDate ? new Date(projectData.startDate).toISOString().split('T')[0] : '';
+      endDate.value = projectData.dueDate ? new Date(projectData.dueDate).toISOString().split('T')[0] : '';
+      
+      teamMembers.value = projectData.teamMembers || [];
     } else {
-      console.error('Error updating project:', result.message);
+      console.error('Failed to fetch project data');
     }
   } catch (error) {
-    console.error('Error updating project:', error.message);
+    console.error('Error fetching project data:', error);
+  } finally {
+    loading.value = false;
   }
 };
 
+
+onMounted(() => {
+  fetchProjectData(); // เรียกใช้ฟังก์ชันดึงข้อมูลเมื่อ component ถูกโหลด
+});
 </script>
 
 <template>
