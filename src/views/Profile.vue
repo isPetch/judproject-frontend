@@ -73,6 +73,7 @@ const updateUserField = async () => {
     if (result && result.status === 'Success') {
       successMessage.value = "Profile updated successfully!";
       setTimeout(() => successMessage.value = '', 1000);
+      window.location.reload()
     } else {
       console.error("Error updating profile:", result.message);
     }
@@ -179,11 +180,12 @@ const deleteProfileImage = async () => {
     });
 
     const result = await response.json();
-
+    
     if (response.ok) {
       alert("Profile picture deleted successfully.");
       profileImage.value = null; 
       image.value = null;
+      window.location.reload()
     } else {
       console.error("Error deleting profile picture:", result.message);
     }
@@ -195,114 +197,169 @@ const deleteProfileImage = async () => {
 
 </script>
 <template>
-<div class="h-screen bg-gray-50 flex flex-col ">
-  <NavBar />
+  <div class="min-h-screen  from-indigo-100 bg-gray-50 flex flex-col">
+    <NavBar />
 
-  <div class="mt-20 p-10">
-    <h2 class="text-4xl font-bold mb-8 text-center">Profile</h2>
-    <hr class="w-full">
-
-    <div class="flex flex-col items-center mb-6 mt-6">
-      <div class="relative bg-gray-100 text-neutral-content w-40 h-40 rounded-full flex items-center justify-center overflow-hidden shadow">
-  <img 
-    v-if="profileImage" 
-    :src="profileImage" 
-    alt="Profile Image" 
-    class="absolute inset-0 w-full h-full object-cover rounded-full"
-  />
-  <span v-if="!profileImage" class="text-3xl font-bold text-gray-700">
-    {{ userInitials }}
-  </span>
-  
-  <<label for="profilePicture" class="absolute top-3/4 right-5 transform -translate-y-1/2 bg-blue-500 text-white p-2 rounded-full cursor-pointer hover:bg-blue-600">
-  <!-- Plus Icon -->
-  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-    <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v6h6a1 1 0 110 2h-6v6a1 1 0 11-2 0v-6H3a1 1 0 110-2h6V4a1 1 0 011-1z" clip-rule="evenodd" />
-  </svg>
-</label>
-  
-  <!-- Hidden File Input -->
-  <input 
-    id="profilePicture" 
-    type="file" 
-    accept="image/*" 
-    class="hidden" 
-    @change="handleFileUpload" 
-  />
-</div>
+    <div class="px-4 py-20">
       
-      <div class="mt-2 flex space-x-2">
-        <label @click="saveChanges" class="bg-blue-600 text-white px-6 py-2 rounded cursor-pointer">Upload New</label>
-        <input type="file" id="file-upload" class="hidden" @change="handleFileUpload" accept="image/*" />
-        <button @click="deleteProfileImage" class="bg-gray-400 text-white px-6 py-2 rounded">Delete</button>
-      </div>
-    </div>
-    <div v-if="loading" class="text-center text-gray-500">Loading...</div>
-    <div v-else class="space-y-6">
-      <div class="space-y-4">
-        <div class="flex justify-center">
-          <div class="w-3/4 md:w-1/2 lg:w-1/3">
-            <label class="block text-gray-700 font-semibold mb-2">Username</label>
-            <div class="relative flex items-center">
-              <input
-                type="text"
-                class="w-full border border-gray-300 rounded px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                :disabled="!isEditingUsername"
-                v-model="username"
-              />
-              <button v-if="!isEditingUsername" class="absolute right-2 top-2 text-gray-500 hover:text-gray-700" @click="toggleEdit('username')">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                  <path d="M17.414 2.586a2 2 0 00-2.828 0L7 10.172V13h2.828l7.586-7.586a2 2 0 000-2.828z" />
-                </svg>
-              </button>
-              <button v-if="isEditingUsername" class="ml-2 px-4 py-2 rounded text-white" 
-                      :class="username.trim() ? 'bg-green-500' : 'bg-gray-400 cursor-not-allowed'"
-                      @click="saveChanges('username')" 
-                      :disabled="!username.trim()">
-                Save
-              </button>
+        <!-- Header -->
+        <div class="mt-4 p-6 text-center">
+          <h2 class="text-4xl font-extrabold text-black tracking-tight">Profile Settings</h2>
+        </div>
+         <hr>
+        <!-- Profile Picture Section -->
+        <div class="p-8 bg-gray-50">
+          <div class="flex flex-col items-center mb-8">
+            <div class="relative group w-56 h-56">
+              <div class="w-full h-full rounded-full border-4 border-indigo-200 shadow-lg overflow-hidden">
+                <img 
+                  v-if="profileImage" 
+                  :src="profileImage" 
+                  alt="Profile" 
+                  class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
+                />
+                <div v-else class="w-full h-full bg-indigo-100 flex items-center justify-center text-5xl font-bold text-indigo-600">
+                  {{ userInitials }}
+                </div>
+              </div>
+
+              <div class="absolute bottom-0 right-0">
+                <input 
+                  type="file" 
+                  id="profilePicture" 
+                  class="hidden" 
+                  @change="handleFileUpload" 
+                  accept="image/*"
+                />
+                <label 
+                  for="profilePicture" 
+                  class="cursor-pointer bg-indigo-500 text-white p-4 rounded-full shadow-lg hover:bg-indigo-600 transition-all duration-300 transform hover:scale-110 inline-block"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+                  </svg>
+                </label>
+              </div>
+            </div>
+
+            <div class="mt-6 flex space-x-4">
+              <button
+  @click="saveChanges"
+  class="px-6 py-3 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors shadow-md flex items-center space-x-2"
+>
+  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z" clipRule="evenodd" />
+  </svg>
+  <span>Upload New</span>
+</button>
+<button
+  @click="deleteProfileImage"
+  class="px-6 py-3 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors shadow-md flex items-center space-x-2"
+>
+  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+  </svg>
+  <span>Delete</span>
+</button>
             </div>
           </div>
-        </div>
 
-        <div class="flex justify-center">
-          <div class="w-3/4 md:w-1/2 lg:w-1/3">
-            <label class="block text-gray-700 font-semibold mb-2">Email</label>
-            <div class="relative flex items-center">
-              <input
-                type="email"
-                class="w-full border border-gray-300 rounded px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                :disabled="!isEditingEmail"
-                v-model="email"
-              />
-              <button v-if="!isEditingEmail" class="absolute right-2 top-2 text-gray-500 hover:text-gray-700" @click="toggleEdit('email')">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                  <path d="M17.414 2.586a2 2 0 00-2.828 0L7 10.172V13h2.828l7.586-7.586a2 2 0 000-2.828z" />
-                </svg>
-              </button>
-              <button v-if="isEditingEmail" class="ml-2 px-4 py-2 rounded text-white" 
-                      :class="email.trim() ? 'bg-green-500' : 'bg-gray-400 cursor-not-allowed'"
-                      @click="saveChanges('email')" 
-                      :disabled="!email.trim()">
-                Save
-              </button>
-            </div>
-          </div>
-        </div>
+          <!-- Profile Details -->
+          <div class="flex justify-center">
+          <div class="space-y-6 w-3/4 md:w-1/2 lg:w-1/3">
+            <!-- Profile Fields with Modern Input Styling -->
+            <div class="grid grid-cols-1 gap-6  ">
+              <!-- Username Field -->
+              <div class="bg-white rounded-lg shadow-md p-4">
+                <label class="block text-sm font-medium text-gray-700 mb-2">Username</label>
+                <div class="flex items-center space-x-3">
+                  <input
+                    type="text"
+                    class="flex-grow bg-gray-100 border-none rounded-md py-2 px-3 focus:ring-2 focus:ring-indigo-500 focus:bg-white transition-all"
+                    :disabled="!isEditingUsername"
+                    v-model="username"
+                  />
+                  <button 
+                    v-if="!isEditingUsername" 
+                    @click="toggleEdit('username')"
+                    class="text-indigo-500 hover:text-indigo-700 transition-colors"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                    </svg>
+                  </button>
+                  <button 
+                    v-if="isEditingUsername" 
+                    @click="saveChanges('username')"
+                    class="px-4 py-2 rounded-md text-white transition-colors"
+                    :class="username.trim() ? 'bg-green-500 hover:bg-green-600' : 'bg-gray-400 cursor-not-allowed'"
+                    :disabled="!username.trim()"
+                  >
+                    Save
+                  </button>
+                </div>
+              </div>
 
-        <div class="flex justify-center">
-          <div class="w-3/4 md:w-1/2 lg:w-1/3">
-            <router-link to="/password" class="block text-red-600 hover:underline">Change Password</router-link>
-          </div>
-        </div>
-      </div>
-      <div class="flex mt-6 justify-center">
-        <button class="bg-red-500 text-white px-6 py-3 rounded" @click="deleteAccount">Delete Account</button>
-      </div>
-    </div>
+              <!-- Email Field -->
+              <div class="bg-white rounded-lg shadow-md p-4">
+                <label class="block text-sm font-medium text-gray-700 mb-2">Email</label>
+                <div class="flex items-center space-x-3">
+                  <input
+                    type="email"
+                    class="flex-grow bg-gray-100 border-none rounded-md py-2 px-3 focus:ring-2 focus:ring-indigo-500 focus:bg-white transition-all"
+                    :disabled="!isEditingEmail"
+                    v-model="email"
+                  />
+                  <button 
+                    v-if="!isEditingEmail" 
+                    @click="toggleEdit('email')"
+                    class="text-indigo-500 hover:text-indigo-700 transition-colors"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                    </svg>
+                  </button>
+                  <button 
+                    v-if="isEditingEmail" 
+                    @click="saveChanges('email')"
+                    class="px-4 py-2 rounded-md text-white transition-colors"
+                    :class="email.trim() ? 'bg-green-500 hover:bg-green-600' : 'bg-gray-400 cursor-not-allowed'"
+                    :disabled="!email.trim()"
+                  >
+                    Save
+                  </button>
+                </div>
+              </div>
+              <div class="bg-white rounded-lg shadow-md p-4">
+  <div class="flex justify-between items-center">
+    <router-link 
+      to="/password" 
+      class="text-indigo-500 hover:text-indigo-700 hover:underline flex items-center space-x-2 transition-colors"
+    >
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" viewBox="0 0 20 20" fill="currentColor">
+        <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" />
+      </svg>
+      <span>Change Password</span>
+    </router-link>
+    
+    <button 
+      @click="deleteAccount"
+      class="text-red-500 hover:text-red-700 hover:underline flex items-center space-x-2 transition-colors"
+    >
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" viewBox="0 0 20 20" fill="currentColor">
+        <path fillRule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd" />
+      </svg>
+      <span>Delete Account</span>
+    </button>
   </div>
 </div>
-
+      </div>
+    </div>
+</div>
+</div>
+</div>
+</div>
 </template>
 
 <style scoped>
