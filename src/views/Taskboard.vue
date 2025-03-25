@@ -95,6 +95,7 @@ const deleteTask = async (taskId) => {
         await fetchSprint(selectedSprint.value.id);
         // Close task dropdown if open
         taskDropdownOpen.value = null;
+        localStorage.removeItem(`task_comments_${props.task.id}`);
       } else {
         console.error("Error deleting task");
       }
