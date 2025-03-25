@@ -236,25 +236,66 @@ function getRandomPastelColor(seed) {
   return `hsl(${h}, 70%, 80%)`;
 }
 
+const username = ref(''); 
+
+// Fetch the logged-in user's username when the component mounts
+
+const token = localStorage.getItem('userId');  
+
+const fetchUserData = async () => {
+  if (!token) {
+    console.error('Authorization token is missing');
+    return; 
+  }
+
+  try {
+    const response = await fetch(import.meta.env.VITE_ROOT_API + '/api/profile', {
+      method: 'GET',
+      headers: { 'Authorization': `${token}` }, 
+    });
+
+    if (!response.ok) {
+      throw new Error(`Error: ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    username.value = data.username;
+
+  } catch (error) {
+    console.error('Error fetching user data:', error);
+  }
+};
 // Add comment
 const addComment = () => {
   if (newComment.value.trim()) {
     if (!props.task.comments) {
       props.task.comments = [];
     }
-    
-    props.task.comments.push({ 
-      id: Date.now(), 
-      user: "You", 
+    const userNameToDisplay = username.value || "You";
+    const comment = {
+      id: Date.now(),
+      user: userNameToDisplay,
       text: newComment.value,
       timestamp: new Date().toISOString()
-    });
+    };
     
+    props.task.comments.push(comment);
+
+    // Store comments in localStorage
+    localStorage.setItem(`task_comments_${props.task.id}`, JSON.stringify(props.task.comments));
+
     newComment.value = "";
-    
-    // TODO: Send comment to backend
   }
 };
+
+onMounted(() => {
+  fetchUserData();
+  // save comments in localStorage
+  const savedComments = localStorage.getItem(`task_comments_${props.task.id}`);
+  if (savedComments) {
+    props.task.comments = JSON.parse(savedComments);
+  }
+});
 
 // Formatted dates
 const formatDate = (dateString) => {
@@ -529,22 +570,22 @@ watch(() => props.isVisible, (newValue) => {
           
           <!-- Comments list -->
           <div class="mt-3 space-y-3 max-h-[200px] overflow-y-auto p-1">
-            <div 
-              v-if="task.comments && task.comments.length > 0" 
-              v-for="comment in task.comments" 
-              :key="comment.id"
-              class="bg-gray-50 p-3 rounded-lg"
-            >
-              <div class="flex items-center justify-between mb-1">
-                <span class="font-medium text-sm text-gray-900">{{ comment.user }}</span>
-                <span class="text-xs text-gray-500">{{ comment.timestamp ? new Date(comment.timestamp).toLocaleString() : 'Just now' }}</span>
-              </div>
-              <p class="text-sm text-gray-700">{{ comment.text }}</p>
-            </div>
-            <div v-else class="text-sm text-gray-500 text-center py-4">
-              No comments yet
-            </div>
-          </div>
+  <div 
+    v-if="task.comments && task.comments.length > 0" 
+    v-for="comment in task.comments" 
+    :key="comment.id"
+    class="bg-gray-50 p-3 rounded-lg"
+  >
+    <div class="flex items-center justify-between mb-1">
+      <span class="font-medium text-sm text-gray-900">{{ comment.user }}</span> <!-- Show the user -->
+      <span class="text-xs text-gray-500">{{ comment.timestamp ? new Date(comment.timestamp).toLocaleString() : 'Just now' }}</span>
+    </div>
+    <p class="text-sm text-gray-700">{{ comment.text }}</p>
+  </div>
+  <div v-else class="text-sm text-gray-500 text-center py-4">
+    No comments yet
+  </div>
+</div>
         </div>
       </div>
     </div>
