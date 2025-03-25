@@ -570,22 +570,22 @@ watch(() => props.isVisible, (newValue) => {
           
           <!-- Comments list -->
           <div class="mt-3 space-y-3 max-h-[200px] overflow-y-auto p-1">
-  <div 
-    v-if="task.comments && task.comments.length > 0" 
-    v-for="comment in task.comments" 
-    :key="comment.id"
-    class="bg-gray-50 p-3 rounded-lg"
-  >
-    <div class="flex items-center justify-between mb-1">
-      <span class="font-medium text-sm text-gray-900">{{ comment.user }}</span> <!-- Show the user -->
-      <span class="text-xs text-gray-500">{{ comment.timestamp ? new Date(comment.timestamp).toLocaleString() : 'Just now' }}</span>
-    </div>
-    <p class="text-sm text-gray-700">{{ comment.text }}</p>
-  </div>
-  <div v-else class="text-sm text-gray-500 text-center py-4">
-    No comments yet
-  </div>
-</div>
+            <div 
+              v-if="task.comments && task.comments.length > 0" 
+              v-for="comment in [...task.comments].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))" 
+              :key="comment.id"
+              class="bg-gray-50 p-3 rounded-lg"
+            >
+              <div class="flex items-center justify-between mb-1">
+                <span class="font-medium text-sm text-gray-900">{{ comment.user }}</span>
+                <span class="text-xs text-gray-500">{{ comment.timestamp ? new Date(comment.timestamp).toLocaleString() : 'Just now' }}</span>
+              </div>
+              <p class="text-sm text-gray-700">{{ comment.text }}</p>
+            </div>
+            <div v-else class="text-sm text-gray-500 text-center py-4">
+              No comments yet
+            </div>
+          </div>
         </div>
       </div>
     </div>
