@@ -44,56 +44,59 @@ onMounted(() => {
 </script>
 
 <template>
-  <NavBar />
-   
-     <div class="mt-20 p-8">
-    <h2 class="text-4xl font-bold mb-8 text-center">Edit Project</h2>
-<hr class="w-full border-gray-300 border-t-2 p-2" />
-<!-- Form Section -->
-<div class="flex justify-center">
-  <div class="w-full max-w-2xl">
-    <!-- Form Inputs -->
-    <div class="space-y-4">
-      <!-- Project Name -->
-      <div>
-        <label class="block font-semibold text-gray-700">Project Name</label>
-        <input v-model="projectName" type="text" class="w-full p-3 border rounded-lg shadow-sm focus:ring focus:ring-blue-300" />
-      </div>
+ <div class="min-h-screen  from-indigo-100 bg-gray-50 flex flex-col">
+    <NavBar />
+    <div class="px-4 py-20">
+        <!-- Header -->
+        <div class="mt-4 p-6 text-center">
+          <h2 class="text-4xl font-extrabold text-black tracking-tight">Edit Project</h2>
+        </div>
+         <hr>
+    <div class="flex justify-center p-4">
+      <div class="w-full max-w-2xl">
+        <!-- Form Inputs -->
+     <div class="space-y-6">
+  <div class="bg-white rounded-lg shadow-md p-4">
+    <label class="block font-semibold text-gray-700 mb-2">Project Name</label>
+    <input v-model="projectName" type="text" class="w-full p-3 border rounded-lg shadow-sm focus:ring focus:ring-blue-300" 
+      :class="{'border-red-500': !projectName.trim() && isSubmitDisabled}" />
+  </div>
 
-      <!-- Project Description -->
-      <div>
-        <label class="block font-semibold text-gray-700">Project Description</label>
-        <textarea v-model="projectDescription" class="w-full p-3 border rounded-lg shadow-sm h-32 focus:ring focus:ring-blue-300"></textarea>
-      </div>
-    </div>
+  <div class="bg-white rounded-lg shadow-md p-4">
+    <label class="block font-semibold text-gray-700 mb-2">Project Description</label>
+    <textarea v-model="projectDescription" class="w-full p-3 border rounded-lg shadow-sm h-32 focus:ring focus:ring-blue-300" 
+      :class="{'border-red-500': !projectDescription.trim() && isSubmitDisabled}"></textarea>
+  </div>
 
-    <!-- Project Duration -->
-    <div class="mt-4 space-y-4">
+  <div class="bg-white rounded-lg shadow-md p-4">
+    <div class="mt-2 space-y-4">
       <label class="block font-semibold text-gray-700">Project Duration</label>
       <div>
-        <p class="text-sm text-gray-600">Start Date</p>
+        <p class="text-sm text-gray-600 mb-2">Start Date</p>
         <input v-model="startDate" type="date" class="w-full p-3 border rounded-lg shadow-sm focus:ring focus:ring-blue-300" />
       </div>
       <div>
-        <p class="text-sm text-gray-600">End Date</p>
+        <p class="text-sm text-gray-600 mb-2">End Date</p>
         <input v-model="endDate" type="date" class="w-full p-3 border rounded-lg shadow-sm focus:ring focus:ring-blue-300" />
       </div>
     </div>
+  </div>
 
-    <!-- Team Section -->
-    <div class="mt-4 space-y-4">
-      <!-- Add Team Members -->
+  <!-- Team Section -->
+  <div class="bg-white rounded-lg shadow-md p-4">
+    <div class="space-y-6">
       <div>
-        <label class="text-base font-semibold text-gray-700">Add Team Members</label>
-        <input v-model="searchEmail" id="add-member" type="text" placeholder="Search email..." class="w-full p-3 border rounded-lg shadow-sm focus:ring focus:ring-blue-300" />
+        <label class="text-base font-semibold text-gray-700 mb-2">Add Team Members</label>
+        <input v-model="searchEmail" type="text" placeholder="Search email..." 
+          class="w-full p-3 border rounded-lg shadow-sm focus:ring focus:ring-blue-300" />
         <ul v-if="searchEmail && !selectedEmail" class="bg-white border rounded-md mt-2 max-h-32 overflow-y-auto shadow-md">
-          <li v-for="(email, index) in filteredEmails.slice(0, 10)" :key="index" @click="selectEmail(email)" class="p-2 cursor-pointer hover:bg-gray-100">
+          <li v-for="(email, index) in filteredEmails.slice(0, 10)" :key="index" 
+            @click="selectEmail(email)" class="p-2 cursor-pointer hover:bg-gray-100">
             {{ email }}
           </li>
         </ul>
       </div>
 
-      <!-- Role Selection -->
       <div>
         <label class="text-base font-semibold text-gray-700">Role</label>
         <div class="flex items-center gap-2 mt-2">
@@ -106,9 +109,8 @@ onMounted(() => {
         </div>
       </div>
 
-      <!-- Team Members List -->
       <div>
-        <label class="text-base font-semibold text-gray-700">Team Members</label>
+        <label class="text-base font-semibold text-gray-700 ">Team Members</label>
         <div class="w-full h-24 bg-gray-200 rounded-lg p-3 overflow-y-auto shadow-sm">
           <ul>
             <li v-for="(member, index) in teamMembers" :key="index" class="flex justify-between items-center py-1">
@@ -121,18 +123,27 @@ onMounted(() => {
     </div>
   </div>
 </div>
-<hr class="w-full border-t-2 border-gray-300 my-4" />
-<!-- Buttons -->
-<div class="flex justify-center space-x-4 items-center">
-  <button @click="addCreateProject" :disabled="isSubmitDisabled" class="bg-blue-600 text-white px-6 py-3 rounded-lg shadow-md text-lg font-bold hover:bg-blue-700">Save Change</button>
-  <button @click="CancleCreateProject, goToListProject()" class="bg-red-600 text-white px-6 py-3 rounded-lg shadow-md text-lg font-bold hover:bg-red-700">Cancel</button>
 </div>
 </div>
 
+    <hr class="w-full border-t-2 border-gray-300 my-4" />
+    <div class="flex justify-center space-x-4 items-center">
+      <button @click="addCreateProject" :disabled="isSubmitDisabled" class="bg-blue-600 text-white px-6 py-3 rounded-lg shadow-md text-lg font-bold hover:bg-blue-700" :class="{'bg-gray-400 cursor-not-allowed': isSubmitDisabled}">Save Change</button>
+      <button @click="CancleCreateProject, goToListProject()" class="bg-red-600 text-white px-6 py-3 rounded-lg shadow-md text-lg font-bold hover:bg-red-700">Cancel</button>
+    </div>
+  </div>
+   </div>
+  
   
 </template>
 
-
 <style scoped>
-
+input, textarea, select {
+  border: 1px solid #d1d5db;
+}
+hr {
+  width: 100%;
+  border-top-width: 2px;
+  border-color: #d1d5db;
+}
 </style>
