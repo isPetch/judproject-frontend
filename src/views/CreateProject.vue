@@ -52,6 +52,7 @@ const addCreateProject = async () => {
       ...(endDate.value && { dueDate: new Date(endDate.value).toISOString() }),
     };
 
+    // หากมีสมาชิกใน teamMembers ก็จะส่งไปด้วย
     if (teamMembers.value.length > 0) {
       projectData.member = teamMembers.value;
     }
@@ -71,8 +72,9 @@ const addCreateProject = async () => {
 
       if (response.ok) {
         await response.json();
-        goToListProject();
+        
       } else {
+        goToListProject(); 
         console.error('Failed to add project');
       }
     } catch (error) {
