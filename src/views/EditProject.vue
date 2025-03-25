@@ -1,34 +1,38 @@
 <script setup>
 import { ref, onMounted } from 'vue';
-import { useRouter } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import NavBar from "@/components/NavBar.vue";
-import { getProjectById } from "../composable/getJudProjects"; // Use this instead of fetch
+import { getProjectById } from "../composable/getJudProjects"; 
 
-const projectId = 2;
+const route = useRoute();
+const router = useRouter();
+const projectId = route.params.id; // ✅ กำหนดค่า projectId จาก URL
 
 const projectName = ref('');
 const projectDescription = ref('');
 const startDate = ref('');
 const endDate = ref('');
 const teamMembers = ref([]);
+const searchEmail = ref('');
+const selectedEmail = ref('');
+const selectedRole = ref('');
 const loading = ref(true);
+const isSubmitDisabled = ref(false);
 
 const fetchProjectData = async () => {
   try {
-    const response = await getProjectById(projectId); // Use the function to fetch project by ID
-    if (response && response.status === "Success") {
-      const projectData = response.project; // Assuming the response has the project object
-      
+    loading.value = true;
+    console.log("Project ID:", projectId); // ตรวจสอบค่า projectId
+    
+       const response = await fetch(import.meta.env.VITE_ROOT_API + `/api/project/${projectId}`);
+    console.log("Project Data:", projectData); // ตรวจสอบว่ามีข้อมูลกลับมาหรือไม่
+    
+    if (projectData) {
       projectName.value = projectData.name || '';
       projectDescription.value = projectData.description || '';
-      
-      // Convert startDate and endDate to YYYY-MM-DD format
       startDate.value = projectData.startDate ? new Date(projectData.startDate).toISOString().split('T')[0] : '';
       endDate.value = projectData.dueDate ? new Date(projectData.dueDate).toISOString().split('T')[0] : '';
-      
       teamMembers.value = projectData.teamMembers || [];
-    } else {
-      console.error('Failed to fetch project data');
     }
   } catch (error) {
     console.error('Error fetching project data:', error);
@@ -37,10 +41,42 @@ const fetchProjectData = async () => {
   }
 };
 
-onMounted(() => {
-  fetchProjectData(); // Fetch data when component is mounted
-});
+
+const saveProject = async () => {
+  isSubmitDisabled.value = true;
+  try {
+    const response = await fetch(`${import.meta.env.VITE_ROOT_API}/api/project/${projectId}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name: projectName.value,
+        description: projectDescription.value,
+        startDate: startDate.value,
+        dueDate: endDate.value,
+        teamMembers: teamMembers.value
+      }),
+    });
+
+    if (response.ok) {
+      alert("Project updated successfully!");
+      router.push("/projects"); // ✅ กลับไปที่หน้ารายการโปรเจค
+    } else {
+      console.error("Failed to update project");
+    }
+  } catch (error) {
+    console.error("Error updating project:", error);
+  } finally {
+    isSubmitDisabled.value = false;
+  }
+};
+
+const cancelEdit = () => {
+  router.push("/projects"); // ✅ กลับไปหน้าเดิมเมื่อยกเลิก
+};
+
+onMounted(fetchProjectData);
 </script>
+
 
 
 <template>

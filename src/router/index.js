@@ -51,7 +51,7 @@ const router = createRouter({
       component: TeamPlanVue
     },
     {
-      path: '/edit',
+      path: '/edit/:id',
       name: 'EditProject',
       component: EditProjectVue
     },
