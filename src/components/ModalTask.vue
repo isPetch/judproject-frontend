@@ -128,7 +128,6 @@ const startEditing = (field) => {
   if (field === "name") {
     isEditingName.value = true;
     editedTaskName.value = props.task.name;
-    // Focus the input after it's shown
     setTimeout(() => {
       const nameInput = document.getElementById('task-name-input');
       if (nameInput) nameInput.focus();
@@ -137,6 +136,13 @@ const startEditing = (field) => {
 };
 
 const finishEditing = async () => {
+  if (!editedTaskName.value.trim()) {
+    alert("Task name cannot be empty.");
+    editedTaskName.value = props.task.name;
+    isEditingName.value = false;
+    return;
+  }
+  
   isEditingName.value = false;
   await saveTaskChanges();
 };
