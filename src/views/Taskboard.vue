@@ -32,6 +32,7 @@ const dropdownSubtaskId = ref(null);
 const editingSubtaskId = ref(null);
 const sprintDropdownOpen = ref(false);
 const taskDropdownOpen = ref(null);
+const draggedTask = ref(null);
 
 // UI improvement - Task statistics
 const taskStats = computed(() => {
@@ -43,6 +44,28 @@ const taskStats = computed(() => {
   
   return { total, completed, percentage };
 });
+// Add drag and drop methods
+const onDragStart = (task) => {
+  draggedTask.value = task;
+};
+
+const onDragOver = (event) => {
+  event.preventDefault();
+};
+
+const onDrop = async (targetStatus) => {
+  if (!draggedTask.value) return;
+
+  // Prevent dropping task in the same column
+  if (draggedTask.value.status === targetStatus) return;
+
+  try {
+    await updateTaskStatus(draggedTask.value, targetStatus);
+    draggedTask.value = null;
+  } catch (error) {
+    console.error("Error moving task:", error);
+  }
+};
 
 // Better columns layout with fixed titles
 const columns = [
@@ -458,7 +481,9 @@ onMounted(() => {
         <!-- Task columns -->
         <div class="grid grid-cols-3 gap-6 h-[calc(100vh-220px)]">
           <div v-for="column in columns" :key="column.id" 
-               class="flex flex-col rounded-xl shadow-lg overflow-hidden border border-white/10">
+              class="flex flex-col rounded-xl shadow-lg overflow-hidden border border-white/10"
+              @dragover.prevent="onDragOver"
+              @drop="() => onDrop(column.id)">
             <!-- Column header -->
             <div class="p-4" :style="`background-color: ${column.headerColor}`">
               <h3 class="text-lg font-bold text-white flex items-center">
@@ -477,7 +502,9 @@ onMounted(() => {
               <!-- Task cards -->
               <div v-if="tasks.filter(t => t.status === column.id).length > 0" class="space-y-3">
                 <div v-for="task in tasks.filter(t => t.status === column.id)" :key="task.id"
-                     class="bg-white rounded-lg shadow-sm hover:shadow-md transition-all duration-200 overflow-visible">
+                    draggable="true"
+                    @dragstart="() => onDragStart(task)"
+                    class="bg-white rounded-lg shadow-sm hover:shadow-md transition-all duration-200 overflow-visible cursor-move">
                   <!-- Task header -->
                   <div class="p-3 cursor-pointer border-b border-gray-100">
                     <div class="flex justify-between items-start">
