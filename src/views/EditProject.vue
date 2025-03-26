@@ -1,8 +1,9 @@
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, computed, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import NavBar from "@/components/NavBar.vue";
 import { getProjectById } from "../composable/getJudProjects"; 
+import axios from 'axios';
 
 const route = useRoute();
 const router = useRouter();
@@ -12,7 +13,6 @@ const projectName = ref('');
 const projectDescription = ref('');
 const startDate = ref('');
 const endDate = ref('');
-const teamMembers = ref([]);
 const searchEmail = ref('');
 const selectedEmail = ref('');
 const selectedRole = ref('');
@@ -37,7 +37,7 @@ const fetchProjectData = async () => {
       projectDescription.value = data.description || '';
       startDate.value = data.startDate ? new Date(data.startDate).toISOString().split('T')[0] : '';
       endDate.value = data.dueDate ? new Date(data.dueDate).toISOString().split('T')[0] : '';
-      teamMembers.value = data.teamMembers || [];
+    
     }
   } catch (error) {
     console.error('Error fetching project data:', error);
@@ -45,6 +45,8 @@ const fetchProjectData = async () => {
     loading.value = false;
   }
 };
+
+
 
 const formatToISO = (dateString) => {
   if (!dateString) return null;
@@ -80,6 +82,8 @@ const saveProject = async () => {
   }
 };
 
+
+
 const toggleEdit = async (field) => {
   if (field === 'name') {
     isEditingName.value = !isEditingName.value;
@@ -96,13 +100,14 @@ const toggleEdit = async (field) => {
   }
 };
 
+onMounted(async () => {
+  await fetchProjectData();
+  await fetchProjectMembers(projectId);
+  
+});
 
 
-const cancelEdit = () => {
-  router.push("/projects");
-};
 
-onMounted(fetchProjectData);
 
 </script>
 
@@ -118,7 +123,7 @@ onMounted(fetchProjectData);
       
       <div class="p-8 bg-gray-50">
         <div class="flex justify-center">
-          <div class="space-y-6 w-3/4 md:w-1/2 lg:w-1/3">
+          <div class="space-y-6 w-3/4 md:w-1/2 lg:w-6/5">
             <!-- Project Name Field -->
             <div class="bg-white rounded-lg shadow-md p-4">
               <label class="block text-sm font-medium text-gray-700 mb-2">Project Name</label>
@@ -242,43 +247,7 @@ onMounted(fetchProjectData);
   </div>
 </div>
 
-
-              <!-- Team Section -->
-            <div class="bg-white rounded-lg shadow-md p-4">
-              <div class="space-y-6">
-                <div>
-                  <label class="text-base font-semibold text-gray-700 mb-2">Add Team Members</label>
-                  <input v-model="searchEmail" type="text" placeholder="Search email..." class="w-full p-3 border rounded-lg shadow-sm focus:ring focus:ring-blue-300" />
-                  <ul v-if="searchEmail && !selectedEmail" class="bg-white border rounded-md mt-2 max-h-32 overflow-y-auto shadow-md">
-                    <li v-for="(email, index) in filteredEmails.slice(0, 10)" :key="index" @click="selectEmail(email)" class="p-2 cursor-pointer hover:bg-gray-100">{{ email }}</li>
-                  </ul>
-                </div>
-
-                <div>
-                  <label class="text-base font-semibold text-gray-700">Role</label>
-                  <div class="flex items-center gap-2 mt-2">
-                    <select v-model="selectedRole" class="w-full p-3 border rounded-lg shadow-sm focus:ring focus:ring-blue-300">
-                      <option value="">- Select role -</option>
-                      <option value="member">Member</option>
-                      <option value="admin">Admin</option>
-                    </select>
-                    <button @click="addMember" class="bg-green-600 text-white px-4 py-2 rounded-lg shadow-md hover:bg-green-700">Add</button>
-                  </div>
-                </div>
-
-                <div>
-                  <label class="text-base font-semibold text-gray-700">Team Members</label>
-                  <div class="w-full h-24 bg-gray-200 rounded-lg p-3 overflow-y-auto shadow-sm">
-                    <ul>
-                      <li v-for="(member, index) in teamMembers" :key="index" class="flex justify-between items-center py-1">
-                        <span class="truncate text-gray-700">{{ member.email }} ({{ member.role }})</span>
-                        <button @click="removeMember(index)" class="text-red-500 font-bold px-2 hover:text-red-700">&times;</button>
-                      </li>
-                    </ul>
-                  </div>
-                </div>
-              </div>
-            </div>
+            
           </div>
         </div>
       </div>

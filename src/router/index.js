@@ -10,6 +10,7 @@ import TeamPlanVue from '../views/TeamPlan.vue'
 import EditProjectVue from '../views/EditProject.vue'
 import ProfileVue from  '@/views/Profile.vue'
 import TestVue from '../views/Test.vue'
+import MemberVue from '../views/Member.vue'
 // import ChangePasswordVue from '@/views/ChangePassword.vue'
 
 const router = createRouter({
@@ -64,6 +65,11 @@ const router = createRouter({
       path: '/profile',
       name: 'Profile',
       component: ProfileVue
+     },
+     {
+      path: '/member/:id',
+      name: 'Member',
+      component: MemberVue
      }
     // ,
     // {
