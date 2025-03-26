@@ -6,7 +6,8 @@ import { getProjectById } from "../composable/getJudProjects";
 
 const route = useRoute();
 const router = useRouter();
-const projectId = route.params.id; // ✅ กำหนดค่า projectId จาก URL
+console.log(route.params);
+const projectId = route.params.id; 
 
 const projectName = ref('');
 const projectDescription = ref('');
@@ -21,18 +22,17 @@ const isSubmitDisabled = ref(false);
 
 const fetchProjectData = async () => {
   try {
-    loading.value = true;
-    console.log("Project ID:", projectId); // ตรวจสอบค่า projectId
+    loading.value = true; 
+    const response = await fetch(import.meta.env.VITE_ROOT_API + `/api/project/${projectId}`);
+    const data = await response.json(); 
+    console.log("Project Data:", data); 
     
-       const response = await fetch(import.meta.env.VITE_ROOT_API + `/api/project/${projectId}`);
-    console.log("Project Data:", projectData); // ตรวจสอบว่ามีข้อมูลกลับมาหรือไม่
-    
-    if (projectData) {
-      projectName.value = projectData.name || '';
-      projectDescription.value = projectData.description || '';
-      startDate.value = projectData.startDate ? new Date(projectData.startDate).toISOString().split('T')[0] : '';
-      endDate.value = projectData.dueDate ? new Date(projectData.dueDate).toISOString().split('T')[0] : '';
-      teamMembers.value = projectData.teamMembers || [];
+    if (data) {
+      projectName.value = data.name || '';
+      projectDescription.value = data.description || '';
+      startDate.value = data.startDate ? new Date(data.startDate).toISOString().split('T')[0] : '';
+      endDate.value = data.dueDate ? new Date(data.dueDate).toISOString().split('T')[0] : '';
+      teamMembers.value = data.teamMembers || [];
     }
   } catch (error) {
     console.error('Error fetching project data:', error);
@@ -40,6 +40,7 @@ const fetchProjectData = async () => {
     loading.value = false;
   }
 };
+
 
 
 const saveProject = async () => {
