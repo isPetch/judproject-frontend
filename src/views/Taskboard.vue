@@ -252,6 +252,78 @@ const addSprint = async () => {
     console.error('No project selected');
   }
 };
+const getSprintStatusColor = (status) => {
+  switch (status) {
+    case 'Active': return 'bg-blue-500';
+    case 'Done': return 'bg-green-500';
+    case 'Closed': return 'bg-red-500';
+    default: return 'bg-gray-500';
+  }
+};
+const updateSprintStatus = async (sprintId, newStatus) => {
+  try {
+    const token = localStorage.getItem("token");
+    const response = await fetch(import.meta.env.VITE_ROOT_API + `/api/sprint/${sprintId}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json", "Authorization": `${token}` },
+      body: JSON.stringify({ status: newStatus })
+    });
+    if (response.ok) {
+      await fetchSprint(sprintId);
+      sprintDropdownOpen.value = false;
+    } else {
+      console.error("Error updating sprint status");
+    }
+  } catch (error) {
+    console.error("Error:", error);
+  }
+};
+const deleteSprint = async (sprintId) => {
+  // Check if the sprint has any tasks
+  const sprintToDelete = sprints.value.find(sprint => sprint.id === sprintId);
+  
+  if (!sprintToDelete) {
+    console.error("Sprint not found");
+    return;
+  }
+  try {
+    const sprintDetails = await getSprintById(sprintId);
+    
+    if (sprintDetails.tasks && sprintDetails.tasks.length > 0) {
+      alert("Cannot delete sprint. Remove all tasks first.");
+      return;
+    }
+
+    const confirmDelete = confirm("Are you sure you want to delete this sprint?");
+    if (confirmDelete) {
+      const token = localStorage.getItem("token");
+      const response = await fetch(import.meta.env.VITE_ROOT_API + `/api/sprint/${sprintId}/delete`, {
+        method: "DELETE",
+        headers: { "Authorization": `${token}` }
+      });
+
+      if (response.ok) {
+        // Remove the sprint from the list
+        project.value.sprints = project.value.sprints.filter(sprint => sprint.id !== sprintId);
+        location.reload();
+        // If the deleted sprint was the selected sprint, select the last sprint
+        if (selectedSprint.value?.id === sprintId && project.value.sprints.length > 0) {
+          handleSprintSelection(project.value.sprints[project.value.sprints.length - 1].id);
+        } else if (project.value.sprints.length === 0) {
+          // If no sprints are left, reset selected sprint
+          selectedSprint.value = null;
+          tasks.value = [];
+        }
+      } else {
+        console.error("Error deleting sprint");
+        alert("Failed to delete sprint");
+      }
+    }
+  } catch (error) {
+    console.error("Error checking sprint tasks:", error);
+    alert("An error occurred while checking sprint tasks");
+  }
+};
 
 const toggleSubtaskStatus = async (task, subtask) => {
   const newStatus = subtask.status === 'Done' ? 'ToDo' : 'Done';
@@ -398,12 +470,18 @@ onMounted(() => {
           
           <div class="mt-3 space-y-2">
             <div v-for="sprint in sprints" :key="sprint.id" 
-                 @click="handleSprintSelection(sprint.id)"
-                 class="p-2 rounded-md cursor-pointer transition-all duration-200 hover:bg-white/10"
-                 :class="sprint.id === selectedSprint?.id ? 'bg-[#4380BC]' : ''">
-              <div class="flex items-center">
+                class="p-2 rounded-md cursor-pointer transition-all duration-200 hover:bg-white/10 flex justify-between items-center"
+                :class="sprint.id === selectedSprint?.id ? 'bg-[#4380BC]' : ''">
+              <div @click="handleSprintSelection(sprint.id)" class="flex-1">
                 <span class="ml-2">Sprint {{ sprint.sprintNumber }}</span>
               </div>
+              <button 
+                @click.stop="deleteSprint(sprint.id)" 
+                class="text-white hover:text-red-300 transition-colors"
+                title="Delete Sprint"
+              >
+                <TrashIcon class="h-4 w-4" />
+              </button>
             </div>
           </div>
         </div>
@@ -434,22 +512,34 @@ onMounted(() => {
               Sprint {{ selectedSprint.sprintNumber }}
             </h2>
             
-            <!-- Sprint selector dropdown -->
-            <div class="relative">
+            <!-- Sprint Status Badge -->
+            <div 
+              class="px-3 py-1 rounded-full text-white text-sm font-medium flex items-center"
+              :class="getSprintStatusColor(selectedSprint.status)"
+            >
+              {{ selectedSprint.status || 'No Status' }}
+            </div>
+            
+            <!-- Existing Sprint Status Change Dropdown -->
+            <div class="relative ml-4">
               <button 
                 @click="sprintDropdownOpen = !sprintDropdownOpen"
                 class="flex items-center space-x-1 text-white bg-white/10 px-3 py-1.5 rounded-md hover:bg-white/20 transition"
               >
-                <span>Change Sprint</span>
+                <span>Change Sprint Status</span>
                 <ChevronDownIcon class="h-4 w-4" />
               </button>
               
-              <div v-if="sprintDropdownOpen" 
-                   class="absolute top-full left-0 mt-1 bg-white rounded-md shadow-lg z-10 w-48 py-1 text-gray-800">
-                <div v-for="sprint in sprints" :key="sprint.id"
-                     @click="handleSprintSelection(sprint.id)"
-                     class="px-4 py-2 hover:bg-gray-100 cursor-pointer">
-                  Sprint {{ sprint.sprintNumber }}
+              <!-- Existing dropdown content remains the same -->
+              <div v-if="sprintDropdownOpen" class="absolute top-full left-0 mt-1 bg-white rounded-md shadow-lg z-10 w-48 py-1 text-gray-800">
+                <div @click="updateSprintStatus(selectedSprint.id, 'Active')" class="px-4 py-2 hover:bg-gray-100 cursor-pointer">
+                  Active
+                </div>
+                <div @click="updateSprintStatus(selectedSprint.id, 'Done')" class="px-4 py-2 hover:bg-gray-100 cursor-pointer">
+                  Done
+                </div>
+                <div @click="updateSprintStatus(selectedSprint.id, 'Closed')" class="px-4 py-2 hover:bg-gray-100 cursor-pointer">
+                  Closed
                 </div>
               </div>
             </div>
@@ -487,9 +577,6 @@ onMounted(() => {
             <!-- Column header -->
             <div class="p-4" :style="`background-color: ${column.headerColor}`">
               <h3 class="text-lg font-bold text-white flex items-center">
-                <span v-if="column.id === 'ToDo'">📋</span>
-                <span v-else-if="column.id === 'In Progress'">🔄</span>
-                <span v-else>✅</span>
                 {{ column.title }}
                 <span class="ml-2 bg-white/20 text-white text-xs rounded-full px-2 py-0.5">
                   {{ tasks.filter(t => t.status === column.id).length }}

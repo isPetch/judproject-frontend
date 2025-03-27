@@ -131,7 +131,7 @@ const goToProjectDetail = (id) => {
 const filteredProjects = computed(() => {
   let filtered = projects.value;
   
-  // กรอง project ด้วย search query
+  // project search query
   if (searchQuery.value.trim()) {
     const query = searchQuery.value.toLowerCase();
     filtered = filtered.filter(project => 
@@ -140,20 +140,22 @@ const filteredProjects = computed(() => {
     );
   }
   
-  // เรียงลำดับ
-  return [...filtered].sort((a, b) => {
+
+    return [...filtered].sort((a, b) => {
+    const dateA = new Date(a.creationDate || 0); 
+    const dateB = new Date(b.creationDate || 0);
     if (sortOption.value === 'newest') {
-      return new Date(b.createdAt || 0) - new Date(a.createdAt || 0);
+      return dateB - dateA; 
     } else if (sortOption.value === 'oldest') {
-      return new Date(a.createdAt || 0) - new Date(b.createdAt || 0);
+      return dateA - dateB; 
     } else if (sortOption.value === 'name') {
-      return a.name.localeCompare(b.name);
+      return a.name.localeCompare(b.name); 
     }
     return 0;
   });
 });
 
-// กรองเฉพาะโปรเจกต์ที่ยังไม่ถูกเลือก
+
 const remainingProjects = computed(() => {
   return selectedProject.value
     ? filteredProjects.value.filter(p => p.id !== selectedProject.value.id)
