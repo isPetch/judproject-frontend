@@ -72,7 +72,7 @@ const addCreateProject = async () => {
 
       if (response.ok) {
         await response.json();
-        
+         goToListProject(); 
       } else {
         goToListProject(); 
         console.error('Failed to add project');

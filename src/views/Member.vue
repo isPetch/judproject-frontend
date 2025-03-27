@@ -86,36 +86,36 @@ const addMemberToProject = async (email, role) => {
   }
 };
 
-//update member
-const updateRoleForMember = async (memberId, newRole) => {
-  console.log("Member ID:", memberId); // ตรวจสอบค่าของ memberId ที่ส่งไป
-  if (!memberId) {
-    console.error("Member ID is null or undefined!");
-    return;
-  }
+// //update member
+// const updateRoleForMember = async (memberId, newRole) => {
+//   console.log("Member ID:", memberId); // ตรวจสอบค่าของ memberId ที่ส่งไป
+//   if (!memberId) {
+//     console.error("Member ID is null or undefined!");
+//     return;
+//   }
 
-  try {
-    const response = await fetch(import.meta.env.VITE_ROOT_API + `/api/project/${selectedProjectId.value}/member/update`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ memberId, role: newRole }),
-    });
+//   try {
+//     const response = await fetch(import.meta.env.VITE_ROOT_API + `/api/project/${selectedProjectId.value}/member/update`, {
+//       method: 'PUT',
+//       headers: {
+//         'Content-Type': 'application/json',
+//       },
+//       body: JSON.stringify({ memberId, role: newRole }),
+//     });
 
-    const result = await response.json();
+//     const result = await response.json();
 
-    if (result && result.status === 'Success') {
-      console.log("Role updated successfully:", result);
-      // Refresh member list to reflect the role update
-      await viewProjectMember(selectedProjectId.value);
-    } else {
-      alert(result.message || 'Failed to update role');
-    }
-  } catch (error) {
-    console.error("Error updating role:", error.message);
-  }
-};
+//     if (result && result.status === 'Success') {
+//       console.log("Role updated successfully:", result);
+//       // Refresh member list to reflect the role update
+//       await viewProjectMember(selectedProjectId.value);
+//     } else {
+//       alert(result.message || 'Failed to update role');
+//     }
+//   } catch (error) {
+//     console.error("Error updating role:", error.message);
+//   }
+// };
 
 // delete member
 const removeMemberFromProject = async (memberId) => {
@@ -124,28 +124,25 @@ const removeMemberFromProject = async (memberId) => {
     return;
   }
 
-  if (!memberId) {
-    console.error("No member ID provided");
-    return;
-  }
-
   try {
-    const response = await fetch(import.meta.env.VITE_ROOT_API + `/api/project/${selectedProjectId.value}/member/remove`, {
+    const response = await fetch(`${import.meta.env.VITE_ROOT_API}/api/project/${selectedProjectId.value}/member/remove`, {
       method: 'DELETE',
       headers: {
         'Content-Type': 'application/json',
+        "Authorization":  `${token}`, 
       },
-      body: JSON.stringify({ memberId }),
+      body: JSON.stringify({
+        members: [memberId] 
+      })
     });
 
     const result = await response.json();
 
     if (result && result.status === 'Success') {
       console.log("Member removed successfully:", result);
-      // Refresh member list after removal
       await viewProjectMember(selectedProjectId.value);
     } else {
-      alert(result.message || 'Failed to remove member');
+      console.error("Error removing member:", result.message);
     }
   } catch (error) {
     console.error("Error removing member:", error.message);
@@ -191,14 +188,14 @@ const addMember = () => {
 </script>
 
 <template>
-  <div class="min-h-screen bg-gradient-to-br from-indigo-50 to-white flex flex-col">
+  <div class="min-h-screen from-indigo-100 bg-gray-50  flex flex-col">
     <NavBar />
 
     <!-- Members Section -->
     <div v-if="selectedProjectMembers" class="container mx-auto px-20 py-32">
       <div class="bg-white shadow-xl rounded-xl overflow-hidden">
         <!-- Header -->
-        <div class="bg-indigo-600 text-white px-6 py-4 flex justify-between items-center">
+        <div class="bg-[#316394] text-white px-6 py-4 flex justify-between items-center">
           <h2 class="text-2xl font-bold">Project Members</h2>
           <button 
             class="btn btn-outline btn-sm text-white hover:bg-white hover:text-indigo-600 transition-colors" 
@@ -234,12 +231,12 @@ const addMember = () => {
                   <p class="text-sm text-gray-500">{{ member.email }}</p>
                 </div>
               </div>
-               <div v-if="member.role !== 'admin'" class="flex items-center space-x-2">
+               <!-- <div v-if="member.role !== 'admin'" class="flex items-center space-x-2">
     <select v-model="member.role" @change="updateRoleForMember(member.id, member.role)" class="bg-white text-gray-800 border border-gray-300 px-2 py-1 rounded-md">
   <option value="member">Member</option>
   <option value="admin">Admin</option>
 </select>
-  </div>
+  </div> -->
 <button 
   v-if="member.role === 'member'" 
   @click="removeMemberFromProject(member.memberId)"

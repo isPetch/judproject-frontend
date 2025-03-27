@@ -82,6 +82,29 @@ const saveProject = async () => {
   }
 };
 
+const deleteProject = async () => {
+  try {
+    const response = await fetch(`${import.meta.env.VITE_ROOT_API}/api/project/${projectId}/delete`, {
+      method: 'DELETE',
+      "Authorization": token,
+      
+    });
+
+    if (response.ok) {
+      alert("Project deleted successfully!");
+      router.push('/projects'); // Redirect to projects list after deletion
+    } else {
+      console.error("Failed to delete project");
+      alert("Failed to delete project. Please try again.");
+    }
+  } catch (error) {
+    console.error("Error deleting project:", error);
+    alert("An error occurred while deleting the project.");
+  } finally {
+    isDeleteModalOpen.value = false;
+  }
+};
+
 
 
 const toggleEdit = async (field) => {
@@ -99,6 +122,8 @@ const toggleEdit = async (field) => {
     if (!isEditingEndDate.value) await saveProject();
   }
 };
+
+
 
 onMounted(async () => {
   await fetchProjectData();
@@ -246,12 +271,20 @@ onMounted(async () => {
     </button>
   </div>
 </div>
-
+<div class="bg-white rounded-lg shadow-md p-2">
+   <div class="flex justify-center ">
+  <button 
+    @click="deleteProject"
+    class="w-full md:w-auto px-6 py-2 bg-red-500 text-white font-semibold rounded-lg shadow-md hover:bg-red-600 transition-all"
+  >
+    Delete Project
+  </button>
+  </div>
+  </div>
             
           </div>
         </div>
       </div>
-
     </div>
   </div>
 </template>
