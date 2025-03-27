@@ -14,6 +14,14 @@ const sprints = ref([]);
 const selectedSprint = ref(null);
 const tasks = ref([]);
 const isBoardView = ref(false);
+const getSprintStatusColor = (status) => {
+  switch (status) {
+    case 'Active': return 'bg-blue-500';
+    case 'Done': return 'bg-green-500';
+    case 'Closed': return 'bg-red-500';
+    default: return 'bg-gray-500';
+  }
+};
 
 // Calendar and team plan related refs
 const calendarRef = ref(null);
@@ -285,9 +293,19 @@ const getColorByStatus = (status) => {
         <!-- Task Board -->
         <div v-if="selectedSprint" class="flex-1 p-6 overflow-hidden">
           <div class="flex flex-row justify-between mb-4">
-            <h2 v-if="selectedSprint" class="text-2xl font-semibold text-white">
+            <div class="flex items-center">
+            <h2 class="text-2xl font-bold text-white mr-4">
               Sprint {{ selectedSprint.sprintNumber }}
             </h2>
+ 
+            <!-- Sprint Status Badge -->
+            <div 
+              class="px-3 py-1 rounded-full text-white text-sm font-medium flex items-center"
+              :class="getSprintStatusColor(selectedSprint.status)">
+              {{ selectedSprint.status || 'No Status' }}
+            </div>
+          </div>
+
             <div class="flex items-center justify-center">
               <div class="relative w-44">
                 <div class="w-full h-10 bg-[#316394] rounded-full flex items-center">

@@ -252,6 +252,32 @@ const addSprint = async () => {
     console.error('No project selected');
   }
 };
+const getSprintStatusColor = (status) => {
+  switch (status) {
+    case 'Active': return 'bg-blue-500';
+    case 'Done': return 'bg-green-500';
+    case 'Closed': return 'bg-red-500';
+    default: return 'bg-gray-500';
+  }
+};
+const updateSprintStatus = async (sprintId, newStatus) => {
+  try {
+    const token = localStorage.getItem("token");
+    const response = await fetch(import.meta.env.VITE_ROOT_API + `/api/sprint/${sprintId}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json", "Authorization": `${token}` },
+      body: JSON.stringify({ status: newStatus })
+    });
+    if (response.ok) {
+      await fetchSprint(sprintId);
+      sprintDropdownOpen.value = false;
+    } else {
+      console.error("Error updating sprint status");
+    }
+  } catch (error) {
+    console.error("Error:", error);
+  }
+};
 
 const toggleSubtaskStatus = async (task, subtask) => {
   const newStatus = subtask.status === 'Done' ? 'ToDo' : 'Done';
@@ -434,22 +460,34 @@ onMounted(() => {
               Sprint {{ selectedSprint.sprintNumber }}
             </h2>
             
-            <!-- Sprint selector dropdown -->
-            <div class="relative">
+            <!-- Sprint Status Badge -->
+            <div 
+              class="px-3 py-1 rounded-full text-white text-sm font-medium flex items-center"
+              :class="getSprintStatusColor(selectedSprint.status)"
+            >
+              {{ selectedSprint.status || 'No Status' }}
+            </div>
+            
+            <!-- Existing Sprint Status Change Dropdown -->
+            <div class="relative ml-4">
               <button 
                 @click="sprintDropdownOpen = !sprintDropdownOpen"
                 class="flex items-center space-x-1 text-white bg-white/10 px-3 py-1.5 rounded-md hover:bg-white/20 transition"
               >
-                <span>Change Sprint</span>
+                <span>Change Sprint Status</span>
                 <ChevronDownIcon class="h-4 w-4" />
               </button>
               
-              <div v-if="sprintDropdownOpen" 
-                   class="absolute top-full left-0 mt-1 bg-white rounded-md shadow-lg z-10 w-48 py-1 text-gray-800">
-                <div v-for="sprint in sprints" :key="sprint.id"
-                     @click="handleSprintSelection(sprint.id)"
-                     class="px-4 py-2 hover:bg-gray-100 cursor-pointer">
-                  Sprint {{ sprint.sprintNumber }}
+              <!-- Existing dropdown content remains the same -->
+              <div v-if="sprintDropdownOpen" class="absolute top-full left-0 mt-1 bg-white rounded-md shadow-lg z-10 w-48 py-1 text-gray-800">
+                <div @click="updateSprintStatus(selectedSprint.id, 'Active')" class="px-4 py-2 hover:bg-gray-100 cursor-pointer">
+                  Active
+                </div>
+                <div @click="updateSprintStatus(selectedSprint.id, 'Done')" class="px-4 py-2 hover:bg-gray-100 cursor-pointer">
+                  Done
+                </div>
+                <div @click="updateSprintStatus(selectedSprint.id, 'Closed')" class="px-4 py-2 hover:bg-gray-100 cursor-pointer">
+                  Closed
                 </div>
               </div>
             </div>
