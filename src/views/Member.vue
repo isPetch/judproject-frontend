@@ -185,6 +185,12 @@ const addMember = () => {
     console.error("Please select an email and role");
   }
 };
+
+const getMemberInitials = (name) => {
+  if (!name || name.length < 2) return name || 'U';
+  
+  return (name[0] + name[name.length - 1]).toUpperCase();
+};
 </script>
 
 <template>
@@ -219,7 +225,7 @@ const addMember = () => {
             >
               <div class="flex items-center space-x-4">
                 <div class="w-10 h-10 bg-indigo-200 rounded-full flex items-center justify-center text-indigo-800">
-                  {{ member.username.charAt(0).toUpperCase() }}
+                  {{ member.username ? getMemberInitials(member.username) : 'U' }}
                 </div>
                 <div>
                   <div class="flex items-center space-x-2">
