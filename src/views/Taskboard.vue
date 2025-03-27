@@ -487,9 +487,6 @@ onMounted(() => {
             <!-- Column header -->
             <div class="p-4" :style="`background-color: ${column.headerColor}`">
               <h3 class="text-lg font-bold text-white flex items-center">
-                <span v-if="column.id === 'ToDo'">📋</span>
-                <span v-else-if="column.id === 'In Progress'">🔄</span>
-                <span v-else>✅</span>
                 {{ column.title }}
                 <span class="ml-2 bg-white/20 text-white text-xs rounded-full px-2 py-0.5">
                   {{ tasks.filter(t => t.status === column.id).length }}
