@@ -5,10 +5,6 @@ import { getUserById } from "../composable/getJudProjects";
 import NavBar from '../components/NavBar.vue';
 
 const router = useRouter();
-const tabs = [
-  { name: "Dashboard", link: "/" },
-  { name: "Projects", link: "/projects" },
-];
 
 const username = ref('');
 const email = ref('');
@@ -29,10 +25,24 @@ onMounted(async () => {
     console.log('User Data:', userData); 
     username.value = userData.username;
     email.value = userData.email;
+
     if (userData.pictureName) {
-      profileImage.value = await import.meta.env.VITE_ROOT_API + `/api/profile/picture/${userData.pictureName}`;
+      const response = await fetch(import.meta.env.VITE_ROOT_API + `/api/profile/picture`, {
+        method: 'GET',
+        headers: { 
+          'Authorization': userId
+        }
+      });
+
+      if (response.ok) {
+        const imageBlob = await response.blob();
+        profileImage.value = URL.createObjectURL(imageBlob); 
+
+      } else {
+        console.error("Failed to fetch profile image:", response.status);
+      }
     } else {
-      profileImage.value = null; 
+      profileImage.value = null;
     }
     
     loading.value = false; 
@@ -41,6 +51,7 @@ onMounted(async () => {
     loading.value = false; 
   }
 });
+
 
 const toggleEdit = (field) => {
   if (field === 'username') {

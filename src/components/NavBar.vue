@@ -37,8 +37,21 @@ const fetchUserData = async () => {
     const userData = await getUserById(userId);
     username.value = userData.username;
     email.value = userData.email;
+
     if (userData.pictureName) {
-      profileImage.value = import.meta.env.VITE_ROOT_API + `/api/profile/picture/${userData.pictureName}`;
+      const response = await fetch(import.meta.env.VITE_ROOT_API + `/api/profile/picture`, {
+        method: 'GET',
+        headers: { 
+          'Authorization': userId
+        }
+      });
+
+      if (response.ok) {
+        const imageBlob = await response.blob();
+        profileImage.value = URL.createObjectURL(imageBlob); 
+      } else {
+        console.error("Failed to fetch profile image:", response.status);
+      }
     } else {
       profileImage.value = null;
     }
@@ -46,6 +59,7 @@ const fetchUserData = async () => {
     console.error("Failed to fetch user data:", error);
   }
 };
+
 
 const handleFileUpload = (event) => {
   const file = event.target.files[0];

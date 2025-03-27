@@ -14,6 +14,45 @@ const isLoading = ref(true);
 const isMenuOpen = ref(false);
 const sortOption = ref('newest'); // อาจเป็น 'newest', 'oldest', 'name'
 const projectMembers = ref([]); // Added to store team members
+const profileImage = ref(null);
+const memberId = 27;
+
+
+const fetchMemberProfilePicture = async (memberId) => {
+  try {
+    // เรียก API โดยใช้ fetch
+    const response = await fetch(`${import.meta.env.VITE_ROOT_API}/api/member/${memberId}/picture`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json', 
+      },
+    });
+
+    // ตรวจสอบว่า response.ok เป็น true หรือไม่
+    if (!response.ok) {
+      throw new Error(`Failed to fetch picture, status: ${response.status}`);
+    }
+
+    // ตรวจสอบ Content-Type ของ response
+    const contentType = response.headers.get('Content-Type');
+    if (!contentType || !contentType.startsWith('image')) {
+      throw new Error(`Expected image file, but got ${contentType}`);
+    }
+
+    // รับข้อมูลที่เป็น blob
+    const blob = await response.blob();
+    
+    // สร้าง URL สำหรับแสดงรูปภาพจาก blob
+    const imageUrl = URL.createObjectURL(blob);
+    
+    // ตั้งค่ารูปภาพที่ดึงมาให้กับ profileImage
+    profileImage.value = imageUrl;
+  } catch (error) {
+    console.error("Failed to fetch member picture:", error);
+  }
+};
+
+
 
 const fetchProjects = async () => {
   isLoading.value = true;
@@ -45,7 +84,7 @@ const fetchProjectMembers = async (projectId) => {
     const response = await axios.get(`${import.meta.env.VITE_ROOT_API}/api/project/${projectId}/members`);
     
     // ตรวจสอบก่อนว่า response.data คืนอะไรมา
-    console.log(response.data);
+ 
 
     // ถ้าคืนมาแบบ { members: [...] } ก็ทำแบบนี้
     return response.data.members || [];
@@ -165,7 +204,11 @@ const getMemberInitials = (name) => {
   return (name[0] + name[name.length - 1]).toUpperCase();
 };
 
-onMounted(fetchProjects);
+onMounted(() => {
+  fetchMemberProfilePicture(memberId);
+  fetchProjects();
+});
+
 </script>
 
 <template>
