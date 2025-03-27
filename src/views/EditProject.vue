@@ -13,31 +13,26 @@ const projectName = ref('');
 const projectDescription = ref('');
 const startDate = ref('');
 const endDate = ref('');
-const searchEmail = ref('');
-const selectedEmail = ref('');
-const selectedRole = ref('');
 const loading = ref(true);
 const isSubmitDisabled = ref(false);
-const isEditingName = ref(false);
-const isEditingDescription = ref(false);
-const isEditingStartDate = ref(false);
-const isEditingEndDate = ref(false);
-
-
+const editingFields = ref({
+  name: false,
+  description: false,
+  startDate: false,
+  endDate: false
+});
 
 const fetchProjectData = async () => {
   try {
     loading.value = true; 
     const response = await fetch(import.meta.env.VITE_ROOT_API + `/api/project/${projectId}`);
     const data = await response.json(); 
-    console.log("Project Data:", data); 
     
     if (data) {
       projectName.value = data.name || '';
       projectDescription.value = data.description || '';
       startDate.value = data.startDate ? new Date(data.startDate).toISOString().split('T')[0] : '';
       endDate.value = data.dueDate ? new Date(data.dueDate).toISOString().split('T')[0] : '';
-    
     }
   } catch (error) {
     console.error('Error fetching project data:', error);
@@ -45,8 +40,6 @@ const fetchProjectData = async () => {
     loading.value = false;
   }
 };
-
-
 
 const formatToISO = (dateString) => {
   if (!dateString) return null;
@@ -56,8 +49,7 @@ const formatToISO = (dateString) => {
 const saveProject = async () => {
   isSubmitDisabled.value = true;
   try {
-    const response = await fetch(`${import.meta.env.VITE_ROOT_API}/api/project/${projectId}`
-    , {
+    const response = await fetch(`${import.meta.env.VITE_ROOT_API}/api/project/${projectId}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -65,13 +57,16 @@ const saveProject = async () => {
         description: projectDescription.value,
         startDate: formatToISO(startDate.value),
         dueDate: formatToISO(endDate.value)
-        // teamMembers: teamMembers.value
-        
       }),
     });
 
     if (response.ok) {
-      alert("Project updated successfully!");
+      // Use a toast or snackbar instead of alert
+      console.log("Project updated successfully!");
+      // Reset editing state
+      Object.keys(editingFields.value).forEach(key => {
+        editingFields.value[key] = false;
+      });
     } else {
       console.error("Failed to update project");
     }
@@ -83,206 +78,156 @@ const saveProject = async () => {
 };
 
 const deleteProject = async () => {
+  // Add confirmation modal
+  const confirmDelete = confirm("Are you sure you want to delete this project? This action cannot be undone.");
+  
+  if (!confirmDelete) return;
+
   try {
     const response = await fetch(`${import.meta.env.VITE_ROOT_API}/api/project/${projectId}/delete`, {
       method: 'DELETE',
-      "Authorization": token,
-      
     });
 
     if (response.ok) {
-      alert("Project deleted successfully!");
-      router.push('/projects'); // Redirect to projects list after deletion
+      // Use a toast or snackbar instead of alert
+      console.log("Project deleted successfully!");
+      router.push('/projects');
     } else {
       console.error("Failed to delete project");
-      alert("Failed to delete project. Please try again.");
+      // Use a more user-friendly error notification
+      console.log("Failed to delete project. Please try again.");
     }
   } catch (error) {
     console.error("Error deleting project:", error);
-    alert("An error occurred while deleting the project.");
-  } finally {
-    isDeleteModalOpen.value = false;
+    // Use a more user-friendly error notification
+    console.log("An error occurred while deleting the project.");
   }
 };
-
-
 
 const toggleEdit = async (field) => {
-  if (field === 'name') {
-    isEditingName.value = !isEditingName.value;
-    if (!isEditingName.value) await saveProject();
-  } else if (field === 'description') {
-    isEditingDescription.value = !isEditingDescription.value;
-    if (!isEditingDescription.value) await saveProject();
-  } else if (field === 'startDate') {
-    isEditingStartDate.value = !isEditingStartDate.value;
-    if (!isEditingStartDate.value) await saveProject();
-  } else if (field === 'endDate') {
-    isEditingEndDate.value = !isEditingEndDate.value;
-    if (!isEditingEndDate.value) await saveProject();
+  editingFields.value[field] = !editingFields.value[field];
+  if (!editingFields.value[field]) {
+    await saveProject();
   }
 };
-
-
 
 onMounted(async () => {
   await fetchProjectData();
-  await fetchProjectMembers(projectId);
-  
 });
-
-
-
-
 </script>
 
 <template>
-  <div class="min-h-screen from-indigo-100 bg-gray-50 flex flex-col">
+  <div class="min-h-screen bg-gradient-to-br from-indigo-50 to-white flex flex-col">
     <NavBar />
-    <div class="px-4 py-20">
-      <!-- Header -->
-      <div class="mt-4 p-6 text-center">
-        <h2 class="text-4xl font-extrabold text-black tracking-tight">Edit Project</h2>
-      </div>
-      <hr>
-      
-      <div class="p-8 bg-gray-50">
-        <div class="flex justify-center">
-          <div class="space-y-6 w-3/4 md:w-1/2 lg:w-6/5">
-            <!-- Project Name Field -->
-            <div class="bg-white rounded-lg shadow-md p-4">
-              <label class="block text-sm font-medium text-gray-700 mb-2">Project Name</label>
-              <div class="flex items-center space-x-3">
-                <input
-                  type="text"
-                  class="flex-grow bg-gray-100 border-none rounded-md py-2 px-3 focus:ring-2 focus:ring-indigo-500 focus:bg-white transition-all"
-                  :disabled="!isEditingName"
-                  v-model="projectName"
-                />
-                <button 
-                  v-if="!isEditingName" 
-                  @click="toggleEdit('name')"
-                  class="text-indigo-500 hover:text-indigo-700 transition-colors"
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                  </svg>
-                </button>
-                <button 
-                  v-if="isEditingName" 
-                  @click="toggleEdit('name')"
-                  class="px-4 py-2 rounded-md text-white transition-colors"
-                  :class="projectName.trim() ? 'bg-green-500 hover:bg-green-600' : 'bg-gray-400 cursor-not-allowed'"
-                  :disabled="!projectName.trim()"
-                >
-                  Save
-                </button>
-              </div>
-            </div>
+    
+    <div class="container mx-auto px-4 py-32">
+      <div class="max-w-2xl mx-auto space-y-8">
+        <!-- Page Title -->
+        <div class="text-center mb-8">
+          <h1 class="text-4xl font-bold text-Black mb-2">Edit Project</h1>
+        
+        </div>
 
-            <!-- Project Description Field -->
-            <div class="bg-white rounded-lg shadow-md p-4">
-              <label class="block text-sm font-medium text-gray-700 mb-2">Project Description</label>
-              <div class="flex items-center space-x-3">
-                <textarea
-                  class="flex-grow bg-gray-100 border-none rounded-md py-2 px-3 focus:ring-2 focus:ring-indigo-500 focus:bg-white transition-all h-32"
-                  :disabled="!isEditingDescription"
-                  v-model="projectDescription"
-                ></textarea>
-                <div class="flex flex-col space-y-2">
-                  <button 
-                    v-if="!isEditingDescription" 
-                    @click="toggleEdit('description')"
-                    class="text-indigo-500 hover:text-indigo-700 transition-colors"
-                  >
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                    </svg>
-                  </button>
-                  <button 
-                    v-if="isEditingDescription" 
-                    @click="toggleEdit('description')"
-                    class="px-4 py-2 rounded-md text-white transition-colors"
-                    :class="projectDescription.trim() ? 'bg-green-500 hover:bg-green-600' : 'bg-gray-400 cursor-not-allowed'"
-                    :disabled="!projectDescription.trim()"
-                  >
-                    Save
-                  </button>
-                </div>
-              </div>
-            </div>
-<!-- Project Duration Fields -->
-<div class="bg-white rounded-lg shadow-md p-4">
-  <label class="block text-sm font-medium text-gray-700 mb-2">Project Duration</label>
-
-  <!-- Start Date -->
-  <div class="flex items-center space-x-3 mt-2">
-    <input
-      type="date"
-      class="flex-grow bg-gray-100 border-none rounded-md py-2 px-3 focus:ring-2 focus:ring-indigo-500 focus:bg-white transition-all"
-      :disabled="!isEditingStartDate"
-      v-model="startDate"
-    />
-    <button 
-      v-if="!isEditingStartDate" 
-      @click="toggleEdit('startDate')"
-      class="text-indigo-500 hover:text-indigo-700 transition-colors"
-    >
-      <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-      </svg>
-    </button>
-    <button 
-      v-if="isEditingStartDate" 
-      @click="toggleEdit('startDate')"
-      class="px-4 py-2 rounded-md text-white transition-colors"
-      :class="startDate ? 'bg-green-500 hover:bg-green-600' : 'bg-gray-400 cursor-not-allowed'"
-      :disabled="!startDate"
-    >
-      Save
-    </button>
-  </div>
-
-  <!-- End Date -->
-  <div class="flex items-center space-x-3 mt-2">
-    <input
-      type="date"
-      class="flex-grow bg-gray-100 border-none rounded-md py-2 px-3 focus:ring-2 focus:ring-indigo-500 focus:bg-white transition-all"
-      :disabled="!isEditingEndDate"
-      v-model="endDate"
-    />
-    <button 
-      v-if="!isEditingEndDate" 
-      @click="toggleEdit('endDate')"
-      class="text-indigo-500 hover:text-indigo-700 transition-colors"
-    >
-      <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-      </svg>
-    </button>
-    <button 
-      v-if="isEditingEndDate" 
-      @click="toggleEdit('endDate')"
-      class="px-4 py-2 rounded-md text-white transition-colors"
-      :class="endDate ? 'bg-green-500 hover:bg-green-600' : 'bg-gray-400 cursor-not-allowed'"
-      :disabled="!endDate"
-    >
-      Save
-    </button>
-  </div>
-</div>
-<div class="bg-white rounded-lg shadow-md p-2">
-   <div class="flex justify-center ">
-  <button 
-    @click="deleteProject"
-    class="w-full md:w-auto px-6 py-2 bg-red-500 text-white font-semibold rounded-lg shadow-md hover:bg-red-600 transition-all"
-  >
-    Delete Project
-  </button>
-  </div>
-  </div>
-            
+        <!-- Project Name Section -->
+        <div class="bg-white rounded-xl shadow-lg p-6 transition-all duration-300 hover:shadow-xl">
+          <h2 class="text-xl font-semibold text-black mb-4">Project Name</h2>
+          <div class="flex items-center space-x-4">
+            <input
+              type="text"
+              v-model="projectName"
+              :disabled="!editingFields.name"
+              class="flex-grow px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
+              :class="{'bg-gray-100': !editingFields.name}"
+            />
+            <button 
+              @click="toggleEdit('name')"
+              class="p-2 rounded-full hover:bg-indigo-50 transition-colors"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+              </svg>
+            </button>
           </div>
+        </div>
+
+        <!-- Project Description Section -->
+        <div class="bg-white rounded-xl shadow-lg p-6 transition-all duration-300 hover:shadow-xl">
+          <h2 class="text-xl font-semibold text-black mb-4">Project Description</h2>
+          <div class="flex items-start space-x-4">
+            <textarea
+              v-model="projectDescription"
+              :disabled="!editingFields.description"
+              class="flex-grow px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all h-32"
+              :class="{'bg-gray-100': !editingFields.description}"
+            ></textarea>
+            <button 
+              @click="toggleEdit('description')"
+              class="p-2 rounded-full hover:bg-indigo-50 transition-colors"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- Project Duration Section -->
+        <div class="bg-white rounded-xl shadow-lg p-6 transition-all duration-300 hover:shadow-xl">
+          <h2 class="text-xl font-semibold text-blackmb-4">Project Duration</h2>
+          
+          <!-- Start Date -->
+          <div class="mb-4">
+            <label class="block text-gray-700 mb-2">Start Date</label>
+            <div class="flex items-center space-x-4">
+              <input
+                type="date"
+                v-model="startDate"
+                :disabled="!editingFields.startDate"
+                class="flex-grow px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
+                :class="{'bg-gray-100': !editingFields.startDate}"
+              />
+              <button 
+                @click="toggleEdit('startDate')"
+                class="p-2 rounded-full hover:bg-indigo-50 transition-colors"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <!-- End Date -->
+          <div>
+            <label class="block text-gray-700 mb-2">End Date</label>
+            <div class="flex items-center space-x-4">
+              <input
+                type="date"
+                v-model="endDate"
+                :disabled="!editingFields.endDate"
+                class="flex-grow px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
+                :class="{'bg-gray-100': !editingFields.endDate}"
+              />
+              <button 
+                @click="toggleEdit('endDate')"
+                class="p-2 rounded-full hover:bg-indigo-50 transition-colors"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Delete Project Section -->
+        <div class="text-center">
+          <button 
+            @click="deleteProject"
+            class="px-8 py-3 bg-red-500 text-white font-semibold rounded-lg shadow-md hover:bg-red-600 transition-all transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-red-400 focus:ring-opacity-75"
+          >
+            Delete Project
+          </button>
         </div>
       </div>
     </div>
@@ -290,12 +235,27 @@ onMounted(async () => {
 </template>
 
 <style scoped>
-input, textarea, select {
-  border: 1px solid #d1d5db;
+/* Smooth transitions for all interactive elements */
+input, textarea, button {
+  transition: all 0.3s ease;
 }
-hr {
-  width: 100%;
-  border-top-width: 2px;
-  border-color: #d1d5db;
+
+/* Custom scrollbar for textarea */
+textarea::-webkit-scrollbar {
+  width: 8px;
+}
+
+textarea::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 10px;
+}
+
+textarea::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 10px;
+}
+
+textarea::-webkit-scrollbar-thumb:hover {
+  background: #555;
 }
 </style>

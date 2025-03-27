@@ -142,106 +142,179 @@ const removeMember = (index) => {
 </script>
 
 <template>
- <div class="min-h-screen  from-indigo-100 bg-gray-50 flex flex-col">
+  <div class="min-h-screen bg-gradient-to-br from-indigo-50 to-white flex flex-col">
     <NavBar />
-    <div class="px-4 py-20">
-        <!-- Header -->
-        <div class="mt-4 p-6 text-center">
-          <h2 class="text-4xl font-extrabold text-black tracking-tight">Create Project</h2>
+    
+    <div class="container mx-auto px-4 py-32">
+      <div class="max-w-2xl mx-auto space-y-8">
+        <!-- Page Title -->
+        <div class="text-center mb-8">
+          <h1 class="text-4xl font-bold text-Black mb-2">Create Project</h1>
         </div>
-         <hr>
-    <div class="flex justify-center p-4">
-      <div class="w-full max-w-2xl">
-        <!-- Form Inputs -->
-     <div class="space-y-6">
-  <div class="bg-white rounded-lg shadow-md p-4">
-    <label class="block font-semibold text-gray-700 mb-2">Project Name</label>
-    <input v-model="projectName" type="text" class="w-full p-3 border rounded-lg shadow-sm focus:ring focus:ring-blue-300" 
-      :class="{'border-red-500': !projectName.trim() && isSubmitDisabled}" />
-  </div>
 
-  <div class="bg-white rounded-lg shadow-md p-4">
-    <label class="block font-semibold text-gray-700 mb-2">Project Description</label>
-    <textarea v-model="projectDescription" class="w-full p-3 border rounded-lg shadow-sm h-32 focus:ring focus:ring-blue-300" 
-      :class="{'border-red-500': !projectDescription.trim() && isSubmitDisabled}"></textarea>
-  </div>
+        <!-- Project Name Section -->
+        <div class="bg-white rounded-xl shadow-lg p-6 transition-all duration-300 hover:shadow-xl">
+          <h2 class="text-xl font-semibold text-black mb-4">Project Name</h2>
+          <input
+            v-model="projectName"
+            type="text"
+            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
+            :class="{'border-red-500': !projectName.trim() && isSubmitDisabled}"
+            placeholder="Enter project name"
+          />
+        </div>
 
-  <div class="bg-white rounded-lg shadow-md p-4">
-    <div class="mt-2 space-y-4">
-      <label class="block font-semibold text-gray-700">Project Duration</label>
-      <div>
-        <p class="text-sm text-gray-600 mb-2">Start Date</p>
-        <input v-model="startDate" type="date" class="w-full p-3 border rounded-lg shadow-sm focus:ring focus:ring-blue-300" />
-      </div>
-      <div>
-        <p class="text-sm text-gray-600 mb-2">End Date</p>
-        <input v-model="endDate" type="date" class="w-full p-3 border rounded-lg shadow-sm focus:ring focus:ring-blue-300" />
+        <!-- Project Description Section -->
+        <div class="bg-white rounded-xl shadow-lg p-6 transition-all duration-300 hover:shadow-xl">
+          <h2 class="text-xl font-semibold text-black mb-4">Project Description</h2>
+          <textarea
+            v-model="projectDescription"
+            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all h-32"
+            :class="{'border-red-500': !projectDescription.trim() && isSubmitDisabled}"
+            placeholder="Enter project description"
+          ></textarea>
+        </div>
+
+        <!-- Project Duration Section -->
+        <div class="bg-white rounded-xl shadow-lg p-6 transition-all duration-300 hover:shadow-xl">
+          <h2 class="text-xl font-semibold text-black mb-4">Project Duration</h2>
+          
+          <!-- Start Date -->
+          <div class="mb-4">
+            <label class="block text-gray-700 mb-2">Start Date</label>
+            <input
+              type="date"
+              v-model="startDate"
+              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
+            />
+          </div>
+
+          <!-- End Date -->
+          <div>
+            <label class="block text-gray-700 mb-2">End Date</label>
+            <input
+              type="date"
+              v-model="endDate"
+              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
+            />
+          </div>
+        </div>
+
+        <!-- Team Members Section -->
+        <div class="bg-white rounded-xl shadow-lg p-6 transition-all duration-300 hover:shadow-xl">
+          <h2 class="text-xl font-semibold text-black mb-4">Team Members</h2>
+          
+          <!-- Email Search -->
+          <div class="mb-4">
+            <label class="block text-gray-700 mb-2">Add Team Members</label>
+            <div class="flex items-center space-x-4">
+              <input 
+                v-model="searchEmail" 
+                type="text" 
+                placeholder="Search email..."
+                class="flex-grow px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
+              />
+              <select 
+                v-model="selectedRole" 
+                class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
+              >
+                <option value="">Select Role</option>
+                <option value="member">Member</option>
+                <option value="admin">Admin</option>
+              </select>
+              <button 
+                @click="addMember" 
+                class="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-indigo-700 transition-all"
+              >
+                Add
+              </button>
+            </div>
+            
+            <!-- Email Suggestions -->
+            <ul v-if="searchEmail && !selectedEmail" class="mt-2 border rounded-md max-h-32 overflow-y-auto">
+              <li 
+                v-for="(email, index) in filteredEmails.slice(0, 10)" 
+                :key="index" 
+                @click="selectEmail(email)" 
+                class="px-4 py-2 cursor-pointer hover:bg-gray-100"
+              >
+                {{ email }}
+              </li>
+            </ul>
+          </div>
+
+          <!-- Team Members List -->
+          <div>
+            <label class="block text-gray-700 mb-2">Current Team Members</label>
+            <div class="border rounded-lg p-4 max-h-32 overflow-y-auto bg-gray-200">
+              <ul>
+                <li 
+                  v-for="(member, index) in teamMembers" 
+                  :key="index" 
+                  class="flex justify-between items-center py-2 border-b last:border-b-0"
+                >
+                  <span>{{ member.email }} ({{ member.role }})</span>
+                 <button 
+                @click="removeMember(index)" 
+                class="text-red-500 hover:text-red-700 p-2 rounded-full hover:bg-red-50 transition-all"
+                >
+               <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+              </svg>
+              </button>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="flex justify-center space-x-4">
+          <button 
+            @click="addCreateProject" 
+            :disabled="isSubmitDisabled"
+            class="px-8 py-3 bg-indigo-600 text-white font-semibold rounded-lg shadow-md hover:bg-indigo-700 transition-all transform hover:scale-105 disabled:bg-gray-400 disabled:cursor-not-allowed"
+          >
+            Create Project
+          </button>
+          <button 
+            @click="CancleCreateProject, goToListProject()" 
+            class="px-8 py-3 bg-red-500 text-white font-semibold rounded-lg shadow-md hover:bg-red-600 transition-all transform hover:scale-105"
+          >
+            Cancel
+          </button>
+        </div>
       </div>
     </div>
   </div>
-
-  <!-- Team Section -->
-  <div class="bg-white rounded-lg shadow-md p-4">
-    <div class="space-y-6">
-      <div>
-        <label class="text-base font-semibold text-gray-700 mb-2">Add Team Members</label>
-        <input v-model="searchEmail" type="text" placeholder="Search email..." 
-          class="w-full p-3 border rounded-lg shadow-sm focus:ring focus:ring-blue-300" />
-        <ul v-if="searchEmail && !selectedEmail" class="bg-white border rounded-md mt-2 max-h-32 overflow-y-auto shadow-md">
-          <li v-for="(email, index) in filteredEmails.slice(0, 10)" :key="index" 
-            @click="selectEmail(email)" class="p-2 cursor-pointer hover:bg-gray-100">
-            {{ email }}
-          </li>
-        </ul>
-      </div>
-
-      <div>
-        <label class="text-base font-semibold text-gray-700">Role</label>
-        <div class="flex items-center gap-2 mt-2">
-          <select v-model="selectedRole" class="w-full p-3 border rounded-lg shadow-sm focus:ring focus:ring-blue-300">
-            <option value="">- Select role -</option>
-            <option value="member">Member</option>
-            <option value="admin">Admin</option>
-          </select>
-          <button @click="addMember" class="bg-green-600 text-white px-4 py-2 rounded-lg shadow-md hover:bg-green-700">Add</button>
-        </div>
-      </div>
-
-      <div>
-        <label class="text-base font-semibold text-gray-700 ">Team Members</label>
-        <div class="w-full h-24 bg-gray-200 rounded-lg p-3 overflow-y-auto shadow-sm">
-          <ul>
-            <li v-for="(member, index) in teamMembers" :key="index" class="flex justify-between items-center py-1">
-              <span class="truncate text-gray-700">{{ member.email }} ({{ member.role }})</span>
-              <button @click="removeMember(index)" class="text-red-500 font-bold px-2 hover:text-red-700">&times;</button>
-            </li>
-          </ul>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
-</div>
-</div>
-
-    <hr class="w-full border-t-2 border-gray-300 my-4" />
-    <div class="flex justify-center space-x-4 items-center">
-      <button @click="addCreateProject" :disabled="isSubmitDisabled" class="bg-blue-600 text-white px-6 py-3 rounded-lg shadow-md text-lg font-bold hover:bg-blue-700" :class="{'bg-gray-400 cursor-not-allowed': isSubmitDisabled}">Submit</button>
-      <button @click="CancleCreateProject, goToListProject()" class="bg-red-600 text-white px-6 py-3 rounded-lg shadow-md text-lg font-bold hover:bg-red-700">Cancel</button>
-    </div>
-  </div>
-   </div>
-  
-  
 </template>
 
 <style scoped>
-input, textarea, select {
-  border: 1px solid #d1d5db;
+/* Smooth transitions for all interactive elements */
+input, textarea, button, select {
+  transition: all 0.3s ease;
 }
-hr {
-  width: 100%;
-  border-top-width: 2px;
-  border-color: #d1d5db;
+
+/* Custom scrollbar for textarea and lists */
+textarea::-webkit-scrollbar,
+.max-h-32::-webkit-scrollbar {
+  width: 8px;
+}
+
+textarea::-webkit-scrollbar-track,
+.max-h-32::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 10px;
+}
+
+textarea::-webkit-scrollbar-thumb,
+.max-h-32::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 10px;
+}
+
+textarea::-webkit-scrollbar-thumb:hover,
+.max-h-32::-webkit-scrollbar-thumb:hover {
+  background: #555;
 }
 </style>
