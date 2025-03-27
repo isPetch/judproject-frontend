@@ -278,6 +278,52 @@ const updateSprintStatus = async (sprintId, newStatus) => {
     console.error("Error:", error);
   }
 };
+const deleteSprint = async (sprintId) => {
+  // Check if the sprint has any tasks
+  const sprintToDelete = sprints.value.find(sprint => sprint.id === sprintId);
+  
+  if (!sprintToDelete) {
+    console.error("Sprint not found");
+    return;
+  }
+  try {
+    const sprintDetails = await getSprintById(sprintId);
+    
+    if (sprintDetails.tasks && sprintDetails.tasks.length > 0) {
+      alert("Cannot delete sprint. Remove all tasks first.");
+      return;
+    }
+
+    const confirmDelete = confirm("Are you sure you want to delete this sprint?");
+    if (confirmDelete) {
+      const token = localStorage.getItem("token");
+      const response = await fetch(import.meta.env.VITE_ROOT_API + `/api/sprint/${sprintId}/delete`, {
+        method: "DELETE",
+        headers: { "Authorization": `${token}` }
+      });
+
+      if (response.ok) {
+        // Remove the sprint from the list
+        project.value.sprints = project.value.sprints.filter(sprint => sprint.id !== sprintId);
+        location.reload();
+        // If the deleted sprint was the selected sprint, select the last sprint
+        if (selectedSprint.value?.id === sprintId && project.value.sprints.length > 0) {
+          handleSprintSelection(project.value.sprints[project.value.sprints.length - 1].id);
+        } else if (project.value.sprints.length === 0) {
+          // If no sprints are left, reset selected sprint
+          selectedSprint.value = null;
+          tasks.value = [];
+        }
+      } else {
+        console.error("Error deleting sprint");
+        alert("Failed to delete sprint");
+      }
+    }
+  } catch (error) {
+    console.error("Error checking sprint tasks:", error);
+    alert("An error occurred while checking sprint tasks");
+  }
+};
 
 const toggleSubtaskStatus = async (task, subtask) => {
   const newStatus = subtask.status === 'Done' ? 'ToDo' : 'Done';
@@ -424,12 +470,18 @@ onMounted(() => {
           
           <div class="mt-3 space-y-2">
             <div v-for="sprint in sprints" :key="sprint.id" 
-                 @click="handleSprintSelection(sprint.id)"
-                 class="p-2 rounded-md cursor-pointer transition-all duration-200 hover:bg-white/10"
-                 :class="sprint.id === selectedSprint?.id ? 'bg-[#4380BC]' : ''">
-              <div class="flex items-center">
+                class="p-2 rounded-md cursor-pointer transition-all duration-200 hover:bg-white/10 flex justify-between items-center"
+                :class="sprint.id === selectedSprint?.id ? 'bg-[#4380BC]' : ''">
+              <div @click="handleSprintSelection(sprint.id)" class="flex-1">
                 <span class="ml-2">Sprint {{ sprint.sprintNumber }}</span>
               </div>
+              <button 
+                @click.stop="deleteSprint(sprint.id)" 
+                class="text-white hover:text-red-300 transition-colors"
+                title="Delete Sprint"
+              >
+                <TrashIcon class="h-4 w-4" />
+              </button>
             </div>
           </div>
         </div>
