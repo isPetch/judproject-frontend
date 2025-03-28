@@ -14,29 +14,46 @@ const isLoading = ref(true);
 const isMenuOpen = ref(false);
 const sortOption = ref('newest'); // อาจเป็น 'newest', 'oldest', 'name'
 const projectMembers = ref([]); // Added to store team members
-const profileImage = ref(null);
 
+const profileImage = ref({});
+const image = ref(null);
 
-
+// ฟังก์ชันสำหรับจัดการการอัปโหลดไฟล์
+const handleFileUpload = (event) => {
+  const file = event.target.files[0];
+  if (file) {
+    // สร้าง URL ของไฟล์ที่เลือก
+    image.value = file;
+    const fileURL = URL.createObjectURL(file);
+    profileImage.value = fileURL; // ตั้งค่ารูปโปรไฟล์ใหม่
+  }
+};
 const fetchMemberPicture = async (member) => {
   try {
-    const response = await fetch(`${import.meta.env.VITE_ROOT_API}/api/member/${member.memberId}/picture`, {
-      method: "GET",
-      headers: { 
-        "Content-Type": "application/json"
+    const response = await fetch(
+      `${import.meta.env.VITE_ROOT_API}/api/project/member/${member.memberId}/picture`, 
+      {
+        method: "GET",
+        headers: { "Content-Type": "application/json" }
       }
-    });
+    );
 
-    console.log("Request Headers:", response.headers);
+    console.log("Response Status:", response.status);
 
     if (!response.ok) {
       throw new Error(`Failed to fetch picture, status: ${response.status}`);
+
     }
 
     const imageBlob = await response.blob();
     profileImage.value = URL.createObjectURL(imageBlob);
+    console.log("Profile Image URL:", member.profileImage);
+
   } catch (error) {
     console.error("Failed to fetch member picture:", error);
+
+    // กำหนดรูป Default ถ้าโหลดไม่สำเร็จ
+    profileImage.value = "/images/default-profile.png";
   }
 };
 
@@ -424,8 +441,9 @@ onMounted(() => {
                           class="group relative inline-block"
                         >
                           <div class="h-8 w-8 rounded-full ring-2 ring-white bg-gray-200 flex items-center justify-center text-xs font-medium text-gray-600">
-                            {{ member.username ? getMemberInitials(member.username) : 'U' }}
-                          </div>
+                        <img v-if="profileImage" :src="profileImage" alt="Profile Image" class="h-full w-full rounded-full object-cover">
+                         <span v-else>{{ member.username ? getMemberInitials(member.username) : 'U' }}</span>
+                      </div>
                           <!-- Custom tooltip -->
                           <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-gray-900 text-white text-xs rounded whitespace-nowrap opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-opacity duration-200">
                             {{ member.username || 'Unknown User' }}
