@@ -15,42 +15,31 @@ const isMenuOpen = ref(false);
 const sortOption = ref('newest'); // อาจเป็น 'newest', 'oldest', 'name'
 const projectMembers = ref([]); // Added to store team members
 const profileImage = ref(null);
-const memberId = 27;
 
 
-const fetchMemberProfilePicture = async (memberId) => {
+
+const fetchMemberPicture = async (member) => {
   try {
-    // เรียก API โดยใช้ fetch
-    const response = await fetch(`${import.meta.env.VITE_ROOT_API}/api/member/${memberId}/picture`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json', 
-      },
+    const response = await fetch(`${import.meta.env.VITE_ROOT_API}/api/member/${member.memberId}/picture`, {
+      method: "GET",
+      headers: { 
+        "Content-Type": "application/json"
+      }
     });
 
-    // ตรวจสอบว่า response.ok เป็น true หรือไม่
+    console.log("Request Headers:", response.headers);
+
     if (!response.ok) {
       throw new Error(`Failed to fetch picture, status: ${response.status}`);
     }
 
-    // ตรวจสอบ Content-Type ของ response
-    const contentType = response.headers.get('Content-Type');
-    if (!contentType || !contentType.startsWith('image')) {
-      throw new Error(`Expected image file, but got ${contentType}`);
-    }
-
-    // รับข้อมูลที่เป็น blob
-    const blob = await response.blob();
-    
-    // สร้าง URL สำหรับแสดงรูปภาพจาก blob
-    const imageUrl = URL.createObjectURL(blob);
-    
-    // ตั้งค่ารูปภาพที่ดึงมาให้กับ profileImage
-    profileImage.value = imageUrl;
+    const imageBlob = await response.blob();
+    profileImage.value = URL.createObjectURL(imageBlob);
   } catch (error) {
     console.error("Failed to fetch member picture:", error);
   }
 };
+
 
 
 
@@ -106,6 +95,12 @@ const selectProject = async (id) => {
     
     // Fetch team members for the project
     const members = await fetchProjectMembers(id);
+    console.log(members);
+    members.forEach(member => {
+    console.log(member.memberId); // Log memberId
+    fetchMemberPicture(member); // Fetch picture for each member
+});
+
     
     // Assign members to project
     selectedProject.value = {
@@ -207,7 +202,6 @@ const getMemberInitials = (name) => {
 };
 
 onMounted(() => {
-  fetchMemberProfilePicture(memberId);
   fetchProjects();
 });
 
