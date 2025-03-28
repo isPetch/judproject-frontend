@@ -15,7 +15,7 @@ onMounted(() => {
   if (token && lastLogin) {
     const currentTime = Date.now();
     if (currentTime - lastLogin < EXPIRATION_TIME) {
-      router.push('/');
+      router.push('/dashboard');
     }
   }
 });

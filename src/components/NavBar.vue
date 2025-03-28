@@ -4,7 +4,7 @@ import { getUserById } from "../composable/getJudProjects";
 import { useRouter } from 'vue-router';
 
 const tabs = [
-  { name: "Dashboard", link: "/", icon: "📊" },
+  { name: "Dashboard", link: "/dashboard", icon: "📊" },
   { name: "Projects", link: "/projects", icon: "📁" },
 ];
 

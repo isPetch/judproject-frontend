@@ -17,7 +17,7 @@ const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
     {
-      path: '/',
+      path: '/dashboard',
       name: 'Dashboard',
       component: DashboardListProjects
     },
@@ -71,37 +71,6 @@ const router = createRouter({
       name: 'Member',
       component: MemberVue
      }
-    // ,
-    // {
-    //   path: '/create',
-    //   name: 'CreateProject',
-    //   component: CreateProjectVue
-    // },
-    // {
-    //   path: '/login',
-    //   name: 'Login',
-    //   component: LoginVue
-    // },
-    // {
-    //   path: '/signup',
-    //   name: 'SignUp',
-    //   component: SignUpVue
-    // },
-    // {
-    //   path: '/profile',
-    //   name: 'Profile',
-    //   component: ProfileVue
-    // },
-    // {
-    //   path: '/password',
-    //   name: 'Password',
-    //   component: ChangePasswordVue
-    // },
-    // {
-    //   path: '/sprint/:id',
-    //   name: 'Taskboard',
-    //   component: TaskBoardVue,
-    // }
   ]
 })
 
