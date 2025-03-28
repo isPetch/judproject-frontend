@@ -111,10 +111,10 @@ onMounted(() => {
       <div class="flex justify-between items-center">
         <!-- Logo and Brand -->
         <div class="flex items-center space-x-2">
-          <div class="relative group">
-            <img src="../components/image/jubproject.png" alt="JudProject Logo" 
+          <div class="relative group bg-white p-1 rounded-lg">
+            <img src="../components/image/jubprojectLogo.png" alt="JudProject Logo" 
                 class="h-10 w-10 transition-transform duration-300 group-hover:scale-110" />
-            <div class="absolute -bottom-1 left-0 w-full h-0.5 bg-white scale-x-0 group-hover:scale-x-100 transition-transform duration-300"></div>
+            <div class="absolute -bottom-1 left-0 w-full h-0.5 bg-blue-800 scale-x-0 group-hover:scale-x-100 transition-transform duration-300"></div>
           </div>
           <span class="text-lg font-bold text-white hidden md:block">JudProject</span>
         </div>

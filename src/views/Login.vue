@@ -43,30 +43,33 @@ const handleLogin = async () => {
     alert('Login failed: ' + (error.response?.data?.message || 'An error occurred'));
   }
 };
+
+const goBack = () => {
+  router.push('/');
+};
 </script>
 
 <template>
     <div class="w-screen h-screen bg-white flex flex-col">
-  <nav class="fixed top-0 left-0 w-full z-50 text-white p-4 flex justify-between items-center" style="background-color: #316394;">
-    <div class="flex flex-row space-x-6 items-center">
-      <div class="flex items-center space-x-2">
-        <img src="../components/image/jubproject.png" alt="JudProject Logo" class="h-6 w-6" />
-        <span class="text-lg font-bold">JudProject</span>
-     <div class="text-sm flex space-x-6"> 
-          <a href="#" class="px-4 py-2 relative transition duration-300 hover:text-white after:absolute after:left-0 after:bottom-0 after:w-full after:h-1 after:bg-gradient-to-r after:from-blue-400 after:to-gray-200 after:scale-x-0 hover:after:scale-x-90 after:transition-transform after:duration-300">About</a>
-          <a href="#" class="px-4 py-2 relative transition duration-300 hover:text-white after:absolute after:left-0 after:bottom-0 after:w-full after:h-1 after:bg-gradient-to-r after:from-blue-400 after:to-gray-200 after:scale-x-0 hover:after:scale-x-90 after:transition-transform after:duration-300">Contact</a>
-        </div>
+    <div class="absolute top-4 left-4">
+      <button 
+        @click="goBack" 
+        class="flex items-center text-[#316394] hover:text-blue-800 transition duration-300"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+        </svg>
+        Back to Home
+      </button>
     </div>
-    </div>
-    </nav>
-    <div class="flex flex-grow justify-center items-center  pt-20">
+    <div class="flex flex-grow justify-center items-center pt-20">
       <div class="flex bg-gray-100 shadow-lg rounded-lg overflow-hidden max-w-4xl w-full">
         <div class="w-1/2 bg-[#316394] p-8 flex justify-center items-center">
           <img src="../components/image/clipboard.png" class="max-w-full h-auto" />
         </div>
         <div class="w-1/2 p-8">
           <div class="text-center">
-            <img src="../components/image/jubproject.png" class="h-20 mx-auto mb-10" />
+            <img src="../components/image/jubprojectLogo.png" class="h-20 mx-auto mb-10" />
             <h2 class="text-3xl font-semibold">Welcome Back</h2>
           </div>
           <div class="mt-6">
@@ -88,7 +91,6 @@ const handleLogin = async () => {
       </div>
     </div>
     </div>
-  
 </template>
 
 <style scoped>
