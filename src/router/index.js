@@ -1,4 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
+import HomePage from '../views/HomePage.vue'
 import DashboardListProjects from '../views/DashboardListProjects.vue'
 import ListProjects from '../views/ListProjects.vue'
 // import TaskBoardVue from '@/views/TaskBoard.vue'
@@ -18,6 +19,11 @@ const router = createRouter({
   routes: [
     {
       path: '/',
+      name: 'HomePage',
+      component: HomePage
+    },
+    {
+      path: '/dashboard',
       name: 'Dashboard',
       component: DashboardListProjects
     },
@@ -71,42 +77,11 @@ const router = createRouter({
       name: 'Member',
       component: MemberVue
      }
-    // ,
-    // {
-    //   path: '/create',
-    //   name: 'CreateProject',
-    //   component: CreateProjectVue
-    // },
-    // {
-    //   path: '/login',
-    //   name: 'Login',
-    //   component: LoginVue
-    // },
-    // {
-    //   path: '/signup',
-    //   name: 'SignUp',
-    //   component: SignUpVue
-    // },
-    // {
-    //   path: '/profile',
-    //   name: 'Profile',
-    //   component: ProfileVue
-    // },
-    // {
-    //   path: '/password',
-    //   name: 'Password',
-    //   component: ChangePasswordVue
-    // },
-    // {
-    //   path: '/sprint/:id',
-    //   name: 'Taskboard',
-    //   component: TaskBoardVue,
-    // }
   ]
 })
 
 router.beforeEach((to, from, next) => {
-  const publicPages = ['Login', 'SignUp']; 
+  const publicPages = ['HomePage','Login', 'SignUp']; 
   const isPublicPage = publicPages.includes(to.name);
   const token = localStorage.getItem('token');
   const lastLogin = localStorage.getItem('lastLogin');
@@ -125,6 +100,9 @@ router.beforeEach((to, from, next) => {
       // อัปเดตเวลาใหม่เมื่อยังอยู่ในช่วงเวลาที่กำหนด
       localStorage.setItem('lastLogin', Date.now());
     }
+  }
+  if (to.name === 'HomePage' && token) {
+    return next({ name: 'Dashboard' });
   }
 
   if (!isPublicPage && !token) {
