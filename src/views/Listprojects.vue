@@ -15,7 +15,7 @@ const isMenuOpen = ref(false);
 const sortOption = ref('newest'); // อาจเป็น 'newest', 'oldest', 'name'
 const projectMembers = ref([]); // Added to store team members
 
-const profileImage = ref({});
+
 const image = ref(null);
 
 // ฟังก์ชันสำหรับจัดการการอัปโหลดไฟล์
@@ -28,10 +28,11 @@ const handleFileUpload = (event) => {
     profileImage.value = fileURL; // ตั้งค่ารูปโปรไฟล์ใหม่
   }
 };
-const fetchMemberPicture = async (member) => {
+const membersImage = ref([]);
+const fetchMemberPicture = async (memberId) => {
   try {
     const response = await fetch(
-      `${import.meta.env.VITE_ROOT_API}/api/project/member/${member.memberId}/picture`, 
+      `${import.meta.env.VITE_ROOT_API}/api/project/member/${memberId}/picture`, 
       {
         method: "GET",
         headers: { "Content-Type": "application/json" }
@@ -46,14 +47,14 @@ const fetchMemberPicture = async (member) => {
     }
 
     const imageBlob = await response.blob();
-    profileImage.value = URL.createObjectURL(imageBlob);
-    console.log("Profile Image URL:", member.profileImage);
+    return imageBlob ? URL.createObjectURL(imageBlob): null;
+    
 
   } catch (error) {
     console.error("Failed to fetch member picture:", error);
 
     // กำหนดรูป Default ถ้าโหลดไม่สำเร็จ
-    profileImage.value = "/images/default-profile.png";
+    membersImage.value.push = "/images/default-profile.png";
   }
 };
 
@@ -113,18 +114,20 @@ const selectProject = async (id) => {
     // Fetch team members for the project
     const members = await fetchProjectMembers(id);
     console.log(members);
-    members.forEach(member => {
-    console.log(member.memberId); // Log memberId
-    fetchMemberPicture(member); // Fetch picture for each member
-});
-
-    
+  //   members = members.forEach(async (member) =>  {
+  //   console.log(member.memberId); // Log memberId
+  //   member.image = await fetchMemberPicture (member.memberId)
+  //   }
+  // );
+   console.log(members)
     // Assign members to project
     selectedProject.value = {
       ...projectDetails,
-      members
+         members
+
     };
-    
+    // selectedProject.value.members = members
+    console.log(selectedProject.value)
   } catch (error) {
     console.error("Failed to fetch project details:", error);
   } finally {
@@ -435,15 +438,12 @@ onMounted(() => {
                   <div class="flex flex-wrap gap-1 mt-2">
                     <div v-if="selectedProject.members && selectedProject.members.length > 0">
                       <div class="flex -space-x-2">
-                        <div 
-                          v-for="(member, index) in selectedProject.members.slice(0, 5)" 
-                          :key="index" 
-                          class="group relative inline-block"
-                        >
+                        <div v-for="(member, index) in selectedProject.members.slice(0, 5)" :key="index" class="group relative inline-block">
+                          <!-- <p>{{member}}</p> -->
                           <div class="h-8 w-8 rounded-full ring-2 ring-white bg-gray-200 flex items-center justify-center text-xs font-medium text-gray-600">
-                        <img v-if="profileImage" :src="profileImage" alt="Profile Image" class="h-full w-full rounded-full object-cover">
-                         <span v-else>{{ member.username ? getMemberInitials(member.username) : 'U' }}</span>
-                      </div>
+                              <img v-if="member.image" :src="member.image" alt="Profile Image" class="h-full w-full rounded-full object-cover">
+                              <span v-else>{{ member.image ? member.image :  getMemberInitials(member.username) }}</span>
+                          </div>
                           <!-- Custom tooltip -->
                           <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-gray-900 text-white text-xs rounded whitespace-nowrap opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-opacity duration-200">
                             {{ member.username || 'Unknown User' }}
