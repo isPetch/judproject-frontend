@@ -45,9 +45,6 @@ const addUser = async (use) => {
 
         const res = await fetch(import.meta.env.VITE_ROOT_API + "/api/register", {
             method: 'POST',
-            headers: {
-                'Authorization': id  
-            },
             body: formData
         });
 
