@@ -1,0 +1,22 @@
+name: Front-End dev deployment
+run-name: First time Front-End deployment
+
+on:
+  push: 
+    branches: ["main"]
+jobs: 
+  first:
+    name: Pull Front-End Repository
+    runs-on: [frontend]
+    steps: 
+      - working-directory: /JudProject/Frontend/
+        run: git pull origin main
+  second:
+    name: Build and start Frontend container
+    runs-on: [frontend]
+    needs: [first]
+    steps:
+      - working-directory: /JudProject
+        run: docker compose -f dev-frontend-compose.yml build
+      - working-directory: /JudProject
+        run: docker compose -f dev-frontend-compose.yml up -d
