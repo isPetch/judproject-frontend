@@ -15,7 +15,7 @@ import MemberVue from '../views/Member.vue'
 // import ChangePasswordVue from '@/views/ChangePassword.vue'
 
 const router = createRouter({
-  history: createWebHistory(import.meta.env.Depoly_url),
+  history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
     {
       path: '/',
