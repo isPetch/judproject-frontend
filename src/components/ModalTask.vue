@@ -656,7 +656,6 @@ watch(() => props.isVisible, (newValue) => {
         >
           <option value="ToDo">TO DO</option>
           <option value="In Progress">IN PROGRESS</option>
-          <option value="Done">DONE</option>
         </select>
       </div>
       
