@@ -21,6 +21,11 @@ const goToLogin = () => {
   router.push({ name: 'Login' });
 };
 
+
+const isUsernameValid = computed(() => {
+  return addNewUser.value.username.length >= 5 && addNewUser.value.username.length <= 45;
+});
+
 const isEmailValid = computed(() => {
     const emailRegex = /^[a-zA-Z0-9_!#$%&'*+/=?`{|}~^.-]+@[a-zA-Z0-9.-]+$/;
     return emailRegex.test(addNewUser.value.email);
@@ -36,6 +41,19 @@ const isPasswordLengthValid = computed(() => {
     return passwordLength.value >= 8 && passwordLength.value <= 14;
 });
 
+const popupMessage = ref('');
+const showPopup = ref(false);
+
+const showPopupError = (message) => {
+  popupMessage.value = message;
+  showPopup.value = true;
+};
+
+const closePopup = () => {
+  showPopup.value = false;
+  popupMessage.value = '';
+};
+
 const addUser = async (use) => {
     try {
         const formData = new FormData();
@@ -49,24 +67,26 @@ const addUser = async (use) => {
         });
 
         const result = await res.json();
-
-        if (result && result.status === 'Success') {
-            console.log('User Data:', result);
+        if (result.status === 400 && result.detail && result.detail.includes("Duplicate entry")) {
+            if (result.detail.includes("user.email")) {
+                Status.value = "This email is already taken.";
+                showPopupError(Status.value);
+            } else if (result.detail.includes("user.username")) {
+                Status.value = "This username is already taken.";
+                showPopupError(Status.value);
+            }
+        } else if (result && result.status === 'Success') {
             goToLogin();
         } else {
-            if (result.message.includes("Duplicate entry") && result.message.includes("user.username")) {
-                alert("This username is already taken. Please choose another name.");
-            } else if (result.message.includes("Duplicate entry") && result.message.includes("user.email")) {
-                alert("This email is already taken.");
-            } else {
-                console.error(result.message);
-            }
+            Status.value = "Please fill out the form correctly. Please try again.";
+            showPopupError(Status.value);
         }
     } catch (err) {
-        console.log("เกิดข้อผิดพลาดในการสมัครสมาชิก กรุณาลองใหม่:", err);
+        console.error("Error in registration:", err);
+        Status.value = "เกิดข้อผิดพลาดในการสมัครสมาชิก กรุณาลองใหม่";
+        showPopupError(Status.value);
     }
 };
-
 
 // Updated watcher logic to check password and length validation
 const isFieldAdd = computed(() => {
@@ -112,18 +132,19 @@ const goBack = () => {
           <h2 class="text-3xl font-bold text-center mb-6">Create Account</h2>
           <div class="space-y-4">
                <!-- Username Input -->
-    <div class="w-full">
-      <label for="username" class="block text-gray-600 font-medium">Username</label>
-      <input v-model="addNewUser.username"
-        type="text"
-        id="username"
-        placeholder="Enter your username"
-        class="w-full mt-1 p-2 border border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-blue-500"
-        maxlength="45" required @keydown="preventSpacebar($event)"
-      />
-      <div v-if="Status" class="text-orange-500">
-        <div class="ann-error-username">{{ Status }}</div>
-      </div>
+    <!-- Username Input -->
+<div class="w-full">
+  <label for="username" class="block text-gray-600 font-medium">Username</label>
+  <input v-model="addNewUser.username"
+    type="text"
+    id="username"
+    placeholder="Enter your username"
+    class="w-full mt-1 p-2 border border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-blue-500"
+    maxlength="45" required @keydown="preventSpacebar($event)"
+  />
+  <div v-if="addNewUser.username !== '' && !isUsernameValid" class="text-orange-500">
+    Username must be at least 5 characters long.
+  </div>
     </div>
     <!-- Email Input -->
     <div class="w-full">
@@ -137,9 +158,6 @@ const goBack = () => {
       />
       <div v-if="addNewUser.email !== '' && !isEmailValid" class="text-orange-500">
         Please enter a valid email address
-      </div>
-      <div v-if="Status" class="text-orange-500">
-        <div class="error-email">{{ Status }}</div>
       </div>
     </div>
     <!-- Password Input -->
@@ -175,11 +193,38 @@ const goBack = () => {
           <img src="../components/image/clipboard.png" class="w-3/4" />
         </div>
       </div>
+    <transition name="fade">
+  <div v-if="showPopup" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+    <div class="relative bg-white rounded-lg shadow-2xl px-8 py-6 text-center max-w-md w-full transform transition-all duration-300 scale-100">
+      <!-- Header with color based on message type -->
+      <div class="absolute top-0 left-0 right-0 h-2 bg-red-500 rounded-t-lg"></div>
+      
+      <!-- Icon and message -->
+      <div class="mt-4 mb-2 flex flex-col items-center">
+        <div class="bg-red-100 p-3 rounded-full mb-4">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+          </svg>
+        </div>
+        <p class="text-lg font-medium text-gray-800">{{ popupMessage }}</p>
+      </div>
+      
+      <!-- Action button -->
+      <button 
+        @click="closePopup" 
+        class="mt-6 px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 transition-colors duration-200 font-medium"
+      >
+        Got it
+      </button>
+    </div>
+  </div>
+</transition>
     </div>
   </div>
   </template>
 
 
 <style scoped>
+
 
 </style>
