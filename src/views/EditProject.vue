@@ -106,15 +106,38 @@ const deleteProject = async () => {
 
 const toggleEdit = async (field) => {
   editingFields.value[field] = !editingFields.value[field];
+
   if (!editingFields.value[field]) {
+    if (field === 'name' && isProjectNameTooShort.value) {
+      showPopupError("Project name must be more than 5 characters.");
+      editingFields.value[field] = true;
+      return;
+    }
     await saveProject();
   }
 };
 
+const isProjectNameTooShort = computed(() => projectName.value.length <= 5);
+
+
 onMounted(async () => {
   await fetchProjectData();
 });
+
+const popupMessage = ref('');
+const showPopup = ref(false);
+
+const showPopupError = (message) => {
+  popupMessage.value = message;
+  showPopup.value = true;
+};
+
+const closePopup = () => {
+  showPopup.value = false;
+  popupMessage.value = '';
+};
 </script>
+
 
 <template>
   <div class="min-h-screen bg-gradient-to-br from-indigo-50 to-white flex flex-col">
@@ -139,6 +162,7 @@ onMounted(async () => {
               class="flex-grow px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
               :class="{'bg-gray-100': !editingFields.name}"
             />
+
             <button 
               @click="toggleEdit('name')"
               class="p-2 rounded-full hover:bg-indigo-50 transition-colors"
@@ -148,6 +172,9 @@ onMounted(async () => {
               </svg>
             </button>
           </div>
+             <p v-if="isProjectNameTooShort" class="text-red-500 text-sm mt-2">
+               Project name must be more than 5 characters.
+            </p>
         </div>
 
         <!-- Project Description Section -->
@@ -229,6 +256,32 @@ onMounted(async () => {
             Delete Project
           </button>
         </div>
+        <transition name="fade">
+      <div v-if="showPopup" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+        <div class="relative bg-white rounded-lg shadow-2xl px-8 py-6 text-center max-w-md w-full transform transition-all duration-300 scale-100">
+          <!-- Header with color based on message type -->
+          <div class="absolute top-0 left-0 right-0 h-2 bg-red-500 rounded-t-lg"></div>
+          
+          <!-- Icon and message -->
+          <div class="mt-4 mb-2 flex flex-col items-center">
+            <div class="bg-red-100 p-3 rounded-full mb-4">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              </svg>
+            </div>
+            <p class="text-lg font-medium text-gray-800">{{ popupMessage }}</p>
+          </div>
+          
+          <!-- Action button -->
+          <button 
+            @click="closePopup" 
+            class="mt-6 px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 transition-colors duration-200 font-medium"
+          >
+            Got it
+          </button>
+        </div>
+      </div>
+    </transition>
       </div>
     </div>
   </div>

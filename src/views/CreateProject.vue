@@ -38,10 +38,13 @@ const startDate = ref('');
 const endDate = ref('');
 
 const isSubmitDisabled = computed(() => {
-   return !projectName.value.trim() || 
-         !projectDescription.value.trim() ; 
-         
+  return (
+    !projectName.value.trim() ||
+    projectName.value.trim().length < 5 || // เพิ่มตรงนี้
+    !projectDescription.value.trim()
+  );
 });
+
 
 const addCreateProject = async () => {
   if (!isSubmitDisabled.value) {
@@ -162,6 +165,9 @@ const removeMember = (index) => {
             :class="{'border-red-500': !projectName.trim() && isSubmitDisabled}"
             placeholder="Enter project name"
           />
+           <p v-if="projectName && projectName.trim().length < 5" class="text-red-500 text-sm mt-1">
+            Project name must be at least 5 characters.
+           </p>
         </div>
 
         <!-- Project Description Section -->
