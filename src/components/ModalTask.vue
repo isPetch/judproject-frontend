@@ -152,7 +152,37 @@ const saveTaskChanges = async () => {
   isLoading.value = true;
   saveSuccess.value = false;
   saveError.value = false;
-  
+
+  // ตรวจสอบเมื่อเปลี่ยนสถานะเป็น Done และมี step ที่ยังไม่ Done
+  if (editedStatus.value === 'Done' && props.task.steps && props.task.steps.length > 0) {
+    const incompleteSteps = props.task.steps.filter(step => step.status !== 'Done');
+    if (incompleteSteps.length > 0) {
+      const confirmUpdate = confirm("There are still incomplete steps. Would you like to mark all steps as Done?");
+      if (confirmUpdate) {
+        editedStatus.value = 'Done';
+        props.task.status = 'Done';
+        for (const step of incompleteSteps) {
+          try {
+            const token = localStorage.getItem("token");
+            await fetch(import.meta.env.VITE_ROOT_API + `/api/step/${step.id}`, {
+              method: "PUT",
+              headers: { "Content-Type": "application/json", "Authorization": `${token}` },
+              body: JSON.stringify({ status: 'Done' })
+            });
+            step.status = 'Done';
+          } catch (error) {
+            console.error("Error updating step:", error);
+          }
+        }
+      } else {
+        // หากผู้ใช้ไม่ยืนยัน ให้คืนค่า editedStatus กลับไปที่ค่าเดิมแล้วออกจากฟังก์ชัน
+        editedStatus.value = props.task.status;
+        isLoading.value = false;
+        return;
+      }
+    }
+  }
+
   const payload = {
     name: editedTaskName.value,
     status: editedStatus.value,
@@ -173,7 +203,7 @@ const saveTaskChanges = async () => {
     });
     
     if (response.ok) {
-      // Update local task data
+      // อัปเดตข้อมูล task ใน local state
       props.task.name = editedTaskName.value;
       props.task.status = editedStatus.value;
       props.task.priority = editedPriority.value;
