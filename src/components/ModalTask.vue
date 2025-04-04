@@ -242,6 +242,13 @@ const saveTaskChangesAndRefresh = async () => {
   showMovePopup.value = false;
   location.reload();
 };
+const openMoveModal = () => {
+  if (editedStatus.value === 'Done') {
+    alert("Cannot move a task with status Done.");
+    return;
+  }
+  showMovePopup.value = true;
+};
 
 // Member info calculation
 const memberData = computed(() => {
@@ -458,7 +465,7 @@ watch(() => props.isVisible, (newValue) => {
           
           <div class="flex items-end">
             <button 
-              @click="showMovePopup = true" 
+              @click="openMoveModal" 
               class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md shadow-sm transition-colors flex items-center"
             >
               <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
