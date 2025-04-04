@@ -1,6 +1,5 @@
 <script setup>
 import { ref, onMounted } from 'vue';
-import axios from 'axios';
 import { useRouter } from 'vue-router';
 
 const username = ref('');
@@ -25,24 +24,33 @@ const handleLogin = async () => {
     alert('Please enter username and password.');
     return;
   }
+
   try {
-    const response = await axios.post('https://capstone24.sit.kmutt.ac.th/sy3/api/login', { 
-      username: username.value, 
-      password: password.value 
+    const response = await fetch(import.meta.env.VITE_ROOT_API + "/api/login", {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        username: username.value,
+        password: password.value
+      })
     });
 
-    if (response.data.status === 'Success') {
-      localStorage.setItem('token', response.data.usrtoken); 
-      localStorage.setItem('userId', response.data.usrtoken);
+    const data = await response.json(); 
+    if (data.status === 'Success') {
+      localStorage.setItem('token', data.usrtoken); 
+      localStorage.setItem('userId', data.usrtoken); 
       localStorage.setItem('lastLogin', Date.now());
       router.push({ name: 'Dashboard' });
     } else {
-      alert(response.data.message);
+      alert(data.message);
     }
   } catch (error) {
-    alert('Login failed: ' + (error.response?.data?.message || 'An error occurred'));
+    alert('Login failed: ' + (error.message || 'An error occurred'));
   }
 };
+
 
 const goBack = () => {
   router.push('/');
