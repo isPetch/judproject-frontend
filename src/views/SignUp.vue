@@ -10,6 +10,8 @@ const id = localStorage.getItem('userId') || '';
 const email = ref('')
 const Status = ref('');
 const passwordLength = computed(() => addNewUser.value.password.length);
+// Add new ref for password visibility state
+const showPassword = ref(false);
 
 const addNewUser = ref({
     username: '',
@@ -20,7 +22,6 @@ const addNewUser = ref({
 const goToLogin = () => {
   router.push({ name: 'Login' });
 };
-
 
 const isUsernameValid = computed(() => {
   return addNewUser.value.username.length >= 5 && addNewUser.value.username.length <= 45;
@@ -52,6 +53,11 @@ const showPopupError = (message) => {
 const closePopup = () => {
   showPopup.value = false;
   popupMessage.value = '';
+};
+
+// Function to toggle password visibility
+const togglePasswordVisibility = () => {
+  showPassword.value = !showPassword.value;
 };
 
 const addUser = async (use) => {
@@ -131,60 +137,78 @@ const goBack = () => {
           </div>
           <h2 class="text-3xl font-bold text-center mb-6">Create Account</h2>
           <div class="space-y-4">
-               <!-- Username Input -->
-    <!-- Username Input -->
-<div class="w-full">
-  <label for="username" class="block text-gray-600 font-medium">Username</label>
-  <input v-model="addNewUser.username"
-    type="text"
-    id="username"
-    placeholder="Enter your username"
-    class="w-full mt-1 p-2 border border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-blue-500"
-    maxlength="45" required @keydown="preventSpacebar($event)"
-  />
-  <div v-if="addNewUser.username !== '' && !isUsernameValid" class="text-orange-500">
-    Username must be at least 5 characters long.
-  </div>
-    </div>
-    <!-- Email Input -->
-    <div class="w-full">
-      <label for="email" class="block text-gray-600 font-medium">Email</label>
-      <input v-model="addNewUser.email"
-        type="email"
-        id="email"
-        placeholder="Enter your email"
-        class="w-full mt-1 p-2 border border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-blue-500"
-        maxlength="45" required @keydown="preventSpacebar($event)"
-      />
-      <div v-if="addNewUser.email !== '' && !isEmailValid" class="text-orange-500">
-        Please enter a valid email address
-      </div>
-    </div>
-    <!-- Password Input -->
-    <div class="w-full">
-      <label for="password" class="block text-gray-600 font-medium">Password</label>
-      <input v-model="addNewUser.password"
-        type="password"
-        id="password"
-        placeholder="Enter your password"
-        class="w-full mt-1 p-2 border border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-blue-500"
-        maxlength="45" required @keydown="preventSpacebar($event)"
-      />
-      <div v-if="!isPasswordValid && addNewUser.password !== ''" class="text-orange-500 error-password">
-        Password must be 8-14 characters long, including at least 1 uppercase, 1 lowercase, 1 number, and 1 special character.
-      </div>
-      <div v-if="passwordLength < 8" class="text-orange-500 error-password">
-        Password size must be between 8 and 14 characters
-      </div>
-    </div>
-    </div>
+            <!-- Username Input -->
+            <div class="w-full">
+              <label for="username" class="block text-gray-600 font-medium">Username</label>
+              <input v-model="addNewUser.username"
+                type="text"
+                id="username"
+                placeholder="Enter your username"
+                class="w-full mt-1 p-2 border border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-blue-500"
+                maxlength="45" required @keydown="preventSpacebar($event)"
+              />
+              <div v-if="addNewUser.username !== '' && !isUsernameValid" class="text-orange-500">
+                Username must be at least 5 characters long.
+              </div>
+            </div>
+            <!-- Email Input -->
+            <div class="w-full">
+              <label for="email" class="block text-gray-600 font-medium">Email</label>
+              <input v-model="addNewUser.email"
+                type="email"
+                id="email"
+                placeholder="Enter your email"
+                class="w-full mt-1 p-2 border border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-blue-500"
+                maxlength="45" required @keydown="preventSpacebar($event)"
+              />
+              <div v-if="addNewUser.email !== '' && !isEmailValid" class="text-orange-500">
+                Please enter a valid email address
+              </div>
+            </div>
+            <!-- Password Input with Toggle Visibility -->
+            <div class="w-full">
+              <label for="password" class="block text-gray-600 font-medium">Password</label>
+              <div class="relative">
+                <input v-model="addNewUser.password"
+                  :type="showPassword ? 'text' : 'password'"
+                  id="password"
+                  placeholder="Enter your password"
+                  class="w-full mt-1 p-2 border border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-blue-500"
+                  maxlength="45" required @keydown="preventSpacebar($event)"
+                />
+                <!-- Eye icon for password visibility toggle -->
+                <button 
+                  type="button"
+                  @click="togglePasswordVisibility"
+                  class="absolute inset-y-0 right-0 pr-3 flex items-center mt-1 text-gray-500 hover:text-gray-700 focus:outline-none"
+                >
+                  <!-- Eye open when password is visible -->
+                  <svg v-if="showPassword" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                    <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
+                    <path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd" />
+                  </svg>
+                  <!-- Eye closed when password is hidden -->
+                  <svg v-else xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M3.707 2.293a1 1 0 00-1.414 1.414l14 14a1 1 0 001.414-1.414l-1.473-1.473A10.014 10.014 0 0019.542 10C18.268 5.943 14.478 3 10 3a9.958 9.958 0 00-4.512 1.074l-1.78-1.781zm4.261 4.26l1.514 1.515a2.003 2.003 0 012.45 2.45l1.514 1.514a4 4 0 00-5.478-5.478z" clip-rule="evenodd" />
+                    <path d="M12.454 16.697L9.75 13.992a4 4 0 01-3.742-3.741L2.335 6.578A9.98 9.98 0 00.458 10c1.274 4.057 5.065 7 9.542 7 .847 0 1.669-.105 2.454-.303z" />
+                  </svg>
+                </button>
+              </div>
+              <div v-if="!isPasswordValid && addNewUser.password !== ''" class="text-orange-500 error-password">
+                Password must be 8-14 characters long, including at least 1 uppercase, 1 lowercase, 1 number, and 1 special character.
+              </div>
+              <div v-if="passwordLength < 8" class="text-orange-500 error-password">
+                Password size must be between 8 and 14 characters
+              </div>
+            </div>
+          </div>
           <button class="w-full mt-6 py-2 text-white font-semibold rounded-md hover:bg-blue-700" 
           :disabled="!isFieldAdd"
           :class="{
-    'cursor-not-allowed bg-gray-300 text-gray-400': !isFieldAdd,
-    ' bg-[#316394] text-black': isFieldAdd
-  }"
-  @click="addUser(addNewUser)">Sign Up</button>
+            'cursor-not-allowed bg-gray-300 text-gray-400': !isFieldAdd,
+            ' bg-[#316394] text-black': isFieldAdd
+          }"
+          @click="addUser(addNewUser)">Sign Up</button>
           <p class="text-center text-sm text-gray-500 mt-4">Already have an account? <router-link to="/login" class="text-blue-600">Log in</router-link></p>
         </div>
         
@@ -194,37 +218,36 @@ const goBack = () => {
         </div>
       </div>
     <transition name="fade">
-  <div v-if="showPopup" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-    <div class="relative bg-white rounded-lg shadow-2xl px-8 py-6 text-center max-w-md w-full transform transition-all duration-300 scale-100">
-      <!-- Header with color based on message type -->
-      <div class="absolute top-0 left-0 right-0 h-2 bg-red-500 rounded-t-lg"></div>
-      
-      <!-- Icon and message -->
-      <div class="mt-4 mb-2 flex flex-col items-center">
-        <div class="bg-red-100 p-3 rounded-full mb-4">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-          </svg>
+      <div v-if="showPopup" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+        <div class="relative bg-white rounded-lg shadow-2xl px-8 py-6 text-center max-w-md w-full transform transition-all duration-300 scale-100">
+          <!-- Header with color based on message type -->
+          <div class="absolute top-0 left-0 right-0 h-2 bg-red-500 rounded-t-lg"></div>
+          
+          <!-- Icon and message -->
+          <div class="mt-4 mb-2 flex flex-col items-center">
+            <div class="bg-red-100 p-3 rounded-full mb-4">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              </svg>
+            </div>
+            <p class="text-lg font-medium text-gray-800">{{ popupMessage }}</p>
+          </div>
+          
+          <!-- Action button -->
+          <button 
+            @click="closePopup" 
+            class="mt-6 px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 transition-colors duration-200 font-medium"
+          >
+            Got it
+          </button>
         </div>
-        <p class="text-lg font-medium text-gray-800">{{ popupMessage }}</p>
       </div>
-      
-      <!-- Action button -->
-      <button 
-        @click="closePopup" 
-        class="mt-6 px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 transition-colors duration-200 font-medium"
-      >
-        Got it
-      </button>
+    </transition>
     </div>
   </div>
-</transition>
-    </div>
-  </div>
-  </template>
+</template>
 
 
 <style scoped>
-
-
+/* Your existing styles */
 </style>
