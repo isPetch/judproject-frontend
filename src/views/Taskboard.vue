@@ -397,6 +397,35 @@ const deleteStep = async (subtaskId) => {
 
 // Update task status
 const updateTaskStatus = async (task, newStatus) => {
+  // หากต้องการเปลี่ยนเป็น Done
+  if (newStatus === 'Done') {
+    // ตรวจสอบว่า step ทั้งหมดเสร็จหรือยัง
+    const incompleteSteps = task.steps.filter(s => s.status !== 'Done');
+    if (incompleteSteps.length > 0) {
+      // ถามผู้ใช้
+      const confirmUpdate = confirm('There are still incomplete steps. Would you like to mark all steps as Done?');
+      if (confirmUpdate) {
+        // ทำการ update ทุก step ให้เป็น Done
+        for (const step of incompleteSteps) {
+          try {
+            const token = localStorage.getItem("token");
+            await fetch(import.meta.env.VITE_ROOT_API + `/api/step/${step.id}`, {
+              method: "PUT",
+              headers: { "Content-Type": "application/json", "Authorization": `${token}` },
+              body: JSON.stringify({ status: 'Done' })
+            });
+          } catch (error) {
+            console.error("Error updating step:", error);
+          }
+        }
+      } else {
+        // หากผู้ใช้ไม่ยืนยัน ให้ยกเลิกการเปลี่ยน task status
+        return;
+      }
+    }
+  }
+
+  // ดำเนินการ update task ตามปกติ
   try {
     const token = localStorage.getItem("token");
     const response = await fetch(import.meta.env.VITE_ROOT_API + `/api/task/${task.id}`, {
