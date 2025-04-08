@@ -92,6 +92,7 @@ const fetchMemberPicture = async (memberId) => {
 
     const imageBlob = await response.blob();
     return imageBlob ? URL.createObjectURL(imageBlob) : null;
+  
   } catch (error) {
     console.error("Failed to fetch member picture:", error);
 
@@ -110,7 +111,7 @@ const fetchMembers = async () => {
     );
     if (response.ok) {
       const data = await response.json();
-
+     
       // Fetch รูปภาพของสมาชิกแต่ละคน
       const membersWithImages = await Promise.all(
         data.members.map(async (member) => {
@@ -318,6 +319,7 @@ const memberData = computed(() => {
   return members.map((member) => ({
     memberId: member.memberId,
     username: member.username || "Unknown",
+    image: member.image || "/images/default-profile.png",
     initials: member.username
       ? member.username.length > 1
         ? member.username[0].toUpperCase() +
@@ -618,6 +620,7 @@ watch(
                 />
                 <span v-else>
                   {{ member.initials }}
+                  
                 </span>
 
                 <!-- Custom tooltip that shows on hover -->
