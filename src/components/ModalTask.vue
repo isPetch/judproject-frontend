@@ -397,6 +397,8 @@ const addComment = () => {
 
 onMounted(() => {
   fetchUserData();
+ 
+
   // save comments in localStorage
   const savedComments = localStorage.getItem(`task_comments_${props.task.id}`);
   if (savedComments) {

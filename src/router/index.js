@@ -12,7 +12,7 @@ import EditProjectVue from '../views/EditProject.vue'
 import ProfileVue from  '@/views/Profile.vue'
 import TestVue from '../views/Test.vue'
 import MemberVue from '../views/Member.vue'
-// import ChangePasswordVue from '@/views/ChangePassword.vue'
+import ChangePasswordVue from '../views/ChangePassword.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -71,6 +71,11 @@ const router = createRouter({
       path: '/profile',
       name: 'Profile',
       component: ProfileVue
+     },
+     {
+      path: '/password',
+      name: 'Password',
+      component: ChangePasswordVue
      },
      {
       path: '/member/:id',
