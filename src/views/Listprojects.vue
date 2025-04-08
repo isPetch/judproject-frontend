@@ -111,29 +111,35 @@ const selectProject = async (id) => {
     // Fetch project details
     const projectDetails = await getProjectById(id);
     
-    // Fetch team members for the project
-    const members = await fetchProjectMembers(id);
-    console.log(members);
-  //   members = members.forEach(async (member) =>  {
-  //   console.log(member.memberId); // Log memberId
-  //   member.image = await fetchMemberPicture (member.memberId)
-  //   }
-  // );
-   console.log(members)
-    // Assign members to project
+    // Fetch team members
+    let members = await fetchProjectMembers(id);
+    console.log("Before processing members:", members);
+
+    // Properly wait for all async operations
+    members = await Promise.all(
+      members.map(async (member) => {
+        console.log("Fetching image for member:", member.memberId);
+        member.image = await fetchMemberPicture(member.memberId);
+        return member;
+      })
+    );
+
+    console.log("After processing members:", members);
+
+    // Assign to selected project
     selectedProject.value = {
       ...projectDetails,
-         members
-
+      members
     };
-    // selectedProject.value.members = members
-    console.log(selectedProject.value)
+
+    console.log("Selected project:", selectedProject.value);
   } catch (error) {
     console.error("Failed to fetch project details:", error);
   } finally {
     isLoading.value = false;
   }
 };
+
 
 const clearSelection = () => {
   selectedProject.value = null;
