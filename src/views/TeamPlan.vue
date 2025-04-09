@@ -261,8 +261,52 @@ const getTasksForMember = (memberId) => {
 const isToday = (date) => {
   return isDateToday(date);
 };
+//1
 
-const getTaskStyle = (task) => {
+const getTaskPosition = (task, memberTasks) => {
+  // Check for overlapping tasks
+  let row = 0;
+  const startDate = typeof task.startDate === "string" 
+    ? parseISO(task.startDate) 
+    : new Date(task.startDate);
+  const endDate = typeof task.dueDate === "string" 
+    ? parseISO(task.dueDate) 
+    : new Date(task.dueDate);
+
+  // Check each task for overlaps
+  const overlappingRows = new Set();
+  
+  memberTasks.forEach(otherTask => {
+    if (otherTask.id === task.id) return; // Skip the current task
+    
+    const otherStartDate = typeof otherTask.startDate === "string" 
+      ? parseISO(otherTask.startDate) 
+      : new Date(otherTask.startDate);
+    const otherEndDate = typeof otherTask.dueDate === "string" 
+      ? parseISO(otherTask.dueDate) 
+      : new Date(otherTask.dueDate);
+    
+    // Check for time overlap
+    if (startDate <= otherEndDate && endDate >= otherStartDate) {
+      if (otherTask._calculatedRow !== undefined) {
+        overlappingRows.add(otherTask._calculatedRow);
+      }
+    }
+  });
+  
+  // Find an available row for the current task
+  while (overlappingRows.has(row)) {
+    row++;
+  }
+  
+  // Store the calculated row in the task
+  task._calculatedRow = row;
+  
+  return row;
+};
+
+// Modify getTaskStyle to make tasks taller and better looking
+const getTaskStyle = (task, memberTasks) => {
   // Make sure task has startDate and dueDate properties
   if (!task.startDate || !task.dueDate) {
     return { display: "none" };
@@ -299,24 +343,59 @@ const getTaskStyle = (task) => {
   // Calculate left position and width
   const leftPosition = daysFromStart * dayWidth.value;
   const width = duration * dayWidth.value - 4; // Subtract padding
-
-  // Use task color or default to a color based on task status
+  
+  // Calculate vertical position (top) based on overlap level
+  const row = getTaskPosition(task, memberTasks);
+  const rowHeight = 18; // Increased from 14px to allow taller tasks
+  const topPosition = row * rowHeight + 2; // Each row is rowHeight px apart, starting 2px from top
+  
+  // Fixed height for all tasks
+  const height = 16; // Increased fixed task height
+  
+  // Create a darker border based on the task color for better definition
   const backgroundColor = task.color || getColorByStatus(task.status);
+  
+  // Create a slightly darker shade for the border
+  const borderColor = task.color 
+    ? adjustColorBrightness(task.color, -20) 
+    : adjustColorBrightness(getColorByStatus(task.status), -20);
 
   return {
     left: `${leftPosition}px`,
     width: `${width}px`,
+    top: `${topPosition}px`,
+    height: `${height}px`,
     backgroundColor,
+    borderLeft: `3px solid ${borderColor}`,
+    boxShadow: '1px 1px 3px rgba(0,0,0,0.2)',
+    zIndex: 10 - row, // Higher tasks have higher z-index
+    padding: '2px 4px', // Add some padding for text
+    borderRadius: '2px', // Slightly rounded corners
   };
+};
+
+// Helper function to adjust color brightness
+const adjustColorBrightness = (hex, percent) => {
+  // Convert hex to RGB
+  let r = parseInt(hex.substring(1,3), 16);
+  let g = parseInt(hex.substring(3,5), 16);
+  let b = parseInt(hex.substring(5,7), 16);
+
+  // Adjust brightness
+  r = Math.max(0, Math.min(255, r + percent));
+  g = Math.max(0, Math.min(255, g + percent));
+  b = Math.max(0, Math.min(255, b + percent));
+  
+  // Convert back to hex
+  return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
 };
 
 // Helper to get color by task status if no color property exists
 const getColorByStatus = (status) => {
   const statusColors = {
-    todo: "#f28b82", // Red for to-do
-    inProgress: "#81c995", // Green for in progress
-    review: "#ffcc66", // Yellow for review
-    done: "#66a3ff", // Blue for done
+    ToDo: "#66a3ff", // Blue for to-do
+    "In Progress": "#ffcc66", // สีเหลือง for in progress
+    Done: "#81c995", // Green for done,
   };
 
   return statusColors[status] || "#f28b82"; // Default to red if status not found
@@ -498,6 +577,7 @@ const getMemberInitials = (name) => {
                       class="min-w-10 w-10 h-full border-r border-gray-100"
                       :class="{
                         'border-l-2 border-l-blue-500': day.date.getDate() === 1,
+                        'bg-blue-50': isToday(day.date),
                       }"
                     ></div>
                   </div>
@@ -506,8 +586,8 @@ const getMemberInitials = (name) => {
                   <div
                     v-for="task in getTasksForMember(member.memberId)"
                     :key="task.id"
-                    class="absolute top-2 h-12 px-2 text-white text-xs flex items-center rounded"
-                    :style="getTaskStyle(task)"
+                    class="absolute text-white text-xs flex items-center rounded overflow-hidden text-ellipsis whitespace-nowrap"
+                    :style="getTaskStyle(task, getTasksForMember(member.memberId))"
                     :title="task.name"
                   >
                     {{ task.name }}
