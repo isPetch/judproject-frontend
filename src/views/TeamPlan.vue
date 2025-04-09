@@ -117,7 +117,7 @@ const viewProjectMember = async (projectId) => {
       import.meta.env.VITE_ROOT_API + `/api/project/${projectId}/members`
     );
     const result = await response.json();
-    console.log("API Response:", result);
+    console.log("Members:", result);
 
     if (result && result.status === "Success") {
       const membersWithImages = await Promise.all(
@@ -166,6 +166,7 @@ const fetchSprint = async (sprintId) => {
   try {
     selectedSprint.value = await getSprintById(sprintId);
     tasks.value = selectedSprint.value.tasks || [];
+    console.log("Tasks:",tasks.va)
   } catch (error) {
     console.error("Error fetching sprint:", error);
   } finally {
@@ -250,8 +251,11 @@ const addSprint = async () => {
 
 // Task helpers for team plan
 const getTasksForMember = (memberId) => {
-  // Filter tasks by member ID
-  return tasks.value ? tasks.value.filter((task) => task.assigneeId === memberId) : [];
+  return tasks.value
+    ? tasks.value.filter(task =>
+        task.assigned && task.assigned.some(assignment => assignment.memberId === memberId)
+      )
+    : [];
 };
 
 const isToday = (date) => {
@@ -500,7 +504,7 @@ const getMemberInitials = (name) => {
 
                   <!-- Tasks for this member -->
                   <div
-                    v-for="task in getTasksForMember(member.id)"
+                    v-for="task in getTasksForMember(member.memberId)"
                     :key="task.id"
                     class="absolute top-2 h-12 px-2 text-white text-xs flex items-center rounded"
                     :style="getTaskStyle(task)"
