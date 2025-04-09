@@ -23,8 +23,8 @@ const editedPrerequisite = ref(
   props.task?.prerequisite ? props.task.prerequisite.id : null
 );
 const editedSprintId = ref(props.task?.sprintId);
-const editedStartDate = ref(props.task?.startDate || "");
-const editedEndDate = ref(props.task?.endDate || "");
+const editedStartDate = ref(props.task?.startDate ? props.task.startDate.slice(0, 10) : "");
+const editedDueDate = ref(props.task?.dueDate ? props.task.dueDate.slice(0, 10) : "");
 const sprintData = ref({ projectId: props.projectId });
 const showMemberModal = ref(false);
 const selectedMember = ref("");
@@ -64,8 +64,8 @@ watch(
       editedDescription.value = newTask.description || "";
       editedPrerequisite.value = newTask.prerequisite ? newTask.prerequisite.id : null;
       editedSprintId.value = newTask.sprintId;
-      editedStartDate.value = newTask.startDate || "";
-      editedEndDate.value = newTask.endDate || "";
+      editedStartDate.value = newTask.startDate ? newTask.startDate.slice(0, 10) : "";
+      editedDueDate.value = newTask.dueDate ? newTask.dueDate.slice(0, 10) : "";
     }
   },
   { deep: true }
@@ -241,8 +241,8 @@ const saveTaskChanges = async () => {
     description: editedDescription.value,
     prerequisite: editedPrerequisite.value,
     sprintId: editedSprintId.value,
-    startDate: editedStartDate.value,
-    endDate: editedEndDate.value,
+    startDate: editedStartDate.value ? editedStartDate.value + "T00:00:00Z" : "",
+    dueDate: editedDueDate.value ? editedDueDate.value + "T00:00:00Z" : "",
     members: props.task.assigned
       ? props.task.assigned.map((member) => member.memberId)
       : [],
@@ -269,7 +269,7 @@ const saveTaskChanges = async () => {
       );
       props.task.sprintId = editedSprintId.value;
       props.task.startDate = editedStartDate.value;
-      props.task.endDate = editedEndDate.value;
+      props.task.dueDate = editedDueDate.value;
 
       saveSuccess.value = true;
       emit("taskUpdated", props.task);
@@ -442,6 +442,7 @@ const handleKeyDown = (e) => {
     props.closeModal();
   }
 };
+
 
 onMounted(() => {
   document.addEventListener("keydown", handleKeyDown);
@@ -707,10 +708,10 @@ watch(
               />
             </div>
             <div class="flex-1 min-w-[150px]">
-              <label class="text-xs text-gray-600 block mb-1">End Date</label>
+              <label class="text-xs text-gray-600 block mb-1">Due Date</label>
               <input
                 type="date"
-                v-model="editedEndDate"
+                v-model="editedDueDate"
                 @change="saveTaskChanges"
                 class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
