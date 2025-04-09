@@ -52,15 +52,17 @@ const dayWidth = ref(40); // Default width before measurement
 // Calculate days to display - show current month plus part of next month
 const displayDays = computed(() => {
   const monthStart = startOfMonth(currentDate.value);
-  const monthEnd = endOfMonth(currentDate.value);
-  return eachDayOfInterval({ start: monthStart, end: monthEnd }).map((date) => ({
+  const nextMonthEnd = endOfMonth(addMonths(currentDate.value, 1));
+  
+  return eachDayOfInterval({ start: monthStart, end: nextMonthEnd }).map((date) => ({
     date,
     dateStr: format(date, "yyyy-MM-dd"),
   }));
 });
-
-const currentMonthName = computed(() => {
-  return format(currentDate.value, "MMMM yyyy");
+const currentMonthDisplay = computed(() => {
+  const startMonth = format(startOfMonth(currentDate.value), "MMMM yyyy");
+  const endMonth = format(endOfMonth(addMonths(currentDate.value, 1)), "MMMM yyyy");
+  return `${startMonth} - ${endMonth}`;
 });
 
 // Navigation for calendar
@@ -261,7 +263,6 @@ const getTasksForMember = (memberId) => {
 const isToday = (date) => {
   return isDateToday(date);
 };
-//1
 
 const getTaskPosition = (task, memberTasks) => {
   // Check for overlapping tasks
@@ -507,7 +508,7 @@ const getMemberInitials = (name) => {
             >
               ←
             </button>
-            <span class="text-lg font-medium">{{ currentMonthName }}</span>
+            <span class="text-lg font-medium">{{ currentMonthDisplay }}</span>
             <button
               @click="nextMonth"
               class="text-xl hover:bg-blue-600 px-2 py-1 rounded"
