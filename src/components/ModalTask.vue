@@ -311,23 +311,38 @@ const openMoveModal = () => {
 // Member info calculation
 const memberData = computed(() => {
   if (!props.task.assigned) return [];
-
-  const members = Array.isArray(props.task.assigned)
+  // ตรวจสอบให้แน่ใจว่า task.assigned เป็น Array
+  const assignedMembers = Array.isArray(props.task.assigned)
     ? props.task.assigned
     : [props.task.assigned];
 
-  return members.map((member) => ({
-    memberId: member.memberId,
-    username: member.username || "Unknown",
-    image: member.image || "/images/default-profile.png",
-    initials: member.username
-      ? member.username.length > 1
-        ? member.username[0].toUpperCase() +
-          member.username[member.username.length - 1].toUpperCase()
-        : member.username.toUpperCase()
-      : "?",
-    color: getRandomPastelColor(member.username), // Generate consistent color for each user
-  }));
+  return assignedMembers.map(assignedMember => {
+    // หาสมาชิกใน availableMembers ที่มี memberId ตรงกับ assignedMember
+    const fetchedMember = availableMembers.value.find(
+      member => member.memberId === assignedMember.memberId
+    ) || {};
+
+    // ใช้ username จาก availableMembers ถ้ามี ถ้าไม่มีก็ใช้ที่มีอยู่ใน assignedMember หรือ fallback เป็น "Unknown"
+    const username = fetchedMember.username || assignedMember.username || "Unknown";
+    // ใช้รูปที่ได้จาก availableMembers หากไม่มีให้ใช้ default profile
+    const image = fetchedMember.image || null;
+    // สร้าง initials จาก username
+    const initials = username
+      ? (username.length > 1
+          ? username[0].toUpperCase() + username[username.length - 1].toUpperCase()
+          : username.toUpperCase())
+      : "?";
+    // สร้างสีแบบสุ่ม (แบบ consistency) โดยใช้ฟังก์ชัน getRandomPastelColor
+    const color = getRandomPastelColor(username);
+
+    return {
+      memberId: assignedMember.memberId,
+      username,
+      image,
+      initials,
+      color,
+    };
+  });
 });
 
 // Generate consistent colors for member avatars
