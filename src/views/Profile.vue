@@ -9,6 +9,7 @@ const router = useRouter();
 const username = ref('');
 const email = ref('');
 
+
 const isEditingUsername = ref(false);
 const isEditingEmail = ref(false);
 const successMessage = ref(''); 
@@ -41,6 +42,7 @@ onMounted(async () => {
     console.log('User Data:', userData); 
     username.value = userData.username;
     email.value = userData.email;
+    pictureName.value = userData.pictureName;
 
     if (userData.pictureName) {
       const response = await fetch(import.meta.env.VITE_ROOT_API + `/api/profile/picture`, {
@@ -228,20 +230,18 @@ const handleFileUpload = (event) => {
   }
 };
 
+const pictureName = ref(null);
 
 const deleteProfileImage = async () => {
   try {
-    if (!profileImage.value) {
+    if (!pictureName.value) {
       showPopupError("No profile image to delete.");
       return;
     }
 
     const userId = localStorage.getItem("userId");
-    const filename = profileImage.value.split("/").pop(); 
 
-    console.log("Deleting profile picture:", filename);
-
-    const response = await fetch(`${import.meta.env.VITE_ROOT_API}/api/profile/picture/${filename}`, {
+    const response = await fetch(`${import.meta.env.VITE_ROOT_API}/api/profile/picture/${pictureName.value}`, {
       method: "DELETE",
       headers: {
         "Authorization": userId,
@@ -249,12 +249,13 @@ const deleteProfileImage = async () => {
     });
 
     const result = await response.json();
-    
+
     if (response.ok) {
       alert("Profile picture deleted successfully.");
-      profileImage.value = null; 
+      profileImage.value = null;
       image.value = null;
-      window.location.reload()
+      pictureName.value = null;
+      window.location.reload();
     } else {
       console.error("Error deleting profile picture:", result.message);
       showPopupError("Error deleting profile picture: " + (result.message || "Please try again"));
