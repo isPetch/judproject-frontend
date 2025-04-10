@@ -4,6 +4,7 @@ import { ref, onMounted, computed } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import NavBar from "@/components/NavBar.vue";
 import { getAllUsers } from "../composable/getJudProjects";
+import { UserPlusIcon } from '@heroicons/vue/24/outline';
 
 const route = useRoute();
 const router = useRouter();
@@ -253,8 +254,8 @@ const getMemberInitials = (name) => {
             class="btn btn-outline btn-sm text-white hover:bg-white hover:text-indigo-600 transition-colors"
             @click="openAddMemberPopup"
           >
-            <MaterialSymbolsPersonAddRounded class="mr-2" />
-            Invite Members
+            <UserPlusIcon class="h-5 w-5 mr-2" />
+              Invite Members
           </button>
         </div>
 
