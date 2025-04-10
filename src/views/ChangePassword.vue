@@ -62,7 +62,7 @@ const updatePassword = async () => {
       return;
     }
 
-    // 🔒 Step 1: ตรวจสอบรหัสผ่านเก่า
+    // Step 1: ตรวจสอบรหัสผ่านเก่า
     const checkResponse = await fetch(
       import.meta.env.VITE_ROOT_API + "/api/checkpassword",
       {
@@ -84,9 +84,13 @@ const updatePassword = async () => {
     }
 
     // Safely parse the response if it's JSON
-    const checkResponseData = await checkResponse.json();
+    let checkResponseData = {};
+    const checkResponseText = await checkResponse.text();
+    if (checkResponseText) {
+      checkResponseData = JSON.parse(checkResponseText);
+    }
 
-    // ✅ Step 2: ส่งรหัสใหม่ไปอัปเดต
+    // Step 2: ส่งรหัสใหม่ไปอัปเดต
     const formData = new FormData();
     formData.append("password", newPassword.value);
 
@@ -107,7 +111,11 @@ const updatePassword = async () => {
       throw new Error(errorText || "Error updating password. Please try again.");
     }
 
-    const result = await updateResponse.json();
+    const resultText = await updateResponse.text();
+    let result = {};
+    if (resultText) {
+      result = JSON.parse(resultText);
+    }
 
     if (result && result.status === "Success") {
       successMessage.value = "Password updated successfully!";
@@ -122,7 +130,6 @@ const updatePassword = async () => {
     showPopupError("Error: " + error.message);
   }
 };
-
 const toggleCurrentPasswordVisibility = () => {
   showCurrentPassword.value = !showCurrentPassword.value;
 };

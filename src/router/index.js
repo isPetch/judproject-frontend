@@ -2,7 +2,6 @@ import { createRouter, createWebHistory } from 'vue-router'
 import HomePage from '../views/HomePage.vue'
 import DashboardListProjects from '../views/DashboardListProjects.vue'
 import ListProjects from '../views/ListProjects.vue'
-// import TaskBoardVue from '@/views/TaskBoard.vue'
 import CreateProjectVue from '@/views/CreateProject.vue'
 import LoginVue from '../views/Login.vue'
 import SignUpVue from '@/views/SignUp.vue'
@@ -10,7 +9,6 @@ import Taskboard from '../views/Taskboard.vue'
 import TeamPlanVue from '../views/TeamPlan.vue'
 import EditProjectVue from '../views/EditProject.vue'
 import ProfileVue from  '@/views/Profile.vue'
-import TestVue from '../views/Test.vue'
 import MemberVue from '../views/Member.vue'
 import ChangePasswordVue from '../views/ChangePassword.vue'
 
@@ -61,11 +59,6 @@ const router = createRouter({
       path: '/edit/:id',
       name: 'EditProject',
       component: EditProjectVue
-    },
-    {
-    path: '/test',
-    name: 'Test',
-    component: TestVue
     },
     {
       path: '/profile',
