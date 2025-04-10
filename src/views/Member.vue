@@ -197,12 +197,18 @@ const removeMemberFromProject = async (memberId) => {
     console.error("No project selected for removing members");
     return;
   }
+  if (!confirm("Are you sure you want to remove this member?")) {
+    return; // If the user selects Cancel, exit the function
+  }
+  const token = localStorage.getItem('token');
+  if (!token) {
+    console.error("No token found for authorization");
+    return;
+  }
 
   try {
     const response = await fetch(
-      `${import.meta.env.VITE_ROOT_API}/api/project/${
-        selectedProjectId.value
-      }/member/remove`,
+      `${import.meta.env.VITE_ROOT_API}/api/project/${selectedProjectId.value}/member/remove`,
       {
         method: "DELETE",
         headers: {
