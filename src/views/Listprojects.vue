@@ -2,7 +2,7 @@
 import { ref, computed, onMounted } from 'vue';
 import { useRoute,useRouter } from 'vue-router';
 import NavBar from "@/components/NavBar.vue";
-import { getAllProjects, getProjectById } from "../composable/getJudProjects";
+import { getAllProjects, getProjectById, getUserById } from "../composable/getJudProjects";
 import axios from 'axios'; // Make sure axios is imported
 
 const route = useRoute();
@@ -14,6 +14,8 @@ const isLoading = ref(true);
 const isMenuOpen = ref(false);
 const sortOption = ref('newest'); // อาจเป็น 'newest', 'oldest', 'name'
 const projectMembers = ref([]); // Added to store team members
+const currentUser = ref(null);
+const currentUserRole = ref(null);
 
 
 const image = ref(null);
@@ -105,6 +107,31 @@ const fetchProjectMembers = async (projectId) => {
   }
 };
 
+const checkUserRole = async () => {
+  try {
+    const storedUserId = localStorage.getItem('userId');
+    if (!storedUserId) {
+      console.error("No userId found in localStorage");
+      return;
+    }
+    const userData = await getUserById(storedUserId);
+    currentUser.value = userData;
+    if (selectedProject.value && selectedProject.value.members) {
+      // ค้นหาสมาชิกที่มี username ตรงกับ userData.username
+      const member = selectedProject.value.members.find((m) => m.username === userData.username);
+      if (member) {
+        currentUserRole.value = member.role;
+        console.log("Current user role:", member.role);
+      } else {
+        currentUserRole.value = null;
+        console.warn("User is not found among project members");
+      }
+    }
+  } catch (error) {
+    console.error("Error checking user role:", error);
+  }
+};
+
 const selectProject = async (id) => {
   isLoading.value = true;
   try {
@@ -133,6 +160,7 @@ const selectProject = async (id) => {
     };
 
     console.log("Selected project:", selectedProject.value);
+    await checkUserRole();
   } catch (error) {
     console.error("Failed to fetch project details:", error);
   } finally {
@@ -382,12 +410,6 @@ onMounted(() => {
                           </svg>
                           Edit Members
                         </button>
-                         <button class="flex items-center w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100">
-                          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-                          </svg>
-                          Leave Project
-                        </button>
                       </div>
                     </div>
                   </div>
@@ -466,7 +488,7 @@ onMounted(() => {
             <!-- Actions -->
             <div class="px-6 py-4 bg-gray-50 border-t border-gray-200">
               <div class="flex justify-between gap-2">
-                <button class="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-md flex items-center gap-1 transition-colors duration-200">
+                <button v-if="currentUserRole === 'Owner' || currentUserRole === 'admin'" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-md flex items-center gap-1 transition-colors duration-200">
                   <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
                   </svg>
