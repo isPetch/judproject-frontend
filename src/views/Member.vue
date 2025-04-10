@@ -325,7 +325,8 @@ const getMemberInitials = (name) => {
                 </div>
               </div>
               <div class="flex items-center space-x-2">
-                <div v-if="currentUserRole !== 'member'  && member.role !== 'Owner' && member.role !== 'admin'" class="flex items-center space-x-2">
+                <div v-if="(currentUserRole === 'Owner' && member.role !== 'Owner') ||
+                         (currentUserRole !== 'member' && currentUserRole !== 'Owner' && member.role === 'member')" class="flex items-center space-x-2">
                   <select
                     v-model="member.role"
                     @change="updateRoleForMember(member.memberId, member.role)"
@@ -337,7 +338,8 @@ const getMemberInitials = (name) => {
                 </div>
 
                 <button
-                  v-if="currentUserRole !== 'member' && member.role !== 'Owner' && member.role !== 'admin'"
+                  v-if="(currentUserRole === 'Owner' && member.role !== 'Owner') ||
+                        (currentUserRole !== 'member' && currentUserRole !== 'Owner' && member.role === 'member')"
                   @click="removeMemberFromProject(member.memberId)"
                   class="group relative flex items-center justify-center w-10 h-10 rounded-full bg-red-50 hover:bg-red-100 transition-all duration-300 ease-in-out"
                 >
