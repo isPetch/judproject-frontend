@@ -294,42 +294,46 @@ const getMemberInitials = (name) => {
                   <p class="text-sm text-gray-500">{{ member.email }}</p>
                 </div>
               </div>
-              <div v-if="member.role !== 'admin'" class="flex items-center space-x-2">
-                <select
-                  v-model="member.role"
-                  @change="updateRoleForMember(member.memberId, member.role)"
-                  class="bg-white text-gray-800 border border-gray-300 px-2 py-1 rounded-md"
+              <div class="flex items-center space-x-2">
+                <div v-if="member.role !== 'admin' && member.role !== 'Owner'" class="flex items-center space-x-2">
+                  <select
+                    v-model="member.role"
+                    @change="updateRoleForMember(member.memberId, member.role)"
+                    class="bg-white text-gray-800 border border-gray-300 px-2 py-1 rounded-md"
+                  >
+                    <option value="member">Member</option>
+                    <option value="admin">Admin</option>
+                  </select>
+                </div>
+
+                <button
+                  v-if="member.role === 'member'"
+                  @click="removeMemberFromProject(member.memberId)"
+                  class="group relative flex items-center justify-center w-10 h-10 rounded-full bg-red-50 hover:bg-red-100 transition-all duration-300 ease-in-out"
                 >
-                  <option value="member">Member</option>
-                  <option value="admin">Admin</option>
-                </select>
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    class="h-5 w-5 text-red-600 group-hover:text-red-800 transition-colors duration-200"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                    />
+                  </svg>
+                  <span
+                    class="absolute -top-8 left-1/2 -translate-x-1/2 bg-gray-800 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                  >
+                    Remove
+                  </span>
+                </button>
               </div>
 
-              <button
-                v-if="member.role === 'member'"
-                @click="removeMemberFromProject(member.memberId)"
-                class="group relative flex items-center justify-center w-10 h-10 rounded-full bg-red-50 hover:bg-red-100 transition-all duration-300 ease-in-out"
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  class="h-5 w-5 text-red-600 group-hover:text-red-800 transition-colors duration-200"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                  />
-                </svg>
-                <span
-                  class="absolute -top-8 left-1/2 -translate-x-1/2 bg-gray-800 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-                >
-                  Remove
-                </span>
-              </button>
+
             </div>
           </div>
 
