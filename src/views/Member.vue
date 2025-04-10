@@ -3,7 +3,7 @@ import { RouterView } from "vue-router";
 import { ref, onMounted, computed } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import NavBar from "@/components/NavBar.vue";
-import { getAllUsers } from "../composable/getJudProjects";
+import { getAllUsers, getUserById } from "../composable/getJudProjects";
 import { UserPlusIcon } from '@heroicons/vue/24/outline';
 
 const route = useRoute();
@@ -17,11 +17,40 @@ const searchEmail = ref("");
 const selectedEmail = ref("");
 const selectedRole = ref("");
 const projectId = route.params.id;
+const currentUserRole = ref("");
 
-onMounted(() => {
+const getUserRole = async () => {
+  try {
+    // ดึงข้อมูลของผู้ใช้จาก API
+    const userData = await getUserById(localStorage.getItem('userId')); // สมมุติว่ามี userId ใน localStorage
+
+    if (!userData || !userData.username) {
+      console.error("User data not found");
+      return;
+    }
+
+    // เปรียบเทียบ username ที่ได้จาก API กับสมาชิกในโปรเจ็กต์
+    const currentUser = selectedProjectMembers.value.find(
+      (member) => member.username === userData.username
+    );
+
+    if (currentUser) {
+      currentUserRole.value = currentUser.role;
+      return currentUser.role;
+    } else {
+      console.error("User is not a member of this project.");
+    }
+  } catch (error) {
+    console.error("Error fetching user data:", error);
+  }
+};
+
+onMounted(async () => {
   fetchUsers();
   if (projectId) {
-    viewProjectMember(projectId);
+    await viewProjectMember(projectId);
+    const role = await getUserRole();
+    console.log("Current user's role:", role);
   } else {
     console.error("No projectId found in route");
   }
@@ -296,7 +325,7 @@ const getMemberInitials = (name) => {
                 </div>
               </div>
               <div class="flex items-center space-x-2">
-                <div v-if="member.role !== 'admin' && member.role !== 'Owner'" class="flex items-center space-x-2">
+                <div v-if="currentUserRole !== 'member'  && member.role !== 'Owner' && member.role !== 'admin'" class="flex items-center space-x-2">
                   <select
                     v-model="member.role"
                     @change="updateRoleForMember(member.memberId, member.role)"
@@ -308,7 +337,7 @@ const getMemberInitials = (name) => {
                 </div>
 
                 <button
-                  v-if="member.role === 'member'"
+                  v-if="currentUserRole !== 'member' && member.role !== 'Owner' && member.role !== 'admin'"
                   @click="removeMemberFromProject(member.memberId)"
                   class="group relative flex items-center justify-center w-10 h-10 rounded-full bg-red-50 hover:bg-red-100 transition-all duration-300 ease-in-out"
                 >
