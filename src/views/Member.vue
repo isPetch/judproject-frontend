@@ -126,36 +126,40 @@ const addMemberToProject = async (email, role) => {
   }
 };
 
-// //update member
-// const updateRoleForMember = async (memberId, newRole) => {
-//   console.log("Member ID:", memberId); // ตรวจสอบค่าของ memberId ที่ส่งไป
-//   if (!memberId) {
-//     console.error("Member ID is null or undefined!");
-//     return;
-//   }
+//update member
+const updateRoleForMember = async (memberId, newRole) => {
+  console.log("Member ID:", memberId); // ตรวจสอบค่าของ memberId ที่ส่งไป
+  if (!memberId) {
+    console.error("Member ID is null or undefined!");
+    return;
+  }
 
-//   try {
-//     const response = await fetch(import.meta.env.VITE_ROOT_API + `/api/project/${selectedProjectId.value}/member/update`, {
-//       method: 'PUT',
-//       headers: {
-//         'Content-Type': 'application/json',
-//       },
-//       body: JSON.stringify({ memberId, role: newRole }),
-//     });
+  try {
+    const response = await fetch(
+      import.meta.env.VITE_ROOT_API +
+        `/api/project/${selectedProjectId.value}/member/update`,
+      {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ memberId, role: newRole }),
+      }
+    );
 
-//     const result = await response.json();
+    const result = await response.json();
 
-//     if (result && result.status === 'Success') {
-//       console.log("Role updated successfully:", result);
-//       // Refresh member list to reflect the role update
-//       await viewProjectMember(selectedProjectId.value);
-//     } else {
-//       alert(result.message || 'Failed to update role');
-//     }
-//   } catch (error) {
-//     console.error("Error updating role:", error.message);
-//   }
-// };
+    if (result && result.status === "Success") {
+      console.log("Role updated successfully:", result);
+      // Refresh member list to reflect the role update
+      await viewProjectMember(selectedProjectId.value);
+    } else {
+      alert(result.message || "Failed to update role");
+    }
+  } catch (error) {
+    console.error("Error updating role:", error.message);
+  }
+};
 
 // delete member
 const removeMemberFromProject = async (memberId) => {
@@ -290,12 +294,17 @@ const getMemberInitials = (name) => {
                   <p class="text-sm text-gray-500">{{ member.email }}</p>
                 </div>
               </div>
-              <!-- <div v-if="member.role !== 'admin'" class="flex items-center space-x-2">
-    <select v-model="member.role" @change="updateRoleForMember(member.id, member.role)" class="bg-white text-gray-800 border border-gray-300 px-2 py-1 rounded-md">
-  <option value="member">Member</option>
-  <option value="admin">Admin</option>
-</select>
-  </div> -->
+              <div v-if="member.role !== 'admin'" class="flex items-center space-x-2">
+                <select
+                  v-model="member.role"
+                  @change="updateRoleForMember(member.memberId, member.role)"
+                  class="bg-white text-gray-800 border border-gray-300 px-2 py-1 rounded-md"
+                >
+                  <option value="member">Member</option>
+                  <option value="admin">Admin</option>
+                </select>
+              </div>
+
               <button
                 v-if="member.role === 'member'"
                 @click="removeMemberFromProject(member.memberId)"
