@@ -33,12 +33,12 @@ const closePopup = () => {
 
 onMounted(async () => {
   try {
-    const userId = localStorage.getItem('userId');
-    if (!userId) {
+    const token = localStorage.getItem('token');
+    if (!token) {
       throw new Error("User ID not found. Please log in.");
     }
 
-    const userData = await getUserById(userId);
+    const userData = await getUserById(token);
     console.log('User Data:', userData); 
     username.value = userData.username;
     email.value = userData.email;
@@ -48,7 +48,8 @@ onMounted(async () => {
       const response = await fetch(import.meta.env.VITE_ROOT_API + `/api/profile/picture`, {
         method: 'GET',
         headers: { 
-          'Authorization': userId
+          'Authorization': token,
+          
         }
       });
 
@@ -81,7 +82,7 @@ const toggleEdit = (field) => {
 
 const updateUserField = async () => {
   try {
-    const userId = localStorage.getItem('userId');
+    const token = localStorage.getItem('token');
     const formData = new FormData();
     
     formData.append('username', username.value);
@@ -93,7 +94,8 @@ const updateUserField = async () => {
     const response = await fetch(import.meta.env.VITE_ROOT_API + "/api/profile/update", {
       method: 'PUT',
       headers: { 
-        'Authorization': userId
+        'Authorization': token
+        
       },
       body: formData,
     });
@@ -168,13 +170,12 @@ const saveChanges = (field) => {
 
 const deleteAccount = async () => {
   try {
-    const userId = localStorage.getItem('userId');
-    console.log(userId)
+    const token = localStorage.getItem('token');
     const response = await fetch(import.meta.env.VITE_ROOT_API + "/api/account/delete", {
       method: 'DELETE',
       headers: { 
         'Content-Type': 'application/json',
-        'Authorization': localStorage.getItem('userId')
+        'Authorization': localStorage.getItem('token')
       },
     });
 
@@ -239,12 +240,13 @@ const deleteProfileImage = async () => {
       return;
     }
 
-    const userId = localStorage.getItem("userId");
+    const token = localStorage.getItem("token");
 
     const response = await fetch(`${import.meta.env.VITE_ROOT_API}/api/profile/picture/${pictureName.value}`, {
       method: "DELETE",
       headers: {
-        "Authorization": userId,
+        "Authorization": token,
+         'Content-Type': 'application/json',
       },
     });
 

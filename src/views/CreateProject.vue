@@ -121,8 +121,8 @@ watch(teamMembers, () => {
 
 const fetchUsers = async () => {
   const response = await getAllUsers();
-  if (response && response.status === "Success") {
-    availableEmails.value = response.users.map(user => user.email);
+  if (response) {
+    availableEmails.value = response.users.map((user) => user.email);
   }
 };
 

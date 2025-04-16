@@ -29,12 +29,12 @@ const handleScroll = () => {
 
 const fetchUserData = async () => {
   try {
-    const userId = localStorage.getItem('userId');
-    if (!userId) {
+    const token = localStorage.getItem('token');
+    if (!token) {
       throw new Error("User ID not found. Please log in.");
     }
 
-    const userData = await getUserById(userId);
+    const userData = await getUserById(token);
     username.value = userData.username;
     email.value = userData.email;
 
@@ -42,7 +42,7 @@ const fetchUserData = async () => {
       const response = await fetch(import.meta.env.VITE_ROOT_API + `/api/profile/picture`, {
         method: 'GET',
         headers: { 
-          'Authorization': userId
+          'Authorization': token
         }
       });
 
