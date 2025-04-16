@@ -225,7 +225,6 @@ const removeMemberFromProject = async (memberId) => {
         headers: {
           "Authorization": token,
           "Content-Type": "application/json",
-          Authorization: `${token}`,
         },
         body: JSON.stringify({
           members: [memberId],
