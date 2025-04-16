@@ -60,11 +60,12 @@ const image = ref(null);
 const membersImage = ref([]);
 const fetchMemberPicture = async (memberId) => {
   try {
+    const token = localStorage.getItem('token');
     const response = await fetch(
       `${import.meta.env.VITE_ROOT_API}/api/project/member/${memberId}/picture`,
       {
         method: "GET",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Authorization": token, "Content-Type": "application/json" },
       }
     );
 
@@ -86,19 +87,24 @@ const fetchMemberPicture = async (memberId) => {
 
 const fetchUsers = async () => {
   const response = await getAllUsers();
-  if (response && response.status === "Success") {
+  if (response) {
     availableEmails.value = response.users.map((user) => user.email);
   }
 };
 
 const viewProjectMember = async (projectId) => {
   try {
+    const token = localStorage.getItem('token');
     console.log("Fetching members for project ID:", projectId);
 
     selectedProjectId.value = projectId;
 
     const response = await fetch(
-      import.meta.env.VITE_ROOT_API + `/api/project/${projectId}/members`
+      import.meta.env.VITE_ROOT_API + `/api/project/${projectId}/members`,
+      {
+        method: "GET",
+        headers: {"Authorization": token, "Content-Type": "application/json" },
+      }
     );
     const result = await response.json();
 
@@ -130,12 +136,14 @@ const addMemberToProject = async (email, role) => {
   }
 
   try {
+    const token = localStorage.getItem('token');
     const response = await fetch(
       import.meta.env.VITE_ROOT_API +
         `/api/project/${selectedProjectId.value}/add-member`,
       {
         method: "POST",
         headers: {
+          "Authorization": token,
           "Content-Type": "application/json",
         },
         body: JSON.stringify({ email, role }),
@@ -165,12 +173,14 @@ const updateRoleForMember = async (memberId, newRole) => {
   }
 
   try {
+    const token = localStorage.getItem('token');
     const response = await fetch(
       import.meta.env.VITE_ROOT_API +
         `/api/project/${selectedProjectId.value}/member/update`,
       {
         method: "PUT",
         headers: {
+          "Authorization": token,
           "Content-Type": "application/json",
         },
         body: JSON.stringify({ memberId, role: newRole }),
@@ -207,11 +217,13 @@ const removeMemberFromProject = async (memberId) => {
   }
 
   try {
+    const token = localStorage.getItem('token');
     const response = await fetch(
       `${import.meta.env.VITE_ROOT_API}/api/project/${selectedProjectId.value}/member/remove`,
       {
         method: "DELETE",
         headers: {
+          "Authorization": token,
           "Content-Type": "application/json",
           Authorization: `${token}`,
         },

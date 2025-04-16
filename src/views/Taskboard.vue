@@ -436,7 +436,9 @@ const updateTaskStatus = async (task, newStatus) => {
         description: task.description,
         sprintId: selectedSprint.value.id,
         priority: task.priority,
-        prerequisite: task.prerequisite ? task.prerequisite.id : null
+        prerequisite: task.prerequisite ? task.prerequisite.id : null,
+        startDate: task.startDate, 
+        dueDate: task.dueDate      
       })
     });
     location.reload();

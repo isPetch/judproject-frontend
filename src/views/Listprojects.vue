@@ -33,11 +33,12 @@ const handleFileUpload = (event) => {
 const membersImage = ref([]);
 const fetchMemberPicture = async (memberId) => {
   try {
+    const token = localStorage.getItem('token');
     const response = await fetch(
       `${import.meta.env.VITE_ROOT_API}/api/project/member/${memberId}/picture`, 
       {
         method: "GET",
-        headers: { "Content-Type": "application/json" }
+        headers: {"Authorization": token, "Content-Type": "application/json" }
       }
     );
 
@@ -90,12 +91,15 @@ const goMemberById = (id) => {
 // Fetch team members for a specific project
 const fetchProjectMembers = async (projectId) => {
   try {
-    const response = await axios.get(`${import.meta.env.VITE_ROOT_API}/api/project/${projectId}/members`);
+    const token = localStorage.getItem('token');
+    const response = await axios.get(`${import.meta.env.VITE_ROOT_API}/api/project/${projectId}/members`,
+    {
+        method: "GET",
+        headers: {  "Authorization": token,"Content-Type": "application/json" },
+      }
+    );
     
-    // ตรวจสอบก่อนว่า response.data คืนอะไรมา
- 
 
-    // ถ้าคืนมาแบบ { members: [...] } ก็ทำแบบนี้
     return response.data.members || [];
 
     // หรือถ้าคืนมาแบบ array ตรงๆ ก็ใช้ response.data

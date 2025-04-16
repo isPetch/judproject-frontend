@@ -90,9 +90,6 @@ const getAllProjects = async () => {
     try {
       const res = await fetch(import.meta.env.VITE_ROOT_API + "/api/admin/users" , {
         method: 'GET',
-        headers: {
-           "Authorization": "112357"
-        }
       });
   
       if (res.ok) {
