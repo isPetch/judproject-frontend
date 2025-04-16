@@ -52,8 +52,8 @@ if (!password.value) {
 
     const data = await response.json(); 
     if (data.status === 'Success') {
-      localStorage.setItem('token', data.usrtoken); 
-      localStorage.setItem('userId', data.usrtoken); 
+      localStorage.setItem('token','Bearer '+ data.acctoken); 
+      localStorage.setItem('userId','Bearer '+ data.acctoken); 
       localStorage.setItem('lastLogin', Date.now());
       router.push({ name: 'Dashboard' });
     } else {

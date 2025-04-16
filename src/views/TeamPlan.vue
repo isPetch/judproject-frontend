@@ -86,11 +86,15 @@ const image = ref(null);
 const membersImage = ref([]);
 const fetchMemberPicture = async (memberId) => {
   try {
+    const token = localStorage.getItem('token');
     const response = await fetch(
       `${import.meta.env.VITE_ROOT_API}/api/project/member/${memberId}/picture`,
       {
         method: "GET",
-        headers: { "Content-Type": "application/json" },
+        headers: {  
+         "Authorization": token,
+         "Content-Type": "application/json"
+       },
       }
     );
 
@@ -115,8 +119,16 @@ const teamMembers = ref([]);
 const viewProjectMember = async (projectId) => {
   try {
     console.log("Fetching members for project ID:", projectId);
+    const token = localStorage.getItem('token');
     const response = await fetch(
-      import.meta.env.VITE_ROOT_API + `/api/project/${projectId}/members`
+      import.meta.env.VITE_ROOT_API + `/api/project/${projectId}/members`,
+      {
+        method: "GET",
+        headers: { 
+          "Authorization": token,
+          "Content-Type": "application/json" 
+        },
+      }
     );
     const result = await response.json();
     console.log("Members:", result);

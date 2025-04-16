@@ -76,11 +76,15 @@ const image = ref(null);
 const membersImage = ref([]);
 const fetchMemberPicture = async (memberId) => {
   try {
+    const token = localStorage.getItem('token');
     const response = await fetch(
       `${import.meta.env.VITE_ROOT_API}/api/project/member/${memberId}/picture`,
       {
         method: "GET",
-        headers: { "Content-Type": "application/json" },
+        headers: { 
+          "Authorization": token,
+          "Content-Type": "application/json" 
+        },
       }
     );
 
@@ -106,8 +110,13 @@ const fetchMemberPicture = async (memberId) => {
 const fetchMembers = async () => {
   isLoading.value = true;
   try {
+    const token = localStorage.getItem('token');
     const response = await fetch(
-      import.meta.env.VITE_ROOT_API + `/api/project/${sprintData.value.projectId}/members`
+      import.meta.env.VITE_ROOT_API + `/api/project/${sprintData.value.projectId}/members`,
+      {
+        method: "GET",
+        headers: {  "Authorization": token,"Content-Type": "application/json" },
+      }
     );
     if (response.ok) {
       const data = await response.json();
@@ -250,11 +259,12 @@ const saveTaskChanges = async () => {
   };
 
   try {
+    const token = localStorage.getItem('token');
     const response = await fetch(
       import.meta.env.VITE_ROOT_API + `/api/task/${props.task.id}`,
       {
         method: "PUT",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Authorization": token, "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       }
     );

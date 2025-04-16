@@ -1,3 +1,4 @@
+const token = localStorage.getItem('token');
 const getAllProjects = async () => {
   try {
     const token = localStorage.getItem('token'); // ดึง token จาก localStorage
@@ -26,7 +27,9 @@ const getAllProjects = async () => {
     try {
       const res = await fetch(import.meta.env.VITE_ROOT_API + "/api/project/" + id, {
         method: 'GET',
-        headers: {}
+        headers: {
+          "Authorization": token,
+        }
       });
   
       if (res.ok) {
@@ -45,7 +48,9 @@ const getAllProjects = async () => {
     try {
       const res = await fetch(import.meta.env.VITE_ROOT_API + "/api/sprint/" + id, {
         method: 'GET',
-        headers: {}
+        headers: {
+          "Authorization": token,
+        }
       });
   
       if (res.ok) {
