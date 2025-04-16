@@ -267,7 +267,7 @@ onMounted(() => {
                 </div>
                 <div class="flex items-center justify-between mt-2">
                   <span v-if="task.dueDate===null" class="text-sm text-gray-500">Due: - </span>
-                  <span v-else class="text-sm text-gray-500">Due: {{ task.dueDate }}</span>
+                  <span v-else class="text-sm text-gray-500">Due: {{ formatDate(task.dueDate) }}</span>
                   <span class="text-sm font-medium"
                     :class="{
                       'text-blue-600': task.status === 'In Progress',
