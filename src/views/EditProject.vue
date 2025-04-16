@@ -25,7 +25,13 @@ const editingFields = ref({
 const fetchProjectData = async () => {
   try {
     loading.value = true; 
-    const response = await fetch(import.meta.env.VITE_ROOT_API + `/api/project/${projectId}`);
+    const token = localStorage.getItem('token');
+    const response = await fetch(import.meta.env.VITE_ROOT_API + `/api/project/${projectId}`,
+    {
+      method: "GET",
+      headers: {"Authorization": token,},
+    }
+    );
     const data = await response.json(); 
     
     if (data) {
@@ -49,9 +55,12 @@ const formatToISO = (dateString) => {
 const saveProject = async () => {
   isSubmitDisabled.value = true;
   try {
+    const token = localStorage.getItem('token');
     const response = await fetch(`${import.meta.env.VITE_ROOT_API}/api/project/${projectId}`, {
       method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 
+        "Authorization": token,
+        'Content-Type': 'application/json' },
       body: JSON.stringify({
         name: projectName.value,
         description: projectDescription.value,
@@ -84,8 +93,10 @@ const deleteProject = async () => {
   if (!confirmDelete) return;
 
   try {
+    const token = localStorage.getItem('token');
     const response = await fetch(`${import.meta.env.VITE_ROOT_API}/api/project/${projectId}/delete`, {
       method: 'DELETE',
+      headers: { "Authorization": token,},
     });
 
     if (response.ok) {
