@@ -145,9 +145,9 @@ const closePopup = () => {
        </button>
          </div>
           </div>
-          <div class="text-right mt-2">
+          <!-- <div class="text-right mt-2">
             <a href="#" class="text-sm text-gray-500 hover:underline">Forgot password?</a>
-          </div>
+          </div> -->
           <button @click="handleLogin" class="w-full mt-4 py-2 text-white bg-[#316394] rounded-md hover:bg-blue-800">Log In</button>
           <div class="text-center text-sm text-gray-500 mt-4">
             Don't have an account yet? <router-link to="/signup" class="text-blue-600 hover:underline">Sign up</router-link>
