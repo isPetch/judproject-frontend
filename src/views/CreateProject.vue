@@ -29,11 +29,11 @@ const fetchProjects = async () => {
   isLoading.value = true;
   try {
     const response = await getAllProjects();
-    if (response.status === 'success') {
-      projects.value = response.data;
-    } else {
-      showNotification('Error fetching projects: ' + response.message, 'error');
-    }
+    if (response.ok || response.message.includes('success')) {
+  projects.value = response.data;
+} else {
+  showNotification('Error fetching projects: ' + response.message, 'error');
+}
   } catch (error) {
     showNotification('Failed to load projects', 'error');
   } finally {
