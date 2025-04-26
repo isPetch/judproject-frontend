@@ -1,4 +1,3 @@
-const token = localStorage.getItem('token');
 const getAllProjects = async () => {
   try {
     const token = localStorage.getItem('token'); // ดึง token จาก localStorage
@@ -25,6 +24,7 @@ const getAllProjects = async () => {
 };
   const getProjectById = async (id) => {
     try {
+      const token = localStorage.getItem('token');
       const res = await fetch(import.meta.env.VITE_ROOT_API + "/api/project/" + id, {
         method: 'GET',
         headers: {
@@ -46,6 +46,7 @@ const getAllProjects = async () => {
   };
   const getSprintById = async (id) => {
     try {
+      const token = localStorage.getItem('token');
       const res = await fetch(import.meta.env.VITE_ROOT_API + "/api/sprint/" + id, {
         method: 'GET',
         headers: {
@@ -67,6 +68,7 @@ const getAllProjects = async () => {
   };
   const getUserById = async (id) => {
     try {
+      const token = localStorage.getItem('token');
       const res = await fetch(import.meta.env.VITE_ROOT_API + "/api/profile" , {
         method: 'GET',
         headers: {
@@ -88,6 +90,7 @@ const getAllProjects = async () => {
   };
   const getAllUsers = async (id) => {
     try {
+      const token = localStorage.getItem('token');
       const res = await fetch(import.meta.env.VITE_ROOT_API + "/api/admin/users" , {
         method: 'GET',
       });
