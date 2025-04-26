@@ -83,7 +83,7 @@ router.beforeEach((to, from, next) => {
   const isPublicPage = publicPages.includes(to.name);
   const token = localStorage.getItem('token');
   const lastLogin = localStorage.getItem('lastLogin');
-  const EXPIRATION_TIME = 30 * 60 * 1000; // 30 นาที
+  const EXPIRATION_TIME = 60 * 60 * 1000; // 60 นาที
   // const EXPIRATION_TIME = 3000;
 
   if (token && lastLogin) {
