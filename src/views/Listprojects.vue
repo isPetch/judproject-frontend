@@ -57,7 +57,7 @@ const fetchMemberPicture = async (memberId) => {
     console.error("Failed to fetch member picture:", error);
 
     // กำหนดรูป Default ถ้าโหลดไม่สำเร็จ
-    membersImage.value.push = "/images/default-profile.png";
+    membersImage.value.push("/images/default-profile.png");
   }
 };
 
