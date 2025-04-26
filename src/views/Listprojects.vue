@@ -402,7 +402,7 @@ onMounted(() => {
                     
                     <div v-if="isMenuOpen" class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-10 border border-gray-200">
                       <div class="py-1">
-                         <button @click="goEditById(selectedProject.id)" class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                         <button v-if="currentUserRole === 'Owner'" @click="goEditById(selectedProject.id)" class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
                          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                            </svg>
@@ -492,12 +492,12 @@ onMounted(() => {
             <!-- Actions -->
             <div class="px-6 py-4 bg-gray-50 border-t border-gray-200">
               <div class="flex justify-between gap-2">
-                <button v-if="currentUserRole === 'Owner' || currentUserRole === 'admin'" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-md flex items-center gap-1 transition-colors duration-200">
+                <!-- <button v-if="currentUserRole === 'Owner' || currentUserRole === 'admin'" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-md flex items-center gap-1 transition-colors duration-200">
                   <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
                   </svg>
                   Archive
-                </button>
+                </button> -->
                 <button 
                   @click="goToProjectDetail(selectedProject.id)" 
                   class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md flex-1 flex items-center justify-center gap-1 transition-colors duration-200"
