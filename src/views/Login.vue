@@ -60,7 +60,7 @@ if (!password.value) {
       showPopupError('Incorrect username or password.');
     }
   } catch (error) {
-    showPopupError('Login failed: ' + (error.message || 'An unexpected error occurred'));
+     showPopupError('Cannot connect to server. Please try again later.');
   }
 };
 
