@@ -125,7 +125,7 @@ const fetchMembers = async () => {
       const membersWithImages = await Promise.all(
         data.members.map(async (member) => {
           const imageURL = await fetchMemberPicture(member.memberId); 
-          return { ...member, image: imageURL || "/images/default-profile.png" }; 
+          return { ...member, image: imageURL || null }; 
          
         })
       );
@@ -334,7 +334,7 @@ const memberData = computed(() => {
     console.log(assignedMember.memberId); // 10
     console.log(fetchedMember.memberId);  //  undefined
     const username = fetchedMember.username || assignedMember.username || "Unknown";
-    const image = fetchedMember.image || "/images/default-profile.png"; // ใช้ default profile ถ้าไม่มี image
+    const image = fetchedMember.image || null ; 
     console.log(image);  // /images/default-profile.png
     const initials = username
       ? (username.length > 1
